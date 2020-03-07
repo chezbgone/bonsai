@@ -26,7 +26,9 @@ void main()
         print_math(tv);
 
         DecTree* dtp = train_tree(tv);
-        printf(" %2d leaves", nb_leaves(dtp));
+        printf(" %2d leaves\n", nb_leaves(dtp));
+
+        print_tree(dtp);
 
         wipe_taskview(&tv);
         free_tree(dtp);

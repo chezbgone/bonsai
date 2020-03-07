@@ -26,13 +26,15 @@ struct DecTree {
     DecTree* rght; 
     char node_type;
     union {
-        char pred_idx;
-        char leaf_valence;
+        char didx;
+        char value;
     } annotation;
 }; 
 
 DecTree* train_tree(TaskView tv);
 void free_tree(DecTree* dtp);
+int nb_nodes(DecTree const* dtp);
 int nb_leaves(DecTree const* dtp);
+void print_tree(DecTree const* dtp);
 
 #endif//DECTREE_H  

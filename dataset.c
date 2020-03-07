@@ -87,7 +87,7 @@ void populate_math(Tasks* tsp)
 
         for (int si=0; si!=nb_samples; ++si) {
             char label = (
-                ti <  6 ? ((((si>>ti)%2) ^ ((si>>((ti-1)%6))%2)) ? 1 : 0) :
+                ti <  6 ? ((((si>>ti)%2) ^ ((si>>((ti+5)%6))%2)) ? 1 : 0) :
                 ti < 12 ? (si%ti==0 ? 1 : 0) :
                 ti < 18 ? (is_square(si+(ti%6))||is_square(si-(ti%6)) ? 1 : 0) :
                           (gcd(ti, si)==1 ? 1 : 0)
