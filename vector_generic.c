@@ -1,8 +1,8 @@
-/* author: samtenka
- * change: 2020-03-06
- * create: 2020-03-04
- * descrp: 
- * to use: 
+/*  author: samtenka
+ *  change: 2020-03-06
+ *  create: 2020-03-04
+ *  descrp: Implement vector methods to be specialized in "vector.c".
+ *  to use: See "vector.h" for instructions and "vector.c" for examples.
  */
 
 #include <stdlib.h> 
@@ -20,6 +20,10 @@
 #ifdef free_vec 
 #ifdef wipe_vec 
 
+/*=============================================================================
+======  0. CONSTRUCTORS  ======================================================
+=============================================================================*/
+
 VecType make_vec(int cap)
 {
     VecType v;
@@ -33,6 +37,10 @@ void init_vec(VecType* vp, int cap)
     vp->cap = cap;
     vp->len = 0;
 } 
+
+/*=============================================================================
+======  1. MODIFIERS  =========================================================
+=============================================================================*/
 
 void grow_vec(VecType* vp, int new_cap)
 {
@@ -50,12 +58,16 @@ void grow_vec(VecType* vp, int new_cap)
 
 void push_vec(VecType* vp, EltType e)
 {
-    while (vp->len >= vp->cap) {
+    while (vp->cap <= vp->len) {
         grow_vec(vp, (4*vp->cap)/3 + 8);
     } 
     vp->data[vp->len] = e; 
     ++(vp->len);
 }
+
+/*=============================================================================
+======  2. DESTRUCTORS  =======================================================
+=============================================================================*/
 
 void free_vec(VecType* vp)
 {

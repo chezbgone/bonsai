@@ -1,14 +1,20 @@
-/* author: samtenka
- * change: 2020-03-06
- * create: 2020-03-04
- * descrp: 
- * to use: 
+/*  author: samtenka
+ *  change: 2020-03-06
+ *  create: 2020-03-04
+ *  descrp: Implement vector methods for a variety of element types.  See
+ *          "vector.h" and "vector_generic.h" for details on method usage
+ *          and see "vector_generic.c" for the here-repeated template and for
+ *          implementation details.
+ *
+ *  to use: List as an argument to gcc when compiling:
+ *
+ *              gcc ... vector.c ... 
  */
 
 #include "vector.h"
 
 /*=============================================================================
-======  0. VECTOR TYPES  ======================================================
+======  0. VECTOR IMPLEMENTATIONS FOR EACH ELEMENT TYPE  ======================
 =============================================================================*/
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

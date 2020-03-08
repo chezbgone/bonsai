@@ -1,13 +1,12 @@
-/* author: samtenka
- * change: 2020-03-06
- * create: 2020-03-04
- * descrp: 
- * to use: 
+/*  author: samtenka
+ *  change: 2020-03-06
+ *  create: 2020-03-04
+ *  descrp: Declare vector interfaces to be specialized in "vector.h"
+ *  to use: See "vector.h" for instructions and examples.
  */
 
 #include <stdlib.h> 
 #include <stdio.h>  
-#include "assert.h"
 
 #ifdef EltType 
 #ifdef free_elt
@@ -20,11 +19,19 @@
 #ifdef free_vec 
 #ifdef wipe_vec
 
+/*=============================================================================
+======  0. VECTOR DATA  =======================================================
+=============================================================================*/
+
 typedef struct {
     EltType* data;
     int cap;
     int len;
 } VecType;
+
+/*=============================================================================
+======  1. VECTOR METHODS  ====================================================
+=============================================================================*/
 
 VecType make_vec(int cap);
 void init_vec(VecType* vp, int cap);

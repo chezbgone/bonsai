@@ -1,8 +1,8 @@
-/* author: samtenka
- * change: 2020-03-06
- * create: 2020-03-04
- * descrp: 
- * to use: 
+/*  author: samtenka
+ *  change: 2020-03-08
+ *  create: 2020-03-04
+ *  descrp: 
+ *  to use: 
  */
 
 #include <stdio.h>
@@ -11,8 +11,6 @@
 #include "dataset.h" 
 #include "dectree.h" 
 #include "verbose.h"
-
-#define NB_VECTORS 24
 
 void main()
 {

@@ -1,8 +1,8 @@
-/* author: samtenka
- * change: 2020-03-06
- * create: 2020-03-04
- * descrp: 
- * to use: 
+/*  author: samtenka
+ *  change: 2020-03-06
+ *  create: 2020-03-04
+ *  descrp: 
+ *  to use: 
  */
 
 #ifndef DECTREE_H  
