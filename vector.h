@@ -72,7 +72,7 @@
 =============================================================================*/
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~  1.0. vector of int  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+~~~~~~~~~~~~~~  1.0. Vectors of Integers  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #define EltType         int 
 #define free_elt(ep)    ;
@@ -95,10 +95,59 @@
 #undef EltType
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~  1.1. vector of char  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+~~~~~~~~~~~~~~  1.1. Vectors and Nested Vectors of Floats  ~~~~~~~~~~~~~~~~~~*/
+
+/*--------------------  1.1.0. vector of char  ------------------------------*/
+
+#define EltType         float
+#define free_elt(ep)    ;
+#define VecType         floats  
+#define make_vec        make_floats
+#define init_vec        init_floats
+#define grow_vec        grow_floats
+#define push_vec        push_floats
+#define free_vec        free_floats
+#define wipe_vec        wipe_floats
+#include "vector_generic.h"
+#undef wipe_vec
+#undef free_vec
+#undef push_vec
+#undef grow_vec
+#undef init_vec
+#undef make_vec
+#undef VecType
+#undef free_elt
+#undef EltType
+
+/*--------------------  1.1.1. vector of char  ------------------------------*/
+
+#define EltType         floats
+#define free_elt(ep)    free_floats(ep)  
+#define VecType         floatss 
+#define make_vec        make_floatss
+#define init_vec        init_floatss
+#define grow_vec        grow_floatss
+#define push_vec        push_floatss
+#define free_vec        free_floatss
+#define wipe_vec        wipe_floatss
+#include "vector_generic.h"
+#undef wipe_vec
+#undef free_vec
+#undef push_vec
+#undef grow_vec
+#undef init_vec
+#undef make_vec
+#undef VecType
+#undef free_elt
+#undef EltType
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~  1.2. Vectors and Nested Vectors of Characters  ~~~~~~~~~~~~~~*/
+
+/*--------------------  1.2.0. vector of char  ------------------------------*/
 
 #define EltType         char
-#define free_elt(e)     ;
+#define free_elt(ep)    ;
 #define VecType         chars
 #define make_vec        make_chars
 #define init_vec        init_chars
@@ -117,11 +166,10 @@
 #undef free_elt
 #undef EltType
 
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~  1.2. vector of vector of char  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*--------------------  1.2.1. vector of vector of char  --------------------*/
 
 #define EltType         chars
-#define free_elt(e)     free_chars
+#define free_elt(ep)    free_chars(ep)
 #define VecType         charss
 #define make_vec        make_charss
 #define init_vec        init_charss
@@ -140,11 +188,10 @@
 #undef free_elt
 #undef EltType
 
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-~~~~~~~~~~~~~~  1.3. vector of vector of vector of char  ~~~~~~~~~~~~~~~~~~~~*/
+/*--------------------  1.2.2. vector of vector of vector of char  ----------*/
 
 #define EltType         charss
-#define free_elt(e)     free_charss
+#define free_elt(ep)    free_charss(ep)
 #define VecType         charsss
 #define make_vec        make_charsss
 #define init_vec        init_charsss

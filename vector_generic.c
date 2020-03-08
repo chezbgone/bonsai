@@ -72,7 +72,7 @@ void push_vec(VecType* vp, EltType e)
 void free_vec(VecType* vp)
 {
     for (EltType* ep=vp->data; ep!=vp->data + vp->len; ++ep) {
-        free_elt(*ep);
+        free_elt(ep);
     }
     BARK(VERBOSE_VECTOR_MEM, "freed %d elts\n", vp->len);
     free(vp->data);
