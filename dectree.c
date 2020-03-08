@@ -7,9 +7,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "vector.h" 
 #include "dectree.h" 
 #include "verbose.h"
+
 
 DecTree* malloc_tree();
 void grow_tree(DecTree* dtp);
@@ -19,8 +21,6 @@ float info_of_split(TaskView tv, int didx);
 void split_at(TaskView tv, int didx, TaskView* left, TaskView* right);
 void train_subtree(DecTree* dtp, TaskView t, int depth);
 void print_tree_row(DecTree const* dtp, int row);
-//DecTree* train_tree(TaskView t);
-//void free_tree(DecTree* dtp);
 
 int nb_leaves(DecTree const* dtp)
 {
@@ -145,6 +145,68 @@ float info_of(TaskView tv)
         tv.negpoints.len,
         tv.pospoints.len
     );
+}
+
+float gain_from_op(TaskView tv, DecTree const* dtp, int didx_a, int didx_b, char op)
+{
+    if (dtp->node_type == NT_LEAF) { 
+        return 0.0;
+    }
+    
+    int didx = dtp->annotation.didx;
+
+    if (didx != didx_a && didx != didx_b) {
+        TaskView left;
+        TaskView rght;
+        split_at(tv, didx, &left, &rght);
+        float gain = (
+            gain_from_op(left, dtp->left, didx_a, didx_b, op) + 
+            gain_from_op(rght, dtp->rght, didx_a, didx_b, op)   
+        );
+        wipe_taskview(&left);
+        wipe_taskview(&rght);
+        return gain;
+    } else {
+        int nay_neg=0;
+        int nay_pos=0;
+        int yea_neg=0;
+        int yea_pos=0;
+
+        chars* point; 
+        for each(point, tv.negpoints) {
+            char* data = point->data;
+            char val;
+            switch (op) {
+                case OP_AND:    val =   data[didx_a]  & data[didx_b]; break;
+                case OP_OR:     val =   data[didx_a]  | data[didx_b]; break;
+                case OP_XOR:    val =   data[didx_a]  ^ data[didx_b]; break;
+                case OP_IMPLIES:val = (~data[didx_a]) | data[didx_b]; break;
+            }
+            switch ( val ) {
+                case NAY : nay_neg += 1; break; 
+                case YEA : yea_neg += 1; break; 
+            }
+        }
+        for each(point, tv.pospoints) {
+            char* data = point->data;
+            char val;
+            switch (op) {
+                case OP_AND:    val =   data[didx_a]  & data[didx_b]; break;
+                case OP_OR:     val =   data[didx_a]  | data[didx_b]; break;
+                case OP_XOR:    val =   data[didx_a]  ^ data[didx_b]; break;
+                case OP_IMPLIES:val = (~data[didx_a]) | data[didx_b]; break;
+            }
+            switch ( val ) {
+                case NAY : nay_pos += 1; break; 
+                case YEA : yea_pos += 1; break; 
+            }
+        }
+
+        return (
+            entropy_extensive(yea_neg, yea_pos) + 
+            entropy_extensive(nay_neg, nay_pos)   
+        ) - info_of(tv);
+    }
 }
 
 float info_of_split(TaskView tv, int didx)

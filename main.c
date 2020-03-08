@@ -25,6 +25,9 @@ void main()
 
         DecTree* dtp = train_tree(tv);
         printf(" %2d leaves\n", nb_leaves(dtp));
+        printf(" %f \n", gain_from_op(tv, dtp, 0, 5, OP_XOR));
+        printf(" %f \n", gain_from_op(tv, dtp, 0, 1, OP_XOR));
+        printf(" %f \n", gain_from_op(tv, dtp, 0, 1, OP_AND));
 
         print_tree(dtp);
 
