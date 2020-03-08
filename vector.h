@@ -210,4 +210,30 @@
 #undef free_elt
 #undef EltType
 
+#include "dectree.h"
+
+#define EltType         DecTree 
+#define free_elt(ep)    free_tree(ep)
+#define VecType         trees
+#define make_vec        make_trees
+#define init_vec        init_trees
+#define grow_vec        grow_trees
+#define push_vec        push_trees
+#define free_vec        free_trees
+#define wipe_vec        wipe_trees
+#include "vector_generic.h"
+#undef wipe_vec
+#undef free_vec
+#undef push_vec
+#undef grow_vec
+#undef init_vec
+#undef make_vec
+#undef VecType
+#undef free_elt
+#undef EltType
+
+#ifndef VECTOR_DONE
+#define VECTOR_DONE
+#endif//VECTOR_DONE
+
 #endif//VECTOR_H 

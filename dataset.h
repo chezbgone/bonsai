@@ -36,4 +36,8 @@ void empt_taskview(TaskView* tvp, int pt_dim, int cap);
 void cons_taskview(TaskView* tvp, Tasks ts, int tidx);
 void wipe_taskview(TaskView* tvp);
 
-#endif//DATASET_H
+#ifndef DATASET_DONE 
+#define DATASET_DONE
+#endif//DATASET_DONE
+
+#endif//DATASET_H 

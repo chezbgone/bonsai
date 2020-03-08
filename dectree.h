@@ -8,9 +8,6 @@
 #ifndef DECTREE_H  
 #define DECTREE_H  
 
-#include "vector.h"
-#include "dataset.h"
-
 #define VERBOSE_TREE 1
 
 #define NT_PRED 1 
@@ -36,6 +33,9 @@ struct DecTree {
     char node_type;
 }; 
 
+#include "dataset.h"
+#ifdef DATASET_DONE
+
 DecTree* train_tree(TaskView tv);
 void free_tree(DecTree* dtp);
 int nb_nodes(DecTree const* dtp);
@@ -43,5 +43,11 @@ int nb_leaves(DecTree const* dtp);
 void print_tree(DecTree const* dtp);
 
 float gain_from_op(TaskView tv, DecTree const* dtp, int didx_a, int didx_b, char op);
+
+#endif//DATASET_DONE
+
+#ifndef DECTREE_DONE 
+#define DECTREE_DONE
+#endif//DECTREE_DONE
 
 #endif//DECTREE_H  

@@ -7,10 +7,10 @@
 
 #include <stdio.h>
 
+#include "verbose.h"
 #include "vector.h" 
 #include "dataset.h" 
 #include "dectree.h" 
-#include "verbose.h"
 
 void main()
 {
