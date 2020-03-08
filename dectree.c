@@ -8,18 +8,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "vector.h" 
-#include "dectree.h" 
-#include "verbose.h"
-
+#include "verbose.h" 
+#include "fixpoint.h"
 
 DecTree* malloc_tree();
 void grow_tree(DecTree* dtp);
 float entropy_extensive(int A, int B);
-float info_of(TaskView tv);
-float info_of_split(TaskView tv, int didx);
-void split_at(TaskView tv, int didx, TaskView* left, TaskView* right);
-void train_subtree(DecTree* dtp, TaskView t, int depth);
+float info_of(TaskView const* tvp);
+float info_of_split(TaskView const* tvp, int didx);
+void split_at(TaskView const* tvp, int didx, TaskView* left, TaskView* right);
+void train_subtree(DecTree* dtp, TaskView const* t, int depth);
 void print_tree_row(DecTree const* dtp, int row);
 
 int nb_leaves(DecTree const* dtp)
@@ -139,15 +137,15 @@ float entropy_extensive(int A, int B)
     return (1.7 + 2.0 * quad) * quad * (A+B);
 }
 
-float info_of(TaskView tv)
+float info_of(TaskView const* tvp)
 {
     return entropy_extensive(
-        tv.negpoints.len,
-        tv.pospoints.len
+        tvp->negpoints.len,
+        tvp->pospoints.len
     );
 }
 
-float gain_from_op(TaskView tv, DecTree const* dtp, int didx_a, int didx_b, char op)
+float gain_from_op(TaskView const* tvp, DecTree const* dtp, int didx_a, int didx_b, char op)
 {
     if (dtp->node_type == NT_LEAF) { 
         return 0.0;
@@ -158,10 +156,10 @@ float gain_from_op(TaskView tv, DecTree const* dtp, int didx_a, int didx_b, char
     if (didx != didx_a && didx != didx_b) {
         TaskView left;
         TaskView rght;
-        split_at(tv, didx, &left, &rght);
+        split_at(tvp, didx, &left, &rght);
         float gain = (
-            gain_from_op(left, dtp->left, didx_a, didx_b, op) + 
-            gain_from_op(rght, dtp->rght, didx_a, didx_b, op)   
+            gain_from_op(&left, dtp->left, didx_a, didx_b, op) + 
+            gain_from_op(&rght, dtp->rght, didx_a, didx_b, op)   
         );
         wipe_taskview(&left);
         wipe_taskview(&rght);
@@ -173,7 +171,7 @@ float gain_from_op(TaskView tv, DecTree const* dtp, int didx_a, int didx_b, char
         int yea_pos=0;
 
         chars* point; 
-        for each(point, tv.negpoints) {
+        for each(point, tvp->negpoints) {
             char* data = point->data;
             char val;
             switch (op) {
@@ -187,7 +185,7 @@ float gain_from_op(TaskView tv, DecTree const* dtp, int didx_a, int didx_b, char
                 case YEA : yea_neg += 1; break; 
             }
         }
-        for each(point, tv.pospoints) {
+        for each(point, tvp->pospoints) {
             char* data = point->data;
             char val;
             switch (op) {
@@ -205,11 +203,11 @@ float gain_from_op(TaskView tv, DecTree const* dtp, int didx_a, int didx_b, char
         return (
             entropy_extensive(yea_neg, yea_pos) + 
             entropy_extensive(nay_neg, nay_pos)   
-        ) - info_of(tv);
+        ) - info_of(tvp);
     }
 }
 
-float info_of_split(TaskView tv, int didx)
+float info_of_split(TaskView const* tvp, int didx)
 {
     int nay_neg=0;
     int nay_pos=0;
@@ -217,13 +215,13 @@ float info_of_split(TaskView tv, int didx)
     int yea_pos=0;
 
     chars* point; 
-    for each(point, tv.negpoints) {
+    for each(point, tvp->negpoints) {
         switch ( point->data[didx] ) {
             case NAY : nay_neg += 1; break; 
             case YEA : yea_neg += 1; break; 
         }
     }
-    for each(point, tv.pospoints) {
+    for each(point, tvp->pospoints) {
         switch ( point->data[didx] ) {
             case NAY : nay_pos += 1; break; 
             case YEA : yea_pos += 1; break; 
@@ -236,19 +234,19 @@ float info_of_split(TaskView tv, int didx)
     );
 }
 
-void split_at(TaskView tv, int didx, TaskView* left, TaskView* rght)
+void split_at(TaskView const* tvp, int didx, TaskView* left, TaskView* rght)
 {
-    empt_taskview(left, tv.pt_dim, (2*len_taskview(tv))/3);
-    empt_taskview(rght, tv.pt_dim, (2*len_taskview(tv))/3);
+    empt_taskview(left, tvp->pt_dim, (2*len_taskview(tvp))/3);
+    empt_taskview(rght, tvp->pt_dim, (2*len_taskview(tvp))/3);
 
     chars* point; 
-    for each(point, tv.negpoints) {
+    for each(point, tvp->negpoints) {
         switch ( point->data[didx] ) {
             case NAY : push_charss(&(left->negpoints), *point); break; 
             case YEA : push_charss(&(rght->negpoints), *point); break;
         }
     }
-    for each(point, tv.pospoints) {
+    for each(point, tvp->pospoints) {
         switch ( point->data[didx] ) {
             case NAY : push_charss(&(left->pospoints), *point); break; 
             case YEA : push_charss(&(rght->pospoints), *point); break;
@@ -256,26 +254,26 @@ void split_at(TaskView tv, int didx, TaskView* left, TaskView* rght)
     }
 }
 
-DecTree* train_tree(TaskView tv)
+DecTree* train_tree(TaskView const* tvp)
 {
     DecTree* dtp = malloc_tree();
-    train_subtree(dtp, tv, 0);
+    train_subtree(dtp, tvp, 0);
     return dtp;
 }
 
-void train_subtree(DecTree* dtp, TaskView tv, int depth)
+void train_subtree(DecTree* dtp, TaskView const* tvp, int depth)
 {
     /* mask.len bounds info from above  */
 
-    float best_info = info_of(tv);
+    float best_info = info_of(tvp);
     if (best_info==0.0) {
-        dtp->annotation.value = tv.pospoints.len ? +1 : -1;
+        dtp->annotation.value = tvp->pospoints.len ? +1 : -1;
         return;
     }
     int best_didx; 
 
-    for (int didx=0; didx!=tv.pt_dim; ++didx) {
-        float info = info_of_split(tv, didx);
+    for (int didx=0; didx!=tvp->pt_dim; ++didx) {
+        float info = info_of_split(tvp, didx);
         if (!(info <= best_info)) { continue; }
         best_info = info;
         best_didx = didx;
@@ -290,12 +288,12 @@ void train_subtree(DecTree* dtp, TaskView tv, int depth)
 
     TaskView left;
     TaskView rght;
-    split_at(tv, best_didx, &left, &rght);
+    split_at(tvp, best_didx, &left, &rght);
     {
         grow_tree(dtp);
         dtp->annotation.didx = best_didx;
-        train_subtree(dtp->left, left, depth+1);
-        train_subtree(dtp->rght, rght, depth+1);
+        train_subtree(dtp->left, &left, depth+1);
+        train_subtree(dtp->rght, &rght, depth+1);
     }
     wipe_taskview(&left);
     wipe_taskview(&rght);
@@ -304,7 +302,7 @@ void train_subtree(DecTree* dtp, TaskView tv, int depth)
         BARK(VERBOSE_DECTREE_TRAIN, "| ");
     }
     BARK(VERBOSE_DECTREE_TRAIN,
-        "%d leaves for %d el.s\n", nb_leaves(dtp), len_taskview(tv) 
+        "%d leaves for %d el.s\n", nb_leaves(dtp), len_taskview(tvp) 
     );
 }
 

@@ -11,7 +11,7 @@
  *              gcc ... vector.c ... 
  */
 
-#include "vector.h"
+#include "fixpoint.h"
 
 /*=============================================================================
 ======  0. VECTOR IMPLEMENTATIONS FOR EACH ELEMENT TYPE  ======================
@@ -156,4 +156,43 @@
 #undef free_elt
 #undef EltType
 
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~  1.3. Vectors of Tasks  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+#define EltType         Task
+#define free_elt(ep)    free_task(ep)
+#define VecType         Tasks  
+#define make_vec        make_tasks
+#define init_vec        init_tasks
+#define grow_vec        grow_tasks
+#define push_vec        push_tasks
+#define free_vec        free_tasks
+#define wipe_vec        wipe_tasks
+#include "vector_generic.c"
+#undef wipe_vec
+#undef free_vec
+#undef push_vec
+#undef grow_vec
+#undef init_vec
+#undef make_vec
+#undef VecType
+#undef free_elt
+#undef EltType
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~  1.4. Vectors of Trees  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+#define EltType         DecTree 
+#define free_elt(ep)    free_tree(ep)
+#define VecType         Trees
+#define make_vec        make_trees
+#define init_vec        init_trees
+#define grow_vec        grow_trees
+#define push_vec        push_trees
+#define free_vec        free_trees
+#define wipe_vec        wipe_trees
+#include "vector_generic.c"
+#undef wipe_vec
+#undef free_vec
+#undef push_vec
+#undef grow_vec

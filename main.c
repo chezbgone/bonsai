@@ -8,9 +8,7 @@
 #include <stdio.h>
 
 #include "verbose.h"
-#include "vector.h" 
-#include "dataset.h" 
-#include "dectree.h" 
+#include "fixpoint.h"
 
 void main()
 {
@@ -20,14 +18,15 @@ void main()
     TaskView tv;
     for (int ti=0; ti!=24; ++ti) {
         printf("task %2d: ", ti);
-        cons_taskview(&tv, ts, ti);
-        print_math(tv);
+        cons_taskview(&tv, &(ts.data[ti]));
+        print_math(&tv);
 
-        DecTree* dtp = train_tree(tv);
+        DecTree* dtp = train_tree(&tv);
         printf(" %2d leaves\n", nb_leaves(dtp));
-        printf(" %f \n", gain_from_op(tv, dtp, 0, 5, OP_XOR));
-        printf(" %f \n", gain_from_op(tv, dtp, 0, 1, OP_XOR));
-        printf(" %f \n", gain_from_op(tv, dtp, 0, 1, OP_AND));
+
+        //printf(" %f \n", gain_from_op(&tv, dtp, 0, 5, OP_XOR));
+        //printf(" %f \n", gain_from_op(&tv, dtp, 0, 1, OP_XOR));
+        //printf(" %f \n", gain_from_op(&tv, dtp, 0, 1, OP_AND));
 
         print_tree(dtp);
 

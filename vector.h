@@ -57,8 +57,7 @@
  *          is appropriate.
  */
 
-#ifndef VECTOR_H
-#define VECTOR_H
+#ifndef BASIC_VECTOR
 
 /*=============================================================================
 ======  0. ITERATION HELPERS  =================================================
@@ -210,11 +209,49 @@
 #undef free_elt
 #undef EltType
 
-#include "dectree.h"
+#define BASIC_VECTOR
+#endif//BASIC_VECTOR
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~  1.3. Vectors of Tasks  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+#ifndef TASKS
+#ifdef TASK
+
+#define EltType         Task
+#define free_elt(ep)    free_task(ep)
+#define VecType         Tasks  
+#define make_vec        make_tasks
+#define init_vec        init_tasks
+#define grow_vec        grow_tasks
+#define push_vec        push_tasks
+#define free_vec        free_tasks
+#define wipe_vec        wipe_tasks
+#include "vector_generic.h"
+#undef wipe_vec
+#undef free_vec
+#undef push_vec
+#undef grow_vec
+#undef init_vec
+#undef make_vec
+#undef VecType
+#undef free_elt
+#undef EltType
+
+#define TASKS
+#endif//TASK
+#endif//TASKS
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~  1.4. Vectors of Trees  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+#ifndef TREES
+#ifdef TREE
+#ifdef TREE_METHODS
 
 #define EltType         DecTree 
 #define free_elt(ep)    free_tree(ep)
-#define VecType         trees
+#define VecType         Trees
 #define make_vec        make_trees
 #define init_vec        init_trees
 #define grow_vec        grow_trees
@@ -232,8 +269,7 @@
 #undef free_elt
 #undef EltType
 
-#ifndef VECTOR_DONE
-#define VECTOR_DONE
-#endif//VECTOR_DONE
-
-#endif//VECTOR_H 
+#define TREES 
+#endif//TREE_METHODS
+#endif//TREE
+#endif//TREES

@@ -5,22 +5,22 @@
  *  to use: 
  */
 
-#include "dataset.h"
+#include "fixpoint.h"
 
-int len_taskview(TaskView tv)
+int len_taskview(TaskView const* tvp)
 {
     return (
-        tv.negpoints.len +
-        tv.pospoints.len
+        tvp->negpoints.len +
+        tvp->pospoints.len
     );
 }
 
-void cons_taskview(TaskView* tvp, Tasks ts, int tidx)
+void cons_taskview(TaskView* tvp, Task const* tp)
 {
-    charss negpoints = ts.negpointss.data[tidx];
-    charss pospoints = ts.pospointss.data[tidx];
+    charss negpoints = tp->negpoints;
+    charss pospoints = tp->pospoints;
 
-    tvp->pt_dim = ts.pt_dim;
+    tvp->pt_dim = tp->pt_dim;
     init_charss(&(tvp->negpoints), negpoints.len);
     init_charss(&(tvp->pospoints), pospoints.len);
 
@@ -46,10 +46,9 @@ void wipe_taskview(TaskView* tvp)
     wipe_charss(&(tvp->pospoints));
 }
 
-void free_tasks(Tasks* tsp)
+void free_task(Task* tp)
 {
-    free_charsss(&(tsp->pospointss));
-    free_charsss(&(tsp->negpointss));
-    tsp->pt_dim=0;
-    tsp->nb_tasks=0;
+    free_charss(&(tp->pospoints));
+    free_charss(&(tp->negpoints));
+    tp->pt_dim=0;
 }

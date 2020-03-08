@@ -5,7 +5,8 @@
  *  to use: 
  */
 
-#include "dataset.h"
+#include "verbose.h"
+#include "fixpoint.h"
 
 int is_square(int n);
 int gcd(int a, int b);
@@ -16,15 +17,15 @@ void populate_math(Tasks* tsp)
     const int nb_samples = 64; 
     const int nb_tasks = 24;
 
-    tsp->pt_dim = pt_dim;
-    tsp->nb_tasks = nb_tasks;
-
-    init_charsss(&(tsp->negpointss), nb_tasks);
-    init_charsss(&(tsp->pospointss), nb_tasks);
+    init_tasks(tsp, nb_tasks);
 
     for (int ti=0; ti!=nb_tasks; ++ti) {
-        push_charsss(&(tsp->negpointss), make_charss(nb_samples/2));
-        push_charsss(&(tsp->pospointss), make_charss(nb_samples/2));
+        Task t = {
+            make_charss(nb_samples/2),
+            make_charss(nb_samples/2),
+            pt_dim
+        };
+        push_tasks(tsp, t);
 
         for (int si=0; si!=nb_samples; ++si) {
             char label = (
@@ -34,8 +35,8 @@ void populate_math(Tasks* tsp)
                           (gcd(ti, si)==1 ? 1 : 0)
             );
             charss* points = (
-                label ? &(tsp->pospointss.data[ti]) :
-                        &(tsp->negpointss.data[ti])
+                label ? &(tsp->data[ti].pospoints) :
+                        &(tsp->data[ti].negpoints)
             );
             push_charss(points, make_chars(pt_dim));
 
@@ -48,7 +49,7 @@ void populate_math(Tasks* tsp)
     }
 }
 
-void print_math(TaskView tv)
+void print_math(TaskView const* tvp)
 {
     char labels[64+1];
     for (int i=0; i!=64; ++i) {
@@ -57,7 +58,7 @@ void print_math(TaskView tv)
     labels[64] = '\0';
 
     chars* point;
-    for each(point, tv.negpoints) {
+    for each(point, tvp->negpoints) {
         int pt_val = 0;
         char* x;
         for each(x, *point) {
@@ -65,7 +66,7 @@ void print_math(TaskView tv)
         }
         labels[pt_val] = ' ';
     } 
-    for each(point, tv.pospoints) {
+    for each(point, tvp->pospoints) {
         int pt_val = 0;
         char* x;
         for each(x, *point) {
@@ -91,5 +92,3 @@ int gcd(int a, int b)
     }
     return a+b;
 }
-
-

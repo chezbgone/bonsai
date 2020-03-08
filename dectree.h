@@ -5,8 +5,7 @@
  *  to use: 
  */
 
-#ifndef DECTREE_H  
-#define DECTREE_H  
+#ifndef TREE  
 
 #define VERBOSE_TREE 1
 
@@ -33,21 +32,22 @@ struct DecTree {
     char node_type;
 }; 
 
-#include "dataset.h"
-#ifdef DATASET_DONE
+#define TREE
+#endif//TREE
 
-DecTree* train_tree(TaskView tv);
+#ifndef TREE_METHODS
+#ifdef TREE
+#ifdef TASK
+
+DecTree* train_tree(TaskView const* tv);
 void free_tree(DecTree* dtp);
 int nb_nodes(DecTree const* dtp);
 int nb_leaves(DecTree const* dtp);
 void print_tree(DecTree const* dtp);
 
-float gain_from_op(TaskView tv, DecTree const* dtp, int didx_a, int didx_b, char op);
+float gain_from_op(TaskView const* tv, DecTree const* dtp, int didx_a, int didx_b, char op);
 
-#endif//DATASET_DONE
-
-#ifndef DECTREE_DONE 
-#define DECTREE_DONE
-#endif//DECTREE_DONE
-
-#endif//DECTREE_H  
+#define TREE_METHODS
+#endif//TASK
+#endif//TREE
+#endif//TREE_METHODS
