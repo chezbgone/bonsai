@@ -51,20 +51,21 @@ void populate_math(Tasks* tsp)
 
 void print_math(TaskView const* tvp)
 {
-    char labels[64+1];
-    for (int i=0; i!=64; ++i) {
-        labels[i] = '?';
+    char labels[64];
+    int i;
+    for (i=0; i!=64; ++i) {
+        labels[i] = 0;
     } 
-    labels[64] = '\0';
 
     chars* point;
+    i=0;
     for each(point, tvp->negpoints) {
         int pt_val = 0;
         char* x;
         for each(x, *point) {
             pt_val += ((*x) ? 1 : 0)<<(x-point->data); 
         }
-        labels[pt_val] = ' ';
+        labels[pt_val] = -1;
     } 
     for each(point, tvp->pospoints) {
         int pt_val = 0;
@@ -72,9 +73,17 @@ void print_math(TaskView const* tvp)
         for each(x, *point) {
             pt_val += ((*x) ? 1 : 0)<<(x-point->data); 
         }
-        labels[pt_val] = '#';
+        labels[pt_val] = +1;
     } 
-    printf("[%s]", labels); 
+    printf("[");
+    for (i=0; i!=64; ++i) {
+        printf("%s", (
+            (labels[i] == -1) ? "\033[31m." :
+            (labels[i] == +1) ? "\033[32m|" :
+                                "\033[36m "
+        )); 
+    }
+    printf("\033[36m]");
 }
 
 int is_square(int n)

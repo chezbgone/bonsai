@@ -131,6 +131,7 @@ void grow_tree(DecTree* dtp)
 
 float entropy_extensive(int A, int B)
 {
+    if (A+B == 0) { return 0.0; }
     float ratio = ((float)A)/(A+B);
     float quad = ratio * (1.0-ratio);
     /* good approximation of shannon entropy times (A+B): */
@@ -145,21 +146,23 @@ float info_of(TaskView const* tvp)
     );
 }
 
-float gain_from_op(TaskView const* tvp, DecTree const* dtp, int didx_a, int didx_b, char op)
+float gain_from_op(TaskView const* tvp, DecTree const* dtp, NewDim const* new_dim)
 {
     if (dtp->node_type == NT_LEAF) { 
         return 0.0;
     }
     
     int didx = dtp->annotation.didx;
+    int didx_a = new_dim->didx_a; 
+    int didx_b = new_dim->didx_b; 
 
     if (didx != didx_a && didx != didx_b) {
         TaskView left;
         TaskView rght;
         split_at(tvp, didx, &left, &rght);
         float gain = (
-            gain_from_op(&left, dtp->left, didx_a, didx_b, op) + 
-            gain_from_op(&rght, dtp->rght, didx_a, didx_b, op)   
+            gain_from_op(&left, dtp->left, new_dim) + 
+            gain_from_op(&rght, dtp->rght, new_dim)   
         );
         wipe_taskview(&left);
         wipe_taskview(&rght);
@@ -174,7 +177,7 @@ float gain_from_op(TaskView const* tvp, DecTree const* dtp, int didx_a, int didx
         for each(point, tvp->negpoints) {
             char* data = point->data;
             char val;
-            switch (op) {
+            switch ( new_dim->op ) {
                 case OP_AND:    val =   data[didx_a]  & data[didx_b]; break;
                 case OP_OR:     val =   data[didx_a]  | data[didx_b]; break;
                 case OP_XOR:    val =   data[didx_a]  ^ data[didx_b]; break;
@@ -188,7 +191,7 @@ float gain_from_op(TaskView const* tvp, DecTree const* dtp, int didx_a, int didx
         for each(point, tvp->pospoints) {
             char* data = point->data;
             char val;
-            switch (op) {
+            switch ( new_dim->op ) {
                 case OP_AND:    val =   data[didx_a]  & data[didx_b]; break;
                 case OP_OR:     val =   data[didx_a]  | data[didx_b]; break;
                 case OP_XOR:    val =   data[didx_a]  ^ data[didx_b]; break;
@@ -200,10 +203,14 @@ float gain_from_op(TaskView const* tvp, DecTree const* dtp, int didx_a, int didx
             }
         }
 
-        return (
+        float baseline_a = info_of_split(tvp, didx_a);
+        float baseline_b = info_of_split(tvp, didx_b);
+        float min_baseline = baseline_a < baseline_b ? baseline_a : baseline_b;
+
+        return min_baseline - (
             entropy_extensive(yea_neg, yea_pos) + 
             entropy_extensive(nay_neg, nay_pos)   
-        ) - info_of(tvp);
+        );
     }
 }
 
@@ -254,11 +261,14 @@ void split_at(TaskView const* tvp, int didx, TaskView* left, TaskView* rght)
     }
 }
 
-DecTree* train_tree(TaskView const* tvp)
+void init_tree(DecTree* dtp)
 {
-    DecTree* dtp = malloc_tree();
+    dtp->node_type = NT_LEAF;
+}
+
+void train_tree(TaskView const* tvp, DecTree* dtp)
+{
     train_subtree(dtp, tvp, 0);
-    return dtp;
 }
 
 void train_subtree(DecTree* dtp, TaskView const* tvp, int depth)
@@ -270,11 +280,11 @@ void train_subtree(DecTree* dtp, TaskView const* tvp, int depth)
         dtp->annotation.value = tvp->pospoints.len ? +1 : -1;
         return;
     }
-    int best_didx; 
+    int best_didx=0; 
 
     for (int didx=0; didx!=tvp->pt_dim; ++didx) {
         float info = info_of_split(tvp, didx);
-        if (!(info <= best_info)) { continue; }
+        if (!(info < best_info)) { continue; }
         best_info = info;
         best_didx = didx;
     }
@@ -310,8 +320,9 @@ void free_tree(DecTree* dtp)
 {
     if (dtp->node_type == NT_PRED) {
         free_tree(dtp->left);
+        free(dtp->left);
         free_tree(dtp->rght);
+        free(dtp->rght); 
     }
     BARK(VERBOSE_DECTREE_MEM, "freed tree!\n");
-    free(dtp);
 }

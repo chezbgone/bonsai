@@ -5,6 +5,7 @@
  *  to use: 
  */
 
+#include <stdlib.h>
 #include "fixpoint.h"
 
 int len_taskview(TaskView const* tvp)
@@ -30,6 +31,29 @@ void cons_taskview(TaskView* tvp, Task const* tp)
     }
     for each(point, pospoints) {
         push_charss(&(tvp->pospoints), *point);
+    }
+}
+
+void rand_taskview(TaskView* tvp, Task const* tp)
+{
+    charss negpoints = tp->negpoints;
+    charss pospoints = tp->pospoints;
+
+    tvp->pt_dim = tp->pt_dim;
+    init_charss(&(tvp->negpoints), negpoints.len);
+    init_charss(&(tvp->pospoints), pospoints.len);
+
+    int len = negpoints.len + pospoints.len;
+    chars* point;
+    for (int i=0; i!=len; ++i) {
+        int idx = rand()%len; 
+        if (idx < negpoints.len) {
+            point = negpoints.data + idx;
+            push_charss(&(tvp->negpoints), *point);
+        } else {
+            point = pospoints.data + (idx-negpoints.len);
+            push_charss(&(tvp->pospoints), *point);
+        }
     }
 }
 

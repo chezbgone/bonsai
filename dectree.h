@@ -21,7 +21,6 @@
 #define OP_IMPLIES  3
 
 typedef struct DecTree DecTree; 
-
 struct DecTree {
     DecTree* left; 
     DecTree* rght; 
@@ -32,6 +31,13 @@ struct DecTree {
     char node_type;
 }; 
 
+typedef struct NewDim NewDim; 
+struct NewDim {
+    int didx_a;  
+    int didx_b;  
+    char op;
+}; 
+
 #define TREE
 #endif//TREE
 
@@ -39,13 +45,14 @@ struct DecTree {
 #ifdef TREE
 #ifdef TASK
 
-DecTree* train_tree(TaskView const* tv);
+void init_tree(DecTree* dtp);
+void train_tree(TaskView const* tvp, DecTree* dtp);
 void free_tree(DecTree* dtp);
 int nb_nodes(DecTree const* dtp);
 int nb_leaves(DecTree const* dtp);
 void print_tree(DecTree const* dtp);
 
-float gain_from_op(TaskView const* tv, DecTree const* dtp, int didx_a, int didx_b, char op);
+float gain_from_op(TaskView const* tvp, DecTree const* dtp, NewDim const* new_dim);
 
 #define TREE_METHODS
 #endif//TASK

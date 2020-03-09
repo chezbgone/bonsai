@@ -40,6 +40,7 @@ void free_task(Task* tp);
 int len_taskview(TaskView const* tvp);
 void empt_taskview(TaskView* tvp, int pt_dim, int cap);
 void cons_taskview(TaskView* tvp, Task const* tp);
+void rand_taskview(TaskView* tvp, Task const* tp);
 void wipe_taskview(TaskView* tvp);
 
 #define TASK_METHODS
