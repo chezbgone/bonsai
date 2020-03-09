@@ -26,10 +26,10 @@ void cons_taskview(TaskView* tvp, Task const* tp)
     init_charss(&(tvp->pospoints), pospoints.len);
 
     chars* point;
-    for each(point, negpoints) {
+    for each (point, negpoints) {
         push_charss(&(tvp->negpoints), *point);
     }
-    for each(point, pospoints) {
+    for each (point, pospoints) {
         push_charss(&(tvp->pospoints), *point);
     }
 }
@@ -92,12 +92,12 @@ char compute_new_dim(chars const* point, NewDim const* nd)
 void add_new_dim(Tasks* tsp, NewDim const* nd)
 {
     Task* tp;
-    for each(tp, *tsp) {
+    for each (tp, *tsp) {
         chars* point;
-        for each(point, tp->negpoints) {
+        for each (point, tp->negpoints) {
             push_chars(point, compute_new_dim(point, nd));
         }
-        for each(point, tp->pospoints) {
+        for each (point, tp->pospoints) {
             push_chars(point, compute_new_dim(point, nd));
         }
         tp->pt_dim += 1;

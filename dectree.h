@@ -31,6 +31,12 @@ struct DecTree {
     char node_type;
 }; 
 
+typedef struct DimPair DimPair; 
+struct DimPair {
+    int didx_a;  
+    int didx_b;  
+}; 
+
 typedef struct NewDim NewDim; 
 struct NewDim {
     int didx_a;  
@@ -62,8 +68,9 @@ void print_tree(DecTree const* dtp);
 #ifdef TREES
 #ifdef TASKS
 
+void most_popular_pairs(Trees const* tsp, DimPairs* psp, int max_len, int pt_dim);
 float gain_from_op(TaskView const* tvp, DecTree const* dtp, NewDim const* new_dim);
-NewDim best_new_dim(Tasks const* tasks, Trees const* trees, int pt_dim, float* score); 
+NewDim best_new_dim(Tasks const* tasks, Trees const* trees, int max_len, int pt_dim, float* score); 
 
 #define ADVANCED_TREE_METHODS
 #endif//TASKS

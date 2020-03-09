@@ -181,7 +181,7 @@ float gain_from_op(TaskView const* tvp, DecTree const* dtp, NewDim const* new_di
         int yea_pos=0;
 
         chars* point; 
-        for each(point, tvp->negpoints) {
+        for each (point, tvp->negpoints) {
             char* data = point->data;
             char val;
             switch ( new_dim->op ) {
@@ -195,7 +195,7 @@ float gain_from_op(TaskView const* tvp, DecTree const* dtp, NewDim const* new_di
                 case YEA : yea_neg += 1; break; 
             }
         }
-        for each(point, tvp->pospoints) {
+        for each (point, tvp->pospoints) {
             char* data = point->data;
             char val;
             switch ( new_dim->op ) {
@@ -230,13 +230,13 @@ float info_of_split(TaskView const* tvp, int didx)
     int yea_pos=0;
 
     chars* point; 
-    for each(point, tvp->negpoints) {
+    for each (point, tvp->negpoints) {
         switch ( point->data[didx] ) {
             case NAY : nay_neg += 1; break; 
             case YEA : yea_neg += 1; break; 
         }
     }
-    for each(point, tvp->pospoints) {
+    for each (point, tvp->pospoints) {
         switch ( point->data[didx] ) {
             case NAY : nay_pos += 1; break; 
             case YEA : yea_pos += 1; break; 
@@ -255,13 +255,13 @@ void split_at(TaskView const* tvp, int didx, TaskView* left, TaskView* rght)
     empt_taskview(rght, tvp->pt_dim, (2*len_taskview(tvp))/3);
 
     chars* point; 
-    for each(point, tvp->negpoints) {
+    for each (point, tvp->negpoints) {
         switch ( point->data[didx] ) {
             case NAY : push_charss(&(left->negpoints), *point); break; 
             case YEA : push_charss(&(rght->negpoints), *point); break;
         }
     }
-    for each(point, tvp->pospoints) {
+    for each (point, tvp->pospoints) {
         switch ( point->data[didx] ) {
             case NAY : push_charss(&(left->pospoints), *point); break; 
             case YEA : push_charss(&(rght->pospoints), *point); break;
@@ -335,34 +335,96 @@ void free_tree(DecTree* dtp)
     BARK(VERBOSE_DECTREE_MEM, "freed tree!\n");
 }
 
-NewDim best_new_dim(Tasks const* tasks, Trees const* trees, int pt_dim, float* score)
+NewDim best_new_dim(Tasks const* tasks, Trees const* trees, int max_len, int pt_dim, float* score)
 {
+    DimPairs ps;
+    init_dimpairs(&ps, 0);
+    most_popular_pairs(trees, &ps, max_len, pt_dim);
+
     float best_gain = -1000000.0;
     NewDim best_nd;
 
-    for (char op=0; op!=4; ++op) {
-        for (int didx_a=0; didx_a!=pt_dim; ++didx_a) {
-            for (int didx_b=didx_a+1; didx_b!=pt_dim; ++didx_b) {
+    DimPair* pp;
+    for each (pp, ps) {
+        int didx_a = pp->didx_a;
+        int didx_b = pp->didx_b;
 
-                NewDim nd = {didx_a, didx_b, op};
-                float total_gain = 0.0;
-                for (int i=0; i!=tasks->len; ++i) {
-                    TaskView tv;
-                    cons_taskview(&tv, &(tasks->data[i]));
-                    float gain = gain_from_op(&tv, &(trees->data[i]), &nd);
-                    if (0.0 < gain) {
-                        total_gain += gain;
-                    }
-                    wipe_taskview(&tv);
+        NewDim nd = {didx_a, didx_b, -1};
+
+        for (char op=0; op!=4; ++op) {
+            nd.op = op;
+
+            float total_gain = 0.0;
+            for (int i=0; i!=tasks->len; ++i) {
+                TaskView tv;
+                cons_taskview(&tv, &(tasks->data[i]));
+                float gain = gain_from_op(&tv, &(trees->data[i]), &nd);
+                if (0.0 < gain) {
+                    total_gain += gain;
                 }
-                if (total_gain <= best_gain) { continue; }
-
-                best_gain = total_gain;
-                best_nd = nd;
-
+                wipe_taskview(&tv);
             }
+
+            if (total_gain <= best_gain) { continue; }
+
+            best_gain = total_gain;
+            best_nd = nd;
         }
     }
+
     *score = best_gain;
+
+    free_dimpairs(&ps);
     return best_nd; 
 } 
+
+void count_edges(DecTree const* tp, int* counts, int pt_dim) 
+{
+    if ( tp->node_type == NT_LEAF ) { return; }
+    if ( tp->left->node_type == NT_PRED ) {
+        int didx_a = tp->annotation.didx; 
+        int didx_b = tp->left->annotation.didx; 
+        if (didx_a < didx_b) {
+            counts[pt_dim * didx_a + didx_b] += 1;
+        } else if (didx_b < didx_a) {
+            counts[pt_dim * didx_b + didx_a] += 1;
+        }
+        count_edges(tp->left, counts, pt_dim);
+    }
+    if ( tp->rght->node_type == NT_PRED ) {
+        int didx_a = tp->annotation.didx; 
+        int didx_b = tp->rght->annotation.didx; 
+        if (didx_a < didx_b) {
+            counts[pt_dim * didx_a + didx_b] += 1;
+        } else if (didx_b < didx_a) {
+            counts[pt_dim * didx_b + didx_a] += 1;
+        }
+        count_edges(tp->rght, counts, pt_dim);
+    }
+}
+
+void most_popular_pairs(Trees const* tsp, DimPairs* psp, int max_len, int pt_dim)
+{
+    int* counts = malloc(sizeof(int)*pt_dim*pt_dim); 
+    DecTree* tp;
+    for each (tp, *tsp) {
+        count_edges(tp, counts, pt_dim);
+    }
+    for (int i=0; i!=max_len; ++i) {
+        int max_count = 0;
+        int best_j = -1;
+        for (int j=0; j!=pt_dim*pt_dim; ++j) {
+            if ( counts[j] <= max_count ) { continue; }
+            max_count = counts[j];
+            best_j = j; 
+        }
+        if (best_j == -1) {
+            break;
+        } else {
+            DimPair p = { best_j/pt_dim, best_j%pt_dim };
+            push_dimpairs(psp, p); 
+            counts[best_j] = -1;
+        }
+    }
+    free(counts);
+}

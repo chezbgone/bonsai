@@ -196,3 +196,28 @@
 #undef free_vec
 #undef push_vec
 #undef grow_vec
+#undef init_vec
+#undef make_vec
+#undef VecType
+#undef free_elt
+#undef EltType
+
+#define EltType         DimPair 
+#define free_elt(ep)    ;
+#define VecType         DimPairs
+#define make_vec        make_dimpairs
+#define init_vec        init_dimpairs
+#define grow_vec        grow_dimpairs
+#define push_vec        push_dimpairs
+#define free_vec        free_dimpairs
+#define wipe_vec        wipe_dimpairs
+#include "vector_generic.c"
+#undef wipe_vec
+#undef free_vec
+#undef push_vec
+#undef grow_vec
+#undef init_vec
+#undef make_vec
+#undef VecType
+#undef free_elt
+#undef EltType

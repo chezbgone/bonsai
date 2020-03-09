@@ -59,14 +59,14 @@ void print_math(TaskView const* tvp)
 
     chars* point;
     i=0;
-    for each(point, tvp->negpoints) {
+    for each (point, tvp->negpoints) {
         int pt_val = 0;
         for (int didx=0; didx!=6; ++didx) {
             pt_val += (point->data[didx] ? 1 : 0) << didx;
         }
         labels[pt_val] = -1;
     } 
-    for each(point, tvp->pospoints) {
+    for each (point, tvp->pospoints) {
         int pt_val = 0;
         for (int didx=0; didx!=6; ++didx) {
             pt_val += (point->data[didx] ? 1 : 0) << didx;

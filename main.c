@@ -21,7 +21,7 @@ void main()
 
     TaskView tv;
 
-    for (int ii=0; ii!=10; ++ii) { 
+    for (int ii=0; ii!=50; ++ii) { 
         Trees trees;
         init_trees(&trees, 24);
 
@@ -38,9 +38,9 @@ void main()
             push_trees(&trees, dt);
 
             //printf(" %2d leaves\n", nb_leaves(&dt));
-            if (ii==9 ) {
+            if (ii==49 && ti==6) {
             print_tree(&dt);
-            printf("\n");
+            //printf("\n");
             }
 
             nodes += nb_nodes(&dt);
@@ -49,7 +49,7 @@ void main()
         printf("%d nodes\n", nodes);
 
         float score;
-        NewDim nd = best_new_dim(&tasks, &trees, 6+ii, &score); 
+        NewDim nd = best_new_dim(&tasks, &trees, 100, 6+ii, &score); 
         //printf("!%d %s %d : %f\n", nd.didx_a, (
         //    nd.op==OP_AND    ? "and" :
         //    nd.op==OP_OR     ? "or" :
