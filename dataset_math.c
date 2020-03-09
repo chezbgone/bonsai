@@ -61,17 +61,15 @@ void print_math(TaskView const* tvp)
     i=0;
     for each(point, tvp->negpoints) {
         int pt_val = 0;
-        char* x;
-        for each(x, *point) {
-            pt_val += ((*x) ? 1 : 0)<<(x-point->data); 
+        for (int didx=0; didx!=6; ++didx) {
+            pt_val += (point->data[didx] ? 1 : 0) << didx;
         }
         labels[pt_val] = -1;
     } 
     for each(point, tvp->pospoints) {
         int pt_val = 0;
-        char* x;
-        for each(x, *point) {
-            pt_val += ((*x) ? 1 : 0)<<(x-point->data); 
+        for (int didx=0; didx!=6; ++didx) {
+            pt_val += (point->data[didx] ? 1 : 0) << didx;
         }
         labels[pt_val] = +1;
     } 
@@ -79,7 +77,7 @@ void print_math(TaskView const* tvp)
     for (i=0; i!=64; ++i) {
         printf("%s", (
             (labels[i] == -1) ? "\033[31m." :
-            (labels[i] == +1) ? "\033[32m|" :
+            (labels[i] == +1) ? "\033[32m@" :
                                 "\033[36m "
         )); 
     }

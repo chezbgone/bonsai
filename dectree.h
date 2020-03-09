@@ -45,6 +45,7 @@ struct NewDim {
 #ifdef TREE
 #ifdef TASK
 
+float info_of(TaskView const* tvp);
 void init_tree(DecTree* dtp);
 void train_tree(TaskView const* tvp, DecTree* dtp);
 void free_tree(DecTree* dtp);
@@ -52,9 +53,21 @@ int nb_nodes(DecTree const* dtp);
 int nb_leaves(DecTree const* dtp);
 void print_tree(DecTree const* dtp);
 
-float gain_from_op(TaskView const* tvp, DecTree const* dtp, NewDim const* new_dim);
-
 #define TREE_METHODS
 #endif//TASK
 #endif//TREE
 #endif//TREE_METHODS
+
+#ifndef ADVANCED_TREE_METHODS
+#ifdef TREES
+#ifdef TASKS
+
+float gain_from_op(TaskView const* tvp, DecTree const* dtp, NewDim const* new_dim);
+NewDim best_new_dim(Tasks const* tasks, Trees const* trees, int pt_dim, float* score); 
+
+#define ADVANCED_TREE_METHODS
+#endif//TASKS
+#endif//TREES
+#endif//ADVANCED_TREE_METHODS
+
+

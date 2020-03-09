@@ -19,44 +19,51 @@ void main()
 
     srand(time(0));
 
-    Trees trees;
-    init_trees(&trees, 24);
-
     TaskView tv;
-    for (int ti=0; ti!=24 ; ++ti) {
-        printf("task %2d: ", ti);
-        cons_taskview(&tv, &(tasks.data[ti]));
-        print_math(&tv);
 
-        DecTree dt;
-        init_tree(&dt);
-        train_tree(&tv, &dt);
-        push_trees(&trees, dt);
+    for (int ii=0; ii!=10; ++ii) { 
+        Trees trees;
+        init_trees(&trees, 24);
 
-        printf(" %2d leaves\n", nb_leaves(&dt));
+        int nodes = 0;
+        for (int ti=0; ti!=24 ; ++ti) {
+            //printf("task %2d: ", ti);
+            cons_taskview(&tv, &(tasks.data[ti]));
+            //printf("info %f\n", info_of(&tv));
+            //print_math(&tv);
 
-        for (int ii=0; ii!=4; ++ii) {
-            for (int didx_a=0; didx_a!=6; ++didx_a) {
-                for (int didx_b=didx_a+1; didx_b!=6; ++didx_b) {
-                    NewDim nd = {didx_a, didx_b, ii};
-                    float gain = gain_from_op(&tv, &dt, &nd);
-                    if (1.0 < gain) {
-                        printf("%d %d  : \033[32m %+5.1f \033[36m \n", didx_a, didx_b, gain);
-                    } else if (gain < -1.0) {
-                        printf("%d %d  : \033[31m %+5.1f \033[36m \n", didx_a, didx_b, gain);
-                    } else {
-                        printf("%d %d  : \033[36m %+5.1f \033[36m \n", didx_a, didx_b, gain);
-                    }
-                }
+            DecTree dt;
+            init_tree(&dt);
+            train_tree(&tv, &dt);
+            push_trees(&trees, dt);
+
+            //printf(" %2d leaves\n", nb_leaves(&dt));
+            if (ii==9 ) {
+            print_tree(&dt);
+            printf("\n");
             }
+
+            nodes += nb_nodes(&dt);
+            wipe_taskview(&tv);
         }
+        printf("%d nodes\n", nodes);
 
-        print_tree(&dt);
+        float score;
+        NewDim nd = best_new_dim(&tasks, &trees, 6+ii, &score); 
+        //printf("!%d %s %d : %f\n", nd.didx_a, (
+        //    nd.op==OP_AND    ? "and" :
+        //    nd.op==OP_OR     ? "or" :
+        //    nd.op==OP_XOR    ? "xor" :
+        //                       "implies"
+        //), nd.didx_b, score);
 
-        wipe_taskview(&tv);
+        add_new_dim(&tasks, &nd);
+        //printf("%d\n", tasks.data[0].pt_dim);
+
         WAIT_FOR_ENTER();
+
+        free_trees(&trees);
     }
 
-    free_trees(&trees);
     free_tasks(&tasks);
 }

@@ -14,7 +14,7 @@
 DecTree* malloc_tree();
 void grow_tree(DecTree* dtp);
 float entropy_extensive(int A, int B);
-float info_of(TaskView const* tvp);
+
 float info_of_split(TaskView const* tvp, int didx);
 void split_at(TaskView const* tvp, int didx, TaskView* left, TaskView* right);
 void train_subtree(DecTree* dtp, TaskView const* t, int depth);
@@ -99,11 +99,18 @@ void print_tree_row(DecTree const* dtp, int row)
                 );
                 return;
             case NT_PRED :
-                for (j=0; j!=nb_nodes(dtp->left); ++j) {
+                for (j=0; j!=nb_nodes(dtp->left)-1; ++j) {
                     printf(" ");
                 }
-                printf("%d", dtp->annotation.didx);
-                for (j=0; j!=nb_nodes(dtp->rght); ++j) {
+                int didx = dtp->annotation.didx;
+                if (didx < 10) {
+                    printf(" %d ", didx);
+                } else if (didx < 100) {
+                    printf("%d ", didx);
+                } else {
+                    printf("%d", didx);
+                }
+                for (j=0; j!=nb_nodes(dtp->rght)-1; ++j) {
                     printf(" ");
                 }
                 return;
@@ -203,11 +210,12 @@ float gain_from_op(TaskView const* tvp, DecTree const* dtp, NewDim const* new_di
             }
         }
 
-        float baseline_a = info_of_split(tvp, didx_a);
-        float baseline_b = info_of_split(tvp, didx_b);
-        float min_baseline = baseline_a < baseline_b ? baseline_a : baseline_b;
+        //float baseline_a = info_of_split(tvp, didx_a);
+        //float baseline_b = info_of_split(tvp, didx_b);
+        //float min_baseline = baseline_a < baseline_b ? baseline_a : baseline_b;
 
-        return min_baseline - (
+        float baseline = info_of_split(tvp, didx);
+        return baseline - (
             entropy_extensive(yea_neg, yea_pos) + 
             entropy_extensive(nay_neg, nay_pos)   
         );
@@ -326,3 +334,35 @@ void free_tree(DecTree* dtp)
     }
     BARK(VERBOSE_DECTREE_MEM, "freed tree!\n");
 }
+
+NewDim best_new_dim(Tasks const* tasks, Trees const* trees, int pt_dim, float* score)
+{
+    float best_gain = -1000000.0;
+    NewDim best_nd;
+
+    for (char op=0; op!=4; ++op) {
+        for (int didx_a=0; didx_a!=pt_dim; ++didx_a) {
+            for (int didx_b=didx_a+1; didx_b!=pt_dim; ++didx_b) {
+
+                NewDim nd = {didx_a, didx_b, op};
+                float total_gain = 0.0;
+                for (int i=0; i!=tasks->len; ++i) {
+                    TaskView tv;
+                    cons_taskview(&tv, &(tasks->data[i]));
+                    float gain = gain_from_op(&tv, &(trees->data[i]), &nd);
+                    if (0.0 < gain) {
+                        total_gain += gain;
+                    }
+                    wipe_taskview(&tv);
+                }
+                if (total_gain <= best_gain) { continue; }
+
+                best_gain = total_gain;
+                best_nd = nd;
+
+            }
+        }
+    }
+    *score = best_gain;
+    return best_nd; 
+} 

@@ -76,3 +76,30 @@ void free_task(Task* tp)
     free_charss(&(tp->negpoints));
     tp->pt_dim=0;
 }
+
+char compute_new_dim(chars const* point, NewDim const* nd) 
+{
+    char a = point->data[nd->didx_a];
+    char b = point->data[nd->didx_b];
+    switch ( nd->op ) {
+        case OP_AND:        return (   a  & b)?1:0; 
+        case OP_OR:         return (   a  | b)?1:0;
+        case OP_XOR:        return (   a  ^ b)?1:0;
+        case OP_IMPLIES:    return ((1^a) | b)?1:0;
+    }
+}
+
+void add_new_dim(Tasks* tsp, NewDim const* nd)
+{
+    Task* tp;
+    for each(tp, *tsp) {
+        chars* point;
+        for each(point, tp->negpoints) {
+            push_chars(point, compute_new_dim(point, nd));
+        }
+        for each(point, tp->pospoints) {
+            push_chars(point, compute_new_dim(point, nd));
+        }
+        tp->pt_dim += 1;
+    }
+}

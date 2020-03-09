@@ -46,3 +46,14 @@ void wipe_taskview(TaskView* tvp);
 #define TASK_METHODS
 #endif//TASKS
 #endif//TASK_METHODS
+
+#ifndef ADVANCED_TASK_METHODS
+#ifdef TASKS
+#ifdef TREE 
+
+void add_new_dim(Tasks* tsp, NewDim const* nd);
+
+#define ADVANCED_TASK_METHODS
+#endif//TREE 
+#endif//TASKS
+#endif//ADVANCED_TASK_METHODS
