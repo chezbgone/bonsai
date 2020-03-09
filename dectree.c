@@ -178,10 +178,10 @@ float gain_from_op(TaskView const* tvp, DecTree const* dtp, NewDim const* new_di
             char* data = point->data;
             char val;
             switch ( new_dim->op ) {
-                case OP_AND:    val =   data[didx_a]  & data[didx_b]; break;
-                case OP_OR:     val =   data[didx_a]  | data[didx_b]; break;
-                case OP_XOR:    val =   data[didx_a]  ^ data[didx_b]; break;
-                case OP_IMPLIES:val = (~data[didx_a]) | data[didx_b]; break;
+                case OP_AND:    val =    data[didx_a]  & data[didx_b]; break;
+                case OP_OR:     val =    data[didx_a]  | data[didx_b]; break;
+                case OP_XOR:    val =    data[didx_a]  ^ data[didx_b]; break;
+                case OP_IMPLIES:val = (1^data[didx_a]) | data[didx_b]; break;
             }
             switch ( val ) {
                 case NAY : nay_neg += 1; break; 
@@ -192,10 +192,10 @@ float gain_from_op(TaskView const* tvp, DecTree const* dtp, NewDim const* new_di
             char* data = point->data;
             char val;
             switch ( new_dim->op ) {
-                case OP_AND:    val =   data[didx_a]  & data[didx_b]; break;
-                case OP_OR:     val =   data[didx_a]  | data[didx_b]; break;
-                case OP_XOR:    val =   data[didx_a]  ^ data[didx_b]; break;
-                case OP_IMPLIES:val = (~data[didx_a]) | data[didx_b]; break;
+                case OP_AND:    val =    data[didx_a]  & data[didx_b]; break;
+                case OP_OR:     val =    data[didx_a]  | data[didx_b]; break;
+                case OP_XOR:    val =    data[didx_a]  ^ data[didx_b]; break;
+                case OP_IMPLIES:val = (1^data[didx_a]) | data[didx_b]; break;
             }
             switch ( val ) {
                 case NAY : nay_pos += 1; break; 
@@ -280,7 +280,7 @@ void train_subtree(DecTree* dtp, TaskView const* tvp, int depth)
         dtp->annotation.value = tvp->pospoints.len ? +1 : -1;
         return;
     }
-    int best_didx=0; 
+    int best_didx = depth % tvp->pt_dim; 
 
     for (int didx=0; didx!=tvp->pt_dim; ++didx) {
         float info = info_of_split(tvp, didx);
