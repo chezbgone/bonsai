@@ -87,24 +87,7 @@ MapType* maxi_map(MapType const* mp)
 
 void setv_map(MapType* mp, KeyType key, ValType value)
 {
-    //printf("[%d", *((int*)((void*)&(mp->value)))); 
-    //printf("%d", *((int*)((void*)&(mp->key))+0)); 
-    //printf("%d", *((int*)((void*)&(mp->key))+1));
-    //printf("%d]", mp->is_leaf);
-    //if (!mp->is_leaf) {
-    //    printf("[%d", mp->left->is_leaf);
-    //    printf("%d]", mp->rght->is_leaf);
-    //}
     mp = find_map(mp, key); 
-    //printf("[%d", *((int*)((void*)&(mp->value)))); 
-    //printf("%d", *((int*)((void*)&(mp->key))+0)); 
-    //printf("%d", *((int*)((void*)&(mp->key))+1)); 
-    //printf("%d]", mp->is_leaf); WAIT_FOR_ENTER();
-    //if (!mp->is_leaf) {
-    //    printf("[%d", mp->left->is_leaf);
-    //    printf("%d]", mp->rght->is_leaf);
-    //}
-
     if ( mp->is_leaf ) {
         mp->left = make_map(mp);
         mp->rght = make_map(mp);
@@ -121,19 +104,31 @@ void deln_map(MapType** mpp, MapType* node)
     char has_rght = !node->rght->is_leaf;
     MapType* newn;
 
+    // attach to node's children 
     if ( !has_left && !has_rght ) {
         newn = node->rght; 
         free(node->left);
     } else if ( !has_left &&  has_rght ) {
         newn = node->rght;
+        free(node->left);
     } else if (  has_left && !has_rght ) {
         newn = node->left;
+        free(node->rght);
     } else {
         newn = succ_map(node);
         // { newn!=NULL && !newn->is_leaf && newn->prnt!=NULL }
-        if ( newn != node->rght ) { newn->prnt->left = newn->rght; }
+        free(newn->left);
+        if ( newn != node->rght ) {
+            // between node and newn is a distinct node newn->prnt
+            newn->prnt->left = newn->rght; newn->rght->prnt = newn->prnt;
+            newn->left = node->left; newn->left->prnt = newn;
+            newn->rght = node->rght; newn->rght->prnt = newn;
+        } else {
+            newn->left = node->left; newn->left->prnt = newn;
+        }
     }
 
+    // attach to node's parent
     newn->prnt = node->prnt;
     if ( node->prnt != NULL ) {
         if ( node->prnt->left == node ) { node->prnt->left = newn; }

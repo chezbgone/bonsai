@@ -9,6 +9,7 @@
 #include <stdio.h>
 
 #include "verbose.h" 
+#include "count_heap.h" 
 #include "fixpoint.h"
 
 DecTree* malloc_tree();
@@ -378,53 +379,43 @@ NewDim best_new_dim(Tasks const* tasks, Trees const* trees, int max_len, int pt_
     return best_nd; 
 } 
 
-void count_edges(DecTree const* tp, int* counts, int pt_dim) 
+
+
+void count_edges(DecTree const* tp, Counter* C, int pt_dim) 
 {
     if ( tp->node_type == NT_LEAF ) { return; }
+
     if ( tp->left->node_type == NT_PRED ) {
         int didx_a = tp->annotation.didx; 
         int didx_b = tp->left->annotation.didx; 
-        if (didx_a < didx_b) {
-            counts[pt_dim * didx_a + didx_b] += 1;
-        } else if (didx_b < didx_a) {
-            counts[pt_dim * didx_b + didx_a] += 1;
-        }
-        count_edges(tp->left, counts, pt_dim);
+        if (didx_a < didx_b) { counter_observe(C, pt_dim * didx_a + didx_b); }//printf("add %d\n", pt_dim * didx_a + didx_b); }
+        else                 { counter_observe(C, pt_dim * didx_b + didx_a); }//printf("add %d\n", pt_dim * didx_b + didx_a); }
+        count_edges(tp->left, C, pt_dim);
     }
     if ( tp->rght->node_type == NT_PRED ) {
         int didx_a = tp->annotation.didx; 
         int didx_b = tp->rght->annotation.didx; 
-        if (didx_a < didx_b) {
-            counts[pt_dim * didx_a + didx_b] += 1;
-        } else if (didx_b < didx_a) {
-            counts[pt_dim * didx_b + didx_a] += 1;
-        }
-        count_edges(tp->rght, counts, pt_dim);
+        if (didx_a < didx_b) { counter_observe(C, pt_dim * didx_a + didx_b); }//printf("add %d\n", pt_dim * didx_a + didx_b); }
+        else                 { counter_observe(C, pt_dim * didx_b + didx_a); }//printf("add %d\n", pt_dim * didx_b + didx_a); }
+        count_edges(tp->rght, C, pt_dim);
     }
 }
 
 void most_popular_pairs(Trees const* tsp, DimPairs* psp, int max_len, int pt_dim)
 {
-    int* counts = malloc(sizeof(int)*pt_dim*pt_dim); 
+    Counter C;
+    init_counter(&C);
+
     DecTree* tp;
     for each (tp, *tsp) {
-        count_edges(tp, counts, pt_dim);
+        count_edges(tp, &C, pt_dim);
     }
     for (int i=0; i!=max_len; ++i) {
-        int max_count = 0;
-        int best_j = -1;
-        for (int j=0; j!=pt_dim*pt_dim; ++j) {
-            if ( counts[j] <= max_count ) { continue; }
-            max_count = counts[j];
-            best_j = j; 
-        }
-        if (best_j == -1) {
-            break;
-        } else {
-            DimPair p = { best_j/pt_dim, best_j%pt_dim };
-            push_dimpairs(psp, p); 
-            counts[best_j] = -1;
-        }
+        if ( C.len == 0 ) { break; }
+        int best_j = pop_most_frequent(&C).fst;
+        //printf("found %d", best_j);
+        DimPair p = { best_j/pt_dim, best_j%pt_dim };
+        push_dimpairs(psp, p); 
     }
-    free(counts);
+    free_counter(&C);
 }
