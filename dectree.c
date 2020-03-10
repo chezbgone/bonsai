@@ -328,8 +328,8 @@ void free_tree(DecTree* dtp)
 {
     if (dtp->node_type == NT_PRED) {
         free_tree(dtp->left);
-        free(dtp->left);
         free_tree(dtp->rght);
+        free(dtp->left);
         free(dtp->rght); 
     }
     BARK(VERBOSE_DECTREE_MEM, "freed tree!\n");

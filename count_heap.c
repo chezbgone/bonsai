@@ -5,56 +5,37 @@
  *  to use: 
  */
 
-#include "vector.h"
+#include "fixpoint.h"
 #include "count_heap.h"
 
+void init_counter(Counter* chp)
+{
+    init_pibi(&(chp->counted_idxs_by_keys));
+    init_ibpi(&(chp->keys_by_counted_idxs));
+    chp->next_idx = 0;
+}
 
-//bool contains_key(CountHeap* chp, int target_key);
-//
-////typedef struct CountHeap CountHeap;
-////struct CountHeap {
-////    ints keys_sorted;
-////    ints heap_idxs_by_key_rank;
-////    ints keys_heap;
-////    ints counts_heap;
-////};
-//
-//void init_count_heap(CountHeap* chp)
-//{
-//    init_ints(&(chp->keys_sorted), 8);
-//    init_ints(&(chp->keys_heap), 8);
-//    init_ints(&(chp->counts_heap), 8);
-//}
-//
-//void insert(CountHeap* chp, int key)
-//{
-//    int idx = find(chp, key); 
-//    if (chp->keys_sorted.len==0 || chp->keys_sorted[idx]!=key) {
-//        // insert new key
-//    } 
-//}
-//
-//int pop_most_frequent(CountHeap* chp)
-//{
-//}
-//
-//int find(CountHeap* chp, int target_key)
-//{
-//    int lo = 0;
-//    int hi = chp->keys_sorted.len;
-//
-//    int current_key;
-//
-//    while ( lo < hi-1 ) {
-//        int mid = (hi+lo)/2;
-//
-//        current_key = chp->keys_sorted.data[mid];
-//
-//        if (target_key < current_key) {
-//            hi = mid;
-//        } else {
-//            lo = mid;
-//        }
-//    }
-//    return lo;
-//}
+void counter_observe(Counter* chp, int key)
+{
+    pint_by_int* node = find_pibi(&(chp->counted_idxs_by_keys), key);
+
+    if ( node->is_leaf ) {
+        pint ic = {1, chp->next_idx++};
+        setv_ibpi(&(chp->keys_by_counted_idxs), ic, key);
+        setv_pibi(node, key, ic); 
+    } else {
+        pint new_ic = {node->value.fst+1, node->value.snd};
+        chgk_ibpi(&(chp->keys_by_counted_idxs), node->value, new_ic); 
+        setv_pibi(node, key, new_ic); 
+    } 
+};
+
+int pop_most_frequent(Counter* chp)
+{
+    int_by_pint* node = maxi_ibpi(&(chp->keys_by_counted_idxs));
+    int count = node->key.fst; 
+    int key = node->value;
+    deln_ibpi(&(chp->keys_by_counted_idxs), node);
+    remk_pibi(&(chp->counted_idxs_by_keys), key);
+    return count;
+};
