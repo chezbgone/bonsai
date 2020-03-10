@@ -289,11 +289,13 @@ void train_subtree(DecTree* dtp, TaskView const* tvp, int depth)
         dtp->annotation.value = tvp->pospoints.len ? +1 : -1;
         return;
     }
-    int best_didx = depth % tvp->pt_dim; 
+
+    int best_didx=rand() % tvp->pt_dim; // = depth % tvp->pt_dim; 
 
     for (int didx=0; didx!=tvp->pt_dim; ++didx) {
         float info = info_of_split(tvp, didx);
         if (!(info < best_info)) { continue; }
+        if (info == best_info && (rand()%2)) { continue; }
         best_info = info;
         best_didx = didx;
     }

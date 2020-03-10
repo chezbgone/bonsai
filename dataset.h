@@ -35,6 +35,7 @@ struct TaskView {
 
 void populate_math(Tasks* tsp);
 void print_math(TaskView const* tvp);
+void print_math_feature(TaskView const* tvp, int didx);
 void free_task(Task* tp);
 
 int len_taskview(TaskView const* tvp);
