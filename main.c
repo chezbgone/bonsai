@@ -12,9 +12,71 @@
 #include "verbose.h"
 #include "fixpoint.h"
 #include "mapping.h"
+#include "count_heap.h"
 
+void print_moo(int_by_int* p)
+{
+    if ( p->is_leaf ) { return; }
+    else {
+        printf("%d:%d", p->key, p->value);
+        printf("(");
+        print_moo(p->left);
+        printf(",");
+        print_moo(p->rght);
+        printf(")");
+    }
+}
 void main()
 {
+    //int_by_int moo;
+    //init_ibi(&moo);
+    //setv_ibi(&moo, 2, 0);
+    //setv_ibi(&moo, 1, 0);
+    //setv_ibi(&moo, 4, 0);
+    //setv_ibi(&moo, 5, 0);
+    //setv_ibi(&moo, 3, 0);
+    //print_moo(&moo);
+    //printf("\n");
+    //remk_ibi(&moo, 4);
+    //print_moo(&moo);
+    //printf("\n");
+    //free_ibi(&moo);
+
+    Counter C;
+    init_counter(&C);
+
+    counter_observe(&C, 3);
+    counter_observe(&C, 3);
+
+    counter_observe(&C, 4);
+    counter_observe(&C, 4);
+    counter_observe(&C, 4);
+    counter_observe(&C, 4);
+
+    counter_observe(&C, 5);
+    counter_observe(&C, 5);
+    counter_observe(&C, 5);
+
+    printf("%d\n", pop_most_frequent(&C).fst);
+    printf("%d\n", pop_most_frequent(&C).fst);
+    printf("%d\n", pop_most_frequent(&C).fst);
+
+    counter_observe(&C, 0);
+    counter_observe(&C, 1);
+    counter_observe(&C, 2);
+    counter_observe(&C, 30);
+    counter_observe(&C, 20);
+    counter_observe(&C, 10);
+
+    printf("%d\n", pop_most_frequent(&C).fst);
+    printf("%d\n", pop_most_frequent(&C).fst);
+    printf("%d\n", pop_most_frequent(&C).fst);
+    printf("%d\n", pop_most_frequent(&C).fst);
+    printf("%d\n", pop_most_frequent(&C).fst);
+    printf("%d\n", pop_most_frequent(&C).fst);
+
+    free_counter(&C);
+
     //Tasks tasks;
     //populate_math(&tasks);
 

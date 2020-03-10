@@ -49,9 +49,9 @@ MapType* maxi_map(MapType const* mp);
 void setv_map(MapType* mp, KeyType key, ValType value);
 
 /* modify the tree structure and potentially the root */
-void deln_map(MapType* mp, MapType* node);
-void remk_map(MapType* mp, KeyType key);
-void chgk_map(MapType* mp, KeyType old_key, KeyType new_key);
+void deln_map(MapType** mpp, MapType* node);
+void remk_map(MapType** mpp, KeyType key);
+void chgk_map(MapType** mpp, KeyType old_key, KeyType new_key);
 
 #endif
 #endif

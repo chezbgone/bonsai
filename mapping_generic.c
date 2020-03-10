@@ -6,6 +6,7 @@
  */
 
 #include <stdlib.h>
+#include "verbose.h"
 
 #ifdef ValType 
 #ifdef KeyType 
@@ -41,9 +42,19 @@ MapType* make_map(MapType* prnt)
     return mp;
 }
 
+void free_map(MapType* mp)
+{
+    if ( mp->is_leaf ) { return; }
+    free_map(mp->left);
+    free_map(mp->rght);
+    free(mp->left);
+    free(mp->rght);
+}
+
 MapType* find_map(MapType const* mp, KeyType key)
 {
     /* assume (mp!=NULL) */
+
     while ( ! mp->is_leaf ) {
         switch ( key_compare(key, mp->key) ) {
             case -1: mp = mp->left; break;
@@ -76,28 +87,36 @@ MapType* maxi_map(MapType const* mp)
 
 void setv_map(MapType* mp, KeyType key, ValType value)
 {
+    //printf("[%d", *((int*)((void*)&(mp->value)))); 
+    //printf("%d", *((int*)((void*)&(mp->key))+0)); 
+    //printf("%d", *((int*)((void*)&(mp->key))+1));
+    //printf("%d]", mp->is_leaf);
+    //if (!mp->is_leaf) {
+    //    printf("[%d", mp->left->is_leaf);
+    //    printf("%d]", mp->rght->is_leaf);
+    //}
     mp = find_map(mp, key); 
+    //printf("[%d", *((int*)((void*)&(mp->value)))); 
+    //printf("%d", *((int*)((void*)&(mp->key))+0)); 
+    //printf("%d", *((int*)((void*)&(mp->key))+1)); 
+    //printf("%d]", mp->is_leaf); WAIT_FOR_ENTER();
+    //if (!mp->is_leaf) {
+    //    printf("[%d", mp->left->is_leaf);
+    //    printf("%d]", mp->rght->is_leaf);
+    //}
+
     if ( mp->is_leaf ) {
         mp->left = make_map(mp);
         mp->rght = make_map(mp);
         mp->key = key; 
+        mp->is_leaf = 0;
     }
     mp->value = value; 
 }
 
-void free_map(MapType* mp)
+void deln_map(MapType** mpp, MapType* node)
 {
-    if ( !mp->is_leaf ) {
-        free_map(mp->left);
-        free_map(mp->rght);
-    }
-    free(mp->left);
-    free(mp->rght);
-}
-
-void deln_map(MapType* mp, MapType* node)
-{
-    // PRE: (found!=NULL && !found->is_leaf)
+    // { found!=NULL && !found->is_leaf }
     char has_left = !node->left->is_leaf;
     char has_rght = !node->rght->is_leaf;
     MapType* newn;
@@ -111,40 +130,34 @@ void deln_map(MapType* mp, MapType* node)
         newn = node->left;
     } else {
         newn = succ_map(node);
-        // POST: assume (newn!=NULL && !newn->is_leaf ) */
-
-        newn->rght->prnt = newn->prnt;
-        newn->prnt->left = newn->rght;
+        // { newn!=NULL && !newn->is_leaf && newn->prnt!=NULL }
+        if ( newn != node->rght ) { newn->prnt->left = newn->rght; }
     }
 
+    newn->prnt = node->prnt;
     if ( node->prnt != NULL ) {
         if ( node->prnt->left == node ) { node->prnt->left = newn; }
-        else                              { node->prnt->rght = newn; }
+        else                            { node->prnt->rght = newn; }
+        free(node);
     } else {
         /* root changed! */
-        *mp = *newn;
+        free(node);
+        *mpp = newn;
     }
-
-    if ( newn != NULL ) {
-        newn->prnt = node->prnt;
-        newn->rght = node->rght;
-        newn->left = node->left;
-    }
-    free(node);
 }
 
-void remk_map(MapType* mp, KeyType key)
+void remk_map(MapType** mpp, KeyType key)
 {
-    MapType* found = find_map(mp, key); 
-    deln_map(mp, found);
+    MapType* found = find_map(*mpp, key); 
+    deln_map(mpp, found);
 }
 
-void chgk_map(MapType* mp, KeyType old_key, KeyType new_key)
+void chgk_map(MapType** mpp, KeyType old_key, KeyType new_key)
 {
-    MapType* found = find_map(mp, old_key); 
+    MapType* found = find_map(*mpp, old_key); 
     ValType value = found->value;
-    deln_map(mp, found);
-    setv_map(mp, new_key, value);
+    deln_map(mpp, found);
+    setv_map(*mpp, new_key, value);
 }
 
 #endif
