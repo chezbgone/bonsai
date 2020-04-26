@@ -10,9 +10,9 @@
 #include <time.h>
 
 #include "verbose.h"
-#include "fixpoint.h"
-#include "mapping.h"
-#include "count_heap.h"
+#include "containers/fixpoint.h"
+#include "containers/mapping.h"
+#include "containers/count_heap.h"
 
 float mylog2(float x)
 {
