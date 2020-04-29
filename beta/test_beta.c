@@ -60,7 +60,8 @@ void test_big()
 {
     LambExpr v0a= {.tag=VRBL, .data={.vrbl_idx=0}};
     LambExpr v0b= {.tag=VRBL, .data={.vrbl_idx=0}};
-    LambExpr v1 = {.tag=VRBL, .data={.vrbl_idx=1}};
+    LambExpr v1a= {.tag=VRBL, .data={.vrbl_idx=1}};
+    LambExpr v1b= {.tag=VRBL, .data={.vrbl_idx=1}};
     LambExpr v2 = {.tag=VRBL, .data={.vrbl_idx=2}};
 
     LambExpr l0  = {.tag=LEAF, .data={.leaf_idx=0}};
@@ -69,24 +70,27 @@ void test_big()
     LambExpr l2b = {.tag=LEAF, .data={.leaf_idx=2}};
 
     LambExpr e0 = {.tag=EVAL, .data={.eval={.fun =&v0a, .arg =&v2 }}};
-    LambExpr e1 = {.tag=EVAL, .data={.eval={.fun =&v1 , .arg =&e0 }}};
+    LambExpr e1 = {.tag=EVAL, .data={.eval={.fun =&v1a, .arg =&e0 }}};
     LambExpr e2 = {.tag=EVAL, .data={.eval={.fun =&e1 , .arg =&l2a}}};
     LambExpr a0 = {.tag=ABST, .data={.abst={.body=&e2             }}};
     LambExpr a1 = {.tag=ABST, .data={.abst={.body=&a0             }}};
 
     LambExpr e3 = {.tag=EVAL, .data={.eval={.fun =&l0 , .arg = &l1 }}};
+
     LambExpr e4 = {.tag=EVAL, .data={.eval={.fun =&v0b, .arg = &l2b}}};
+    LambExpr e5 = {.tag=EVAL, .data={.eval={.fun =&e4 , .arg = &v1b}}};
+    LambExpr a2 = {.tag=ABST, .data={.abst={.body=&e5              }}};
 
-    LambExpr e5 = {.tag=EVAL, .data={.eval={.fun =&a1 , .arg = &e3 }}};
-    LambExpr e6 = {.tag=EVAL, .data={.eval={.fun =&e5 , .arg = &e4 }}};
+    LambExpr e6 = {.tag=EVAL, .data={.eval={.fun =&a1 , .arg = &e3 }}};
+    LambExpr e7 = {.tag=EVAL, .data={.eval={.fun =&e6 , .arg = &a2 }}};
 
-    LambExpr a2 = {.tag=ABST, .data={.abst={.body=&e6              }}};
+    LambExpr a3 = {.tag=ABST, .data={.abst={.body=&e7              }}};
 
     printf("\nexpr:\n");
-    print_expr(&a2, my_leaf_names);
+    print_expr(&a3, my_leaf_names);
 
     printf("\nrewriting...\n");
-    VersionSpace* vs = rewrite(&a2);  
+    VersionSpace* vs = rewrite(&a3);  
 
     printf("\nvs:\n");
     print_vs(vs, my_leaf_names);

@@ -240,10 +240,14 @@ void print_vs(VersionSpace const* vs, char leaf_names[][16])
                 )
             );
             wrap_arg = (
-                vs->data.eval.arg->tag == VS_EVAL || (
+                vs->data.eval.arg->tag == VS_EVAL ||
+                vs->data.eval.arg->tag == VS_ABST ||
+                (
                     vs->data.eval.fun->tag == VS_DISJ &&
-                    vs->data.eval.fun->data.disj.len == 1 &&
-                    vs->data.eval.fun->data.disj.elts[0]->tag == VS_EVAL
+                    vs->data.eval.fun->data.disj.len == 1 && (
+                        vs->data.eval.fun->data.disj.elts[0]->tag == VS_EVAL ||
+                        vs->data.eval.fun->data.disj.elts[0]->tag == VS_ABST
+                    )
                 )
             );
 

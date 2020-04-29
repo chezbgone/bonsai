@@ -1,14 +1,15 @@
 TODO
 
  -- correctness
-     -- adapt data structures to have only single-parent children
+     >< adapt data structures to have only single-parent children
          >< thus solve segfault (see test_crash)
              () aha! we had a y combinator => unbounded number of allocs!
-     -- 
+     -- implement complete set of forward beta version-space construction rules
      -- add inverse beta rule
 
  -- legibility
      -- document "unwrap" and "rewrite", clarifying mutations 
+     >< concisely parenthesize printed expressions 
 
  -- speed
      -- implement equality and hashs for /LambdaExpr/ and /VersionSpace/

@@ -132,8 +132,11 @@ void print_expr(LambExpr* e, char leaf_names[][16])
             print_expr(e->data.abst.body, leaf_names);
             break;
         case EVAL:  
-            wrap_fun = (e->data.eval.fun->tag == ABST) ? 1 : 0; 
-            wrap_arg = (e->data.eval.arg->tag == EVAL) ? 1 : 0; 
+            wrap_fun = e->data.eval.fun->tag == ABST; 
+            wrap_arg = (
+                e->data.eval.arg->tag == EVAL || 
+                e->data.eval.arg->tag == ABST
+            );
 
             if (wrap_fun) { printf("("); }
             print_expr(e->data.eval.fun, leaf_names);
