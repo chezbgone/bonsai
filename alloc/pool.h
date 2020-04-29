@@ -1,15 +1,19 @@
 /*  author: samtenka
  *  create: 2020-04-28
  *  change: 2020-04-28
- *  descrp: Custom allocator to store many *small* allocations, i.e.
- *              allocations whose size is dwarfed by WORDS_PER_POOL
- *          Errors will occur if Pool used otherwise.  We also assume that 
- *          the type /long/ matches the system word size.  All sizes below, 
- *          unless otherwise specified, are in measured in system words.
+ *  descrp: Custom allocator to improve cache efficiency.
+ *
+ *          We store many *small* allocations, i.e. allocations whose size is
+ *          dwarfed by WORDS_PER_POOL == 4096 words. Errors will occur if Pool
+ *          is used otherwise.  
+ *
+ *          We assume that the type /long/ matches the system word size.  All
+ *          sizes below, unless otherwise specified, are in measured in system
+ *          words.
  *  to use:
  */
 
-#include <stdlib.h>
+#include <stdbool.h>
 
 #define WORDS_PER_POOL 4096 
 
@@ -40,3 +44,4 @@ long moo_free(long* allocation);
 void free_pool(PoolHeader* p);
 
 void print_pool(PoolHeader* p); 
+bool check_pool(PoolHeader* p); 

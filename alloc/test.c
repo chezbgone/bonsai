@@ -1,11 +1,19 @@
 #include <stdio.h>
 #include "pool.h"
 
+void basic_test();
+
 void main() 
 {
     printf("hi!\n\n");
     PoolHeader* p = make_pool(NULL); 
+    basic_test(p);
+    free_pool(p); 
+    printf("bye!\n");
+}
 
+void basic_test(PoolHeader* p)
+{
     printf("allocating small blocks...\n");
     long* a = moo_alloc(p, 23); 
     long* b = moo_alloc(p, 100); 
@@ -42,7 +50,4 @@ void main()
     moo_free(g);
     moo_free(h);
     print_pool(p);
-
-    free_pool(p); 
-    printf("bye!\n");
 }
