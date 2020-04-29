@@ -22,28 +22,76 @@ void test_lambda();
 void test_eta();
 void test_beta();
 void test_join();
-void test_crash();
+void test_big();
+void test_two_arg();
 
 void main()
 {
-    test_crash();
+    test_big();
+    //test_two_arg();
+    //test_beta();
 }
 
-void test_crash()
+void test_two_arg()
 {
-    LambdaExpr v0 = {.tag=VRBL, .data={.vrbl_idx=0}};
-    LambdaExpr e0 = {.tag=EVAL, .data={.eval={.fun=&v0, .arg=&v0}}};
-    LambdaExpr a0 = {.tag=ABST, .data={.abst={.body=&e0         }}};
-    LambdaExpr e1 = {.tag=EVAL, .data={.eval={.fun=&a0, .arg=&a0}}};
+    LambExpr v0 = {.tag=VRBL, .data={.vrbl_idx=0}};
+    LambExpr v1 = {.tag=VRBL, .data={.vrbl_idx=1}};
 
-    print_expr(&e1, my_leaf_names);
-    printf("\n");
+    LambExpr l0  = {.tag=LEAF, .data={.leaf_idx=0}};
+    LambExpr l1  = {.tag=LEAF, .data={.leaf_idx=1}};
+    LambExpr l2  = {.tag=LEAF, .data={.leaf_idx=2}};
 
-    char h;
-    scanf("%c", &h);
+    LambExpr e0 = {.tag=EVAL, .data={.eval={.fun = &v0 , .arg = &l0 }}};
+    LambExpr e1 = {.tag=EVAL, .data={.eval={.fun = &e0 , .arg = &v1 }}};
+    LambExpr a0 = {.tag=ABST, .data={.abst={.body= &e1              }}};
+    LambExpr a1 = {.tag=ABST, .data={.abst={.body= &a0              }}};
 
-    VersionSpace* vs = rewrite(&e1);  
+    LambExpr e2 = {.tag=EVAL, .data={.eval={.fun = &a1 , .arg = &l1 }}};
+    LambExpr e3 = {.tag=EVAL, .data={.eval={.fun = &e2 , .arg = &l2 }}};
+
+    printf("\n expr:\n");        print_expr(&e3, my_leaf_names);
+    printf("\n rewriting...\n"); VersionSpace* vs = rewrite(&e3);  
+    printf("\n vs:\n");          print_vs(vs, my_leaf_names);
+    printf("\n freeing...:\n");  free_vs(vs);
+    printf("\n done!\n");
+}
+
+void test_big()
+{
+    LambExpr v0a= {.tag=VRBL, .data={.vrbl_idx=0}};
+    LambExpr v0b= {.tag=VRBL, .data={.vrbl_idx=0}};
+    LambExpr v1 = {.tag=VRBL, .data={.vrbl_idx=1}};
+    LambExpr v2 = {.tag=VRBL, .data={.vrbl_idx=2}};
+
+    LambExpr l0  = {.tag=LEAF, .data={.leaf_idx=0}};
+    LambExpr l1  = {.tag=LEAF, .data={.leaf_idx=1}};
+    LambExpr l2a = {.tag=LEAF, .data={.leaf_idx=2}};
+    LambExpr l2b = {.tag=LEAF, .data={.leaf_idx=2}};
+
+    LambExpr e0 = {.tag=EVAL, .data={.eval={.fun =&v0a, .arg =&v2 }}};
+    LambExpr e1 = {.tag=EVAL, .data={.eval={.fun =&v1 , .arg =&e0 }}};
+    LambExpr e2 = {.tag=EVAL, .data={.eval={.fun =&e1 , .arg =&l2a}}};
+    LambExpr a0 = {.tag=ABST, .data={.abst={.body=&e2             }}};
+    LambExpr a1 = {.tag=ABST, .data={.abst={.body=&a0             }}};
+
+    LambExpr e3 = {.tag=EVAL, .data={.eval={.fun =&l0 , .arg = &l1 }}};
+    LambExpr e4 = {.tag=EVAL, .data={.eval={.fun =&v0b, .arg = &l2b}}};
+
+    LambExpr e5 = {.tag=EVAL, .data={.eval={.fun =&a1 , .arg = &e3 }}};
+    LambExpr e6 = {.tag=EVAL, .data={.eval={.fun =&e5 , .arg = &e4 }}};
+
+    LambExpr a2 = {.tag=ABST, .data={.abst={.body=&e6              }}};
+
+    printf("\nexpr:\n");
+    print_expr(&a2, my_leaf_names);
+
+    printf("\nrewriting...\n");
+    VersionSpace* vs = rewrite(&a2);  
+
+    printf("\nvs:\n");
     print_vs(vs, my_leaf_names);
+
+    printf("\nfreeing...:\n");
     free_vs(vs);
 
     printf("\n");
@@ -51,13 +99,13 @@ void test_crash()
 
 void test_join()
 {
-    LambdaExpr l0 = {.tag=LEAF, .data={.leaf_idx=0}};
-    LambdaExpr l1 = {.tag=LEAF, .data={.leaf_idx=1}};
-    LambdaExpr v0 = {.tag=VRBL, .data={.vrbl_idx=0}};
+    LambExpr l0 = {.tag=LEAF, .data={.leaf_idx=0}};
+    LambExpr l1 = {.tag=LEAF, .data={.leaf_idx=1}};
+    LambExpr v0 = {.tag=VRBL, .data={.vrbl_idx=0}};
 
-    LambdaExpr e0 = {.tag=EVAL, .data={.eval={.fun=&l0, .arg=&v0}}};
-    LambdaExpr a0 = {.tag=ABST, .data={.abst={.body=&e0}}};
-    LambdaExpr e1 = {.tag=EVAL, .data={.eval={.fun=&a0, .arg=&l1}}};
+    LambExpr e0 = {.tag=EVAL, .data={.eval={.fun=&l0, .arg=&v0}}};
+    LambExpr a0 = {.tag=ABST, .data={.abst={.body=&e0}}};
+    LambExpr e1 = {.tag=EVAL, .data={.eval={.fun=&a0, .arg=&l1}}};
 
     print_expr(&e1, my_leaf_names);
     printf("\n");
@@ -71,13 +119,13 @@ void test_join()
 
 void test_beta()
 {
-    LambdaExpr l0 = {.tag=LEAF, .data={.leaf_idx=0}};
-    LambdaExpr l1 = {.tag=LEAF, .data={.leaf_idx=1}};
-    LambdaExpr v0 = {.tag=VRBL, .data={.vrbl_idx=0}};
+    LambExpr l0 = {.tag=LEAF, .data={.leaf_idx=0}};
+    LambExpr l1 = {.tag=LEAF, .data={.leaf_idx=1}};
+    LambExpr v0 = {.tag=VRBL, .data={.vrbl_idx=0}};
 
-    LambdaExpr e0 = {.tag=EVAL, .data={.eval={.fun=&v0, .arg=&l0}}};
-    LambdaExpr a0 = {.tag=ABST, .data={.abst={.body=&e0}}};
-    LambdaExpr e1 = {.tag=EVAL, .data={.eval={.fun=&a0, .arg=&l1}}};
+    LambExpr e0 = {.tag=EVAL, .data={.eval={.fun=&v0, .arg=&l0}}};
+    LambExpr a0 = {.tag=ABST, .data={.abst={.body=&e0}}};
+    LambExpr e1 = {.tag=EVAL, .data={.eval={.fun=&a0, .arg=&l1}}};
 
     print_expr(&e1, my_leaf_names);
     printf("\n");
@@ -91,10 +139,10 @@ void test_beta()
 
 void test_eta()
 {
-    LambdaExpr l0 = {.tag=LEAF, .data={.leaf_idx=0}};
-    LambdaExpr v0 = {.tag=VRBL, .data={.vrbl_idx=0}};
-    LambdaExpr e0 = {.tag=EVAL, .data={.eval={.fun=&l0, .arg=&v0}}};
-    LambdaExpr a0 = {.tag=ABST, .data={.abst={.body=&e0}}};
+    LambExpr l0 = {.tag=LEAF, .data={.leaf_idx=0}};
+    LambExpr v0 = {.tag=VRBL, .data={.vrbl_idx=0}};
+    LambExpr e0 = {.tag=EVAL, .data={.eval={.fun=&l0, .arg=&v0}}};
+    LambExpr a0 = {.tag=ABST, .data={.abst={.body=&e0}}};
 
     print_expr(&a0, my_leaf_names);
     printf("\n");
@@ -109,21 +157,21 @@ void test_eta()
 
 void test_lambda()
 {
-    LambdaExpr l0 = {.tag=LEAF, .data={.leaf_idx=0}};
-    LambdaExpr l1 = {.tag=LEAF, .data={.leaf_idx=1}};
-    LambdaExpr l2 = {.tag=LEAF, .data={.leaf_idx=2}};
+    LambExpr l0 = {.tag=LEAF, .data={.leaf_idx=0}};
+    LambExpr l1 = {.tag=LEAF, .data={.leaf_idx=1}};
+    LambExpr l2 = {.tag=LEAF, .data={.leaf_idx=2}};
 
-    LambdaExpr v0 = {.tag=VRBL, .data={.vrbl_idx=0}};
-    LambdaExpr v1 = {.tag=VRBL, .data={.vrbl_idx=1}};
-    LambdaExpr v2 = {.tag=VRBL, .data={.vrbl_idx=2}};
+    LambExpr v0 = {.tag=VRBL, .data={.vrbl_idx=0}};
+    LambExpr v1 = {.tag=VRBL, .data={.vrbl_idx=1}};
+    LambExpr v2 = {.tag=VRBL, .data={.vrbl_idx=2}};
 
-    LambdaExpr e0 = {.tag=EVAL, .data={.eval={.fun=&v0, .arg=&v1}}};
-    LambdaExpr e1 = {.tag=EVAL, .data={.eval={.fun=&l0, .arg=&e0}}};
-    LambdaExpr e2 = {.tag=EVAL, .data={.eval={.fun=&e1, .arg=&l1}}};
+    LambExpr e0 = {.tag=EVAL, .data={.eval={.fun=&v0, .arg=&v1}}};
+    LambExpr e1 = {.tag=EVAL, .data={.eval={.fun=&l0, .arg=&e0}}};
+    LambExpr e2 = {.tag=EVAL, .data={.eval={.fun=&e1, .arg=&l1}}};
 
-    LambdaExpr a0 = {.tag=ABST, .data={.abst={.body=&e2}}};
-    LambdaExpr e3 = {.tag=EVAL, .data={.eval={.fun=&a0, .arg=&v0}}};
-    LambdaExpr a1 = {.tag=ABST, .data={.abst={.body=&e3}}};
+    LambExpr a0 = {.tag=ABST, .data={.abst={.body=&e2}}};
+    LambExpr e3 = {.tag=EVAL, .data={.eval={.fun=&a0, .arg=&v0}}};
+    LambExpr a1 = {.tag=ABST, .data={.abst={.body=&e3}}};
 
     // the following should print 
     // "\.(\.moo (0 1) chitter) 0"

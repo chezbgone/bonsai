@@ -11,7 +11,7 @@
 #include "colors.h"
 #include "lambda.h"
 
-bool mentions_vrbl(int vrbl_idx, LambdaExpr const* e) {
+bool mentions_vrbl(int vrbl_idx, LambExpr const* e) {
     switch (e->tag) {
         case LEAF: return false;
         case VRBL: return e->data.vrbl_idx == vrbl_idx;
@@ -25,24 +25,40 @@ bool mentions_vrbl(int vrbl_idx, LambdaExpr const* e) {
     }
 }
 
-void unwrap(int vrbl_idx, LambdaExpr* e) {
+LambExpr* unwrap(int vrbl_idx, LambExpr const* e) {
     switch (e->tag) {
-        case LEAF: break;
-        case VRBL: if ( vrbl_idx <= e->data.vrbl_idx ) {
-            e->data.vrbl_idx -= 1;
-        } break;
-        case ABST: unwrap(vrbl_idx+1, e->data.abst.body); break;
-        case EVAL: unwrap(vrbl_idx, e->data.eval.fun);
-                   unwrap(vrbl_idx, e->data.eval.arg); break;
+        case LEAF: return leaf_expr(e->data.leaf_idx);
+        case VRBL: return vrbl_expr(
+            vrbl_idx <= e->data.vrbl_idx ?
+            e->data.vrbl_idx - 1 :
+            e->data.vrbl_idx
+        );
+        case ABST: return abst_expr(
+            unwrap(vrbl_idx+1, e->data.abst.body)
+        );
+        case EVAL: return eval_expr(
+            unwrap(vrbl_idx, e->data.eval.fun),
+            unwrap(vrbl_idx, e->data.eval.arg)
+        );
     }
 }
 
-LambdaExpr* replace(int vrbl_idx, LambdaExpr* exp, LambdaExpr* val) {
+LambExpr* copy_expr(LambExpr const* e) {
+    switch (e->tag) {
+        case LEAF: return leaf_expr(e->data.leaf_idx);
+        case VRBL: return vrbl_expr(e->data.vrbl_idx);
+        case ABST: return abst_expr(copy_expr(e->data.abst.body));
+        case EVAL: return eval_expr(copy_expr(e->data.eval.fun),
+                                    copy_expr(e->data.eval.arg));
+    }
+}
+
+LambExpr* replace(int vrbl_idx, LambExpr const* exp, LambExpr const* val) {
     switch (exp->tag) {
         case LEAF: return leaf_expr(exp->data.leaf_idx);
         case VRBL: return (
             exp->data.vrbl_idx == vrbl_idx ?
-            val :
+            copy_expr(val) :
             vrbl_expr(exp->data.vrbl_idx) 
         ); 
         case ABST: return abst_expr(
@@ -55,31 +71,31 @@ LambdaExpr* replace(int vrbl_idx, LambdaExpr* exp, LambdaExpr* val) {
     }
 }
 
-LambdaExpr* leaf_expr(int leaf_idx)
+LambExpr* leaf_expr(int leaf_idx)
 {
-    LambdaExpr* e = malloc(sizeof(LambdaExpr)); 
-    *e = (LambdaExpr){.tag=LEAF, .data={.leaf_idx=leaf_idx}};
+    LambExpr* e = malloc(sizeof(LambExpr)); 
+    *e = (LambExpr){.tag=LEAF, .data={.leaf_idx=leaf_idx}};
 }
 
-LambdaExpr* vrbl_expr(int vrbl_idx)
+LambExpr* vrbl_expr(int vrbl_idx)
 {
-    LambdaExpr* e = malloc(sizeof(LambdaExpr)); 
-    *e = (LambdaExpr){.tag=VRBL, .data={.vrbl_idx=vrbl_idx}};
+    LambExpr* e = malloc(sizeof(LambExpr)); 
+    *e = (LambExpr){.tag=VRBL, .data={.vrbl_idx=vrbl_idx}};
 }
 
-LambdaExpr* abst_expr(LambdaExpr* body)
+LambExpr* abst_expr(LambExpr* body)
 {
 
-    LambdaExpr* e = malloc(sizeof(LambdaExpr)); 
-    *e = (LambdaExpr){.tag=ABST, .data={.abst={.body=body}}};
+    LambExpr* e = malloc(sizeof(LambExpr)); 
+    *e = (LambExpr){.tag=ABST, .data={.abst={.body=body}}};
 }
-LambdaExpr* eval_expr(LambdaExpr* fun, LambdaExpr* arg)
+LambExpr* eval_expr(LambExpr* fun, LambExpr* arg)
 {
-    LambdaExpr* e = malloc(sizeof(LambdaExpr)); 
-    *e = (LambdaExpr){.tag=EVAL, .data={.eval={.fun=fun, .arg=arg}}};
+    LambExpr* e = malloc(sizeof(LambExpr)); 
+    *e = (LambExpr){.tag=EVAL, .data={.eval={.fun=fun, .arg=arg}}};
 }
 
-void free_expr(LambdaExpr* e)
+void free_expr(LambExpr* e)
 {
     /* TODO: below assumes no multi-parent children.  FIX THIS!!  */
     switch (e->tag) {
@@ -92,7 +108,7 @@ void free_expr(LambdaExpr* e)
     free(e);
 }
 
-void print_expr(LambdaExpr* e, char leaf_names[][16])
+void print_expr(LambExpr* e, char leaf_names[][16])
 {
     bool wrap_fun; 
     bool wrap_arg; 

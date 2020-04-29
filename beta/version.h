@@ -43,8 +43,8 @@ struct VersionSpace {
     } tag;
 }; 
 
-VersionSpace* rewrite(LambdaExpr* e);
-void print_vs(VersionSpace* vs, char leaf_names[][16]);
+VersionSpace* rewrite(LambExpr const* e);
+void print_vs(VersionSpace const* vs, char leaf_names[][16]);
 void free_vs(VersionSpace* vs);
 
 #endif//VERSION_H

@@ -1,18 +1,22 @@
-todo
+TODO
+
+ -- correctness
+     -- adapt data structures to have only single-parent children
+         >< thus solve segfault (see test_crash)
+             () aha! we had a y combinator => unbounded number of allocs!
+     -- 
+     -- add inverse beta rule
 
  -- legibility
      -- document "unwrap" and "rewrite", clarifying mutations 
 
- -- correctness
-     -- avoid double touches due to multi-parent children 
+ -- speed
+     -- implement equality and hashs for /LambdaExpr/ and /VersionSpace/
+     -- allow multi-parent children by explicity avoiding double touches:
          -- in /unwrap/
          -- in /free_expr/
          -- in /free_vs/
-         -- thus solve segfault (see test_crash)
-     -- add inverse beta rule
-
- -- speed
-     -- implement equality and hashs for /LambdaExpr/ and /VersionSpace/
+     -- allow multi-parent nodes 
      -- remove syntactic duplicates in /update_vs/ (see test_join)
      -- memoize /rewrite/'s inputs to make top-down simulate bottom up 
 

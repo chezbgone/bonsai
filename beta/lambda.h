@@ -14,17 +14,17 @@
 ======  1. PROGRAMS  ==========================================================
 =============================================================================*/
 
-typedef struct LambdaExpr LambdaExpr;
-struct LambdaExpr {
+typedef struct LambExpr LambExpr;
+struct LambExpr {
     union {
         int leaf_idx; 
         int vrbl_idx;
         struct {
-            LambdaExpr* body;
+            LambExpr* body;
         } abst; 
         struct {
-            LambdaExpr* fun;
-            LambdaExpr* arg;
+            LambExpr* fun;
+            LambExpr* arg;
         } eval; 
     } data;
     enum {
@@ -36,17 +36,18 @@ struct LambdaExpr {
 }; 
 
 
-LambdaExpr* leaf_expr(int leaf_idx);
-LambdaExpr* vrbl_expr(int vrbl_idx);
-LambdaExpr* abst_expr(LambdaExpr* body);
-LambdaExpr* eval_expr(LambdaExpr* fun, LambdaExpr* arg);
-void free_expr(LambdaExpr* e);
+LambExpr* leaf_expr(int leaf_idx);
+LambExpr* vrbl_expr(int vrbl_idx);
+LambExpr* abst_expr(LambExpr* body);
+LambExpr* eval_expr(LambExpr* fun, LambExpr* arg);
+void free_expr(LambExpr* e);
 
-bool mentions_vrbl(int vrbl_idx, LambdaExpr const* e);
-LambdaExpr* replace(int vrbl_idx, LambdaExpr* exp, LambdaExpr* val);
-void unwrap(int vrbl_idx, LambdaExpr* e);
+bool mentions_vrbl(int vrbl_idx, LambExpr const* e);
+LambExpr* replace(int vrbl_idx, LambExpr const* exp, LambExpr const* val);
+LambExpr* unwrap(int vrbl_idx, LambExpr const* e);
+LambExpr* copy_expr(LambExpr const* e);
 
-void print_expr(LambdaExpr* e, char leaf_names[][16]);
-void print_expr(LambdaExpr* e, char leaf_names[][16]);
+void print_expr(LambExpr* e, char leaf_names[][16]);
+void print_expr(LambExpr* e, char leaf_names[][16]);
 
 #endif//LAMBDA_H
