@@ -13,20 +13,6 @@
 #include "lambda.h"
 #include "version.h"
 
-bool mentions_vrbl(int vrbl_idx, LambdaExpr* e) {
-    switch (e->tag) {
-        case LEAF: return false;
-        case VRBL: return e->data.vrbl_idx == vrbl_idx;
-        case ABST: return (
-            mentions_vrbl(vrbl_idx + 1, e->data.abst.body)
-        );
-        case EVAL: return (
-            mentions_vrbl(vrbl_idx, e->data.eval.fun) ||
-            mentions_vrbl(vrbl_idx, e->data.eval.arg)
-        );
-    }
-}
-
 VersionSpace* make_empty_union()
 {
     VersionSpace* vs = malloc(sizeof(VersionSpace)); 
@@ -93,10 +79,20 @@ VersionSpace* rewrite(LambdaExpr* e)
             update_vs(vs, make_abst(rewrite(e->data.abst.body)));
             break;
         case EVAL:  
-            update_vs(vs, make_eval(
-                rewrite(e->data.eval.fun),
-                rewrite(e->data.eval.arg)
-            ));
+            {
+                VersionSpace* fun = rewrite(e->data.eval.fun);
+                VersionSpace* arg = rewrite(e->data.eval.arg);
+
+                /*  TODO: avoid syntactically redundant trees!  */
+                for (int i=0; i!=fun->data.disj.len; ++i) {
+                    for (int j=0; j!=arg->data.disj.len; ++j) {
+                        update_vs(vs, make_eval(
+                            fun->data.disj.elts[i],
+                            arg->data.disj.elts[j] 
+                        ));
+                    }
+                }
+            }
             break;
     }
 
@@ -109,11 +105,24 @@ VersionSpace* rewrite(LambdaExpr* e)
             arg->data.vrbl_idx==0 &&
             !mentions_vrbl(0, fun)
         ) {
-            update_vs(vs, rewrite(fun));
+            /* TODO: decrement all variable indices!  */
+            LambdaExpr* rtrn = fun; 
+            unwrap(0, rtrn);
+            update_vs(vs, rewrite(rtrn));
         }
     }
 
     /* forward beta ... */
+    if ( e->tag == EVAL && e->data.eval.fun->tag == ABST ) {
+        LambdaExpr* exp = e->data.eval.fun->data.abst.body;
+        LambdaExpr* val = e->data.eval.arg;
+        LambdaExpr* new_exp = replace(0, exp, val);
+
+        unwrap(0, new_exp);
+
+        update_vs(vs, rewrite(new_exp));
+    }
+
     /* backward beta ... */
 
     return vs;
@@ -144,8 +153,20 @@ void print_vs(VersionSpace* vs, char leaf_names[][16])
             print_vs(vs->data.abst.body, leaf_names);
             break;
         case VS_EVAL:  
-            wrap_fun = (vs->data.eval.fun->tag == ABST) ? 1 : 0; 
-            wrap_arg = (vs->data.eval.arg->tag == EVAL) ? 1 : 0; 
+            wrap_fun = (
+                vs->data.eval.fun->tag == VS_ABST || (
+                    vs->data.eval.fun->tag == VS_DISJ &&
+                    vs->data.eval.fun->data.disj.len == 1 &&
+                    vs->data.eval.fun->data.disj.elts[0]->tag == VS_ABST
+                )
+            );
+            wrap_arg = (
+                vs->data.eval.arg->tag == VS_EVAL || (
+                    vs->data.eval.fun->tag == VS_DISJ &&
+                    vs->data.eval.fun->data.disj.len == 1 &&
+                    vs->data.eval.fun->data.disj.elts[0]->tag == VS_EVAL
+                )
+            );
 
             if (wrap_fun) { printf("("); }
             print_vs(vs->data.eval.fun, leaf_names);

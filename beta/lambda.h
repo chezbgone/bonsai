@@ -8,6 +8,8 @@
 #ifndef LAMBDA_H 
 #define LAMBDA_H 
 
+#include <stdbool.h>
+
 /*=============================================================================
 ======  1. PROGRAMS  ==========================================================
 =============================================================================*/
@@ -33,6 +35,18 @@ struct LambdaExpr {
     } tag;
 }; 
 
+
+LambdaExpr* leaf_expr(int leaf_idx);
+LambdaExpr* vrbl_expr(int vrbl_idx);
+LambdaExpr* abst_expr(LambdaExpr* body);
+LambdaExpr* eval_expr(LambdaExpr* fun, LambdaExpr* arg);
+void free_expr(LambdaExpr* e);
+
+bool mentions_vrbl(int vrbl_idx, LambdaExpr const* e);
+LambdaExpr* replace(int vrbl_idx, LambdaExpr* exp, LambdaExpr* val);
+void unwrap(int vrbl_idx, LambdaExpr* e);
+
+void print_expr(LambdaExpr* e, char leaf_names[][16]);
 void print_expr(LambdaExpr* e, char leaf_names[][16]);
 
 #endif//LAMBDA_H

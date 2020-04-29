@@ -1,0 +1,20 @@
+todo
+
+ -- legibility
+     -- document "unwrap" and "rewrite", clarifying mutations 
+
+ -- correctness
+     -- avoid double touches due to multi-parent children 
+         -- in /unwrap/
+         -- in /free_expr/
+         -- in /free_vs/
+         -- thus solve segfault (see test_crash)
+     -- add inverse beta rule
+
+ -- speed
+     -- implement equality and hashs for /LambdaExpr/ and /VersionSpace/
+     -- remove syntactic duplicates in /update_vs/ (see test_join)
+     -- memoize /rewrite/'s inputs to make top-down simulate bottom up 
+
+ -- usage
+     -- arc dsl 
