@@ -122,89 +122,259 @@ VersionSpace* replace_vs(int vrbl_idx, VersionSpace const* vs, VersionSpace cons
     }
 }
 
+//void rewrite_accum(VersionSpace* vs, LambExpr const* e)
+//{
+//    /* TODO: check whether in memoized...! */
+//
+//    /* identity ... */
+//    switch (e->tag) {
+//        case LEAF: update_vs(vs, leaf_vs(e->data.leaf_idx)); break;
+//        case VRBL: update_vs(vs, vrbl_vs(e->data.vrbl_idx)); break;
+//        case ABST: {
+//            VersionSpace* bodies = make_empty_union();
+//            rewrite_accum(bodies, e->data.abst.body);
+//            for ( int i=0; i != bodies->data.disj.len; ++i ) {
+//                VersionSpace* body = bodies->data.disj.elts[i];
+//                update_vs(vs, abst_vs(copy_vs(body)));
+//            }
+//            free_vs(bodies);
+//        } break;
+//        case EVAL: {
+//            VersionSpace* funs = make_empty_union();
+//            VersionSpace* args = make_empty_union();
+//            rewrite_accum(funs, e->data.eval.fun);
+//            rewrite_accum(args, e->data.eval.arg);
+//
+//            /*  TODO: avoid syntactically redundant trees!  */
+//            for ( int i=0; i != funs->data.disj.len; ++i ) {
+//                for ( int j=0; j != args->data.disj.len; ++j ) {
+//                    VersionSpace* fun = funs->data.disj.elts[i];
+//                    VersionSpace* arg = args->data.disj.elts[j];
+//                    update_vs(vs, eval_vs(copy_vs(fun), copy_vs(arg)));
+//                }
+//            }
+//            free_vs(funs);
+//            free_vs(args);
+//        } break;
+//    }
+//
+//    if ( e->tag == EVAL && e->data.eval.fun->tag == ABST ) {
+//        LambExpr* exp = e->data.eval.fun->data.abst.body;
+//        LambExpr* val = e->data.eval.arg;
+//        LambExpr* new_exp_a = replace(0, exp, val);
+//        LambExpr* new_exp_b = unwrap(0, new_exp_a); 
+//
+//        printf(">>> beta on ");
+//        print_expr(exp, NULL);
+//        printf(" and ");
+//        print_expr(val, NULL);
+//        printf(" gives ");
+//        print_expr(new_exp_b, NULL);
+//        printf("\n");
+//
+//        rewrite_accum(vs, new_exp_b);
+//
+//        free_expr(new_exp_b);
+//        free_expr(new_exp_a);
+//    }
+//}
+//
+//VersionSpace* rewrite(LambExpr const* e)
+//{
+//    VersionSpace* vs = make_empty_union();
+//    rewrite_accum(vs, e);
+//    return vs;
+//}
+
+VersionSpace* identity(LambExpr const* e)
+{
+    switch (e->tag) {
+        case LEAF: return leaf_vs(e->data.leaf_idx);
+        case VRBL: return vrbl_vs(e->data.vrbl_idx);
+        case ABST: return abst_vs(identity(e->data.abst.body));
+        case EVAL: return eval_vs(identity(e->data.eval.fun),
+                                  identity(e->data.eval.arg));
+    }
+}
+
+void beta_pass(VersionSpace* vs)
+{
+    switch ( vs->tag ) {
+        case VS_LEAF: break;
+        case VS_VRBL: break;
+        case VS_ABST: beta_pass(vs->data.abst.body); break;
+        case VS_EVAL: beta_pass(vs->data.eval.fun);
+                      beta_pass(vs->data.eval.arg); break;
+        case VS_DISJ: {
+            for ( int i=0; i != vs->data.disj.len; ++i ) {
+                beta_pass(vs->data.disj.elts[i]);
+            }
+        } break; 
+    }
+
+    if ( vs->tag != VS_EVAL ) { return; }
+    VersionSpace* fun = vs->data.eval.fun;
+    while ( fun->tag == VS_DISJ && fun->data.disj.len == 1 ) {
+        fun = fun->data.disj.elts[0];
+    }
+    if ( fun->tag != VS_ABST ) { return; }
+
+    VersionSpace* exp = fun->data.abst.body;
+    VersionSpace* val = vs->data.eval.arg;
+    VersionSpace* replaced = replace_vs(0, exp, val);
+
+    VersionSpace* copy = copy_vs(vs); 
+
+    free_kids(vs);
+    *vs = (VersionSpace){
+        .tag=VS_DISJ,
+        .data={.disj={
+            .len=2,
+            .cap=2,
+            .elts=malloc(sizeof(VersionSpace)*2)
+        }}
+    };
+    vs->data.disj.elts[0] = copy; 
+    vs->data.disj.elts[1] = replaced; 
+} 
+
+void distribute(VersionSpace* vs)
+{
+    switch ( vs->tag ) {
+        case VS_LEAF: break;
+        case VS_VRBL: break;
+        case VS_ABST: distribute(vs->data.abst.body); break;
+        case VS_EVAL: distribute(vs->data.eval.fun);
+                      distribute(vs->data.eval.arg); break;
+        case VS_DISJ: {
+            for ( int i=0; i != vs->data.disj.len; ++i ) {
+                distribute(vs->data.disj.elts[i]);
+            }
+        } break; 
+    }
+
+    if ( vs->tag == VS_EVAL ) {
+        VersionSpace* fun = copy_vs(vs->data.eval.fun);
+        VersionSpace* arg = copy_vs(vs->data.eval.arg);
+
+        free_kids(vs);
+
+        *vs = (VersionSpace){
+            .tag=VS_DISJ,
+            .data={.disj={
+                .len=0,
+                .cap=1,
+                .elts=malloc(sizeof(VersionSpace)*1)
+            }}
+        };
+
+        if ( fun->tag == VS_DISJ && arg->tag == VS_DISJ ) {
+            for ( int i=0; i != fun->data.disj.len; ++i ) {
+                for ( int j=0; j != arg->data.disj.len; ++j ) {
+                    update_vs(vs, eval_vs(
+                        copy_vs(fun->data.disj.elts[i]),
+                        copy_vs(arg->data.disj.elts[j])
+                    )); 
+                }
+            }
+        } else if ( fun->tag == VS_DISJ && arg->tag != VS_DISJ ) {
+            for ( int i=0; i != fun->data.disj.len; ++i ) {
+                update_vs(vs, eval_vs(
+                    copy_vs(fun->data.disj.elts[i]),
+                    copy_vs(arg)
+                )); 
+            }
+        } else if ( fun->tag != VS_DISJ && arg->tag == VS_DISJ ) {
+            for ( int j=0; j != arg->data.disj.len; ++j ) {
+                update_vs(vs, eval_vs(
+                    copy_vs(fun),
+                    copy_vs(arg->data.disj.elts[j])
+                )); 
+            }
+        } else {
+            update_vs(vs, eval_vs(
+                copy_vs(fun),
+                copy_vs(arg)
+            )); 
+        }
+
+        free_vs(fun);
+        free_vs(arg);
+    }
+    //else if ( vs->tag == VS_DISJ ) {
+    //    VersionSpace accum = (VersionSpace){
+    //        .tag=VS_DISJ,
+    //        .data={.disj={
+    //            .len=0,
+    //            .cap=1,
+    //            .elts=malloc(sizeof(VersionSpace)*1)
+    //        }}
+    //    };
+    //    for ( int i=0; i != vs->data.disj.len; ++i ) {
+    //        VersionSpace* row = vs->data.disj.elts[i];
+    //        if ( row->tag == VS_DISJ ) {
+    //            for ( int j=0; j != row->data.disj.len; ++j ) {
+    //                update_vs(&accum, copy_vs(row->data.disj.elts[j])); 
+    //            }
+    //        } else {
+    //            update_vs(&accum, copy_vs(row));
+    //        }
+    //    }
+    //    free_kids(vs);
+    //    *vs = accum;
+    //}
+}
+
 VersionSpace* rewrite(LambExpr const* e)
 {
     /* TODO: check whether in memoized...! */
 
-    VersionSpace* vs = make_empty_union();
-
-    //update_forward_betas(vs, e);
-
-    /* identity ... */
-    switch (e->tag) {
-        case LEAF: update_vs(vs, leaf_vs(e->data.leaf_idx)); break;
-        case VRBL: update_vs(vs, vrbl_vs(e->data.vrbl_idx)); break;
-        case ABST: update_vs(vs, abst_vs(rewrite(e->data.abst.body))); break;
-        case EVAL:  
-            {
-                VersionSpace* funs = rewrite(e->data.eval.fun);
-                VersionSpace* args = rewrite(e->data.eval.arg);
-
-                /*  TODO: avoid syntactically redundant trees!  */
-                for ( int i=0; i != funs->data.disj.len; ++i ) {
-                    for ( int j=0; j != args->data.disj.len; ++j ) {
-                        VersionSpace* fun = funs->data.disj.elts[i];
-                        VersionSpace* arg = args->data.disj.elts[j];
-                        update_vs(vs, eval_vs(copy_vs(fun), copy_vs(arg)));
-
-                        while ( fun->tag == VS_DISJ && fun->data.disj.len == 1) {
-                            fun = fun->data.disj.elts[0];
-                        }
-                        if ( fun->tag != VS_ABST ) { continue; }
-                        update_vs(vs, replace_vs(0, fun->data.abst.body, arg));
-                    }
-                }
-
-                free_vs(funs);
-                free_vs(args);
-            }
-            break;
-    }
-
-    // /* forward eta ... */
-    // if ( e->tag == ABST && e->data.abst.body->tag == EVAL ) {
-    //     LambExpr* fun = e->data.abst.body->data.eval.fun;
-    //     LambExpr* arg = e->data.abst.body->data.eval.arg;
-    //     if (
-    //         arg->tag==VRBL &&
-    //         arg->data.vrbl_idx==0 &&
-    //         !mentions_vrbl(0, fun)
-    //     ) {
-    //         LambExpr* new_exp = unwrap(0, fun);
-    //         update_vs(vs, rewrite(new_exp));
-    //         free_expr(new_exp);
-    //     }
-    // }
-
-    /* forward beta ... */
-    //{
-    //    LambExpr* exp = e->data.eval.fun->data.abst.body;
-    //    LambExpr* val = e->data.eval.arg;
-
-    //    if ( e->tag == EVAL && e->data.eval.fun->tag == ABST ) {
-    //        LambExpr* new_exp_a = replace(0, exp, val);
-    //        LambExpr* new_exp_b = unwrap(0, new_exp_a); 
-
-    //        printf(">>> beta on ");
-    //        print_expr(exp, NULL);
-    //        printf(" and ");
-    //        print_expr(val, NULL);
-    //        printf(" gives ");
-    //        print_expr(new_exp_b, NULL);
-    //        printf("\n");
-
-    //        update_vs(vs, rewrite(new_exp_b));
-
-    //        free_expr(new_exp_b);
-    //        free_expr(new_exp_a);
-    //    }
-
-    //}
-
-    /* backward beta ... */
-
+    VersionSpace* vs = identity(e);
+    beta_pass(vs); distribute(vs);
+    beta_pass(vs); distribute(vs);
+    beta_pass(vs); distribute(vs);
     return vs;
 }
+
+//VersionSpace* rewrite(LambExpr const* e)
+//{
+//    /* TODO: check whether in memoized...! */
+//
+//    VersionSpace* vs = make_empty_union();
+//
+//    /* identity ... */
+//    switch (e->tag) {
+//        case LEAF: update_vs(vs, leaf_vs(e->data.leaf_idx)); break;
+//        case VRBL: update_vs(vs, vrbl_vs(e->data.vrbl_idx)); break;
+//        case ABST: update_vs(vs, abst_vs(rewrite(e->data.abst.body))); break;
+//        case EVAL:  
+//            {
+//                VersionSpace* funs = rewrite(e->data.eval.fun);
+//                VersionSpace* args = rewrite(e->data.eval.arg);
+//
+//                /*  TODO: avoid syntactically redundant trees!  */
+//                for ( int i=0; i != funs->data.disj.len; ++i ) {
+//                    for ( int j=0; j != args->data.disj.len; ++j ) {
+//                        VersionSpace* fun = funs->data.disj.elts[i];
+//                        VersionSpace* arg = args->data.disj.elts[j];
+//                        update_vs(vs, eval_vs(copy_vs(fun), copy_vs(arg)));
+//
+//                        while ( fun->tag == VS_DISJ && fun->data.disj.len == 1) {
+//                            fun = fun->data.disj.elts[0];
+//                        }
+//                        if ( fun->tag != VS_ABST ) { continue; }
+//                        update_vs(vs, replace_vs(0, fun->data.abst.body, arg));
+//                    }
+//                }
+//
+//                free_vs(funs);
+//                free_vs(args);
+//            }
+//            break;
+//    }
+//
+//    return vs;
+//}
 
 void print_vs(VersionSpace const* vs, char leaf_names[][16])
 {
@@ -272,35 +442,46 @@ void print_vs(VersionSpace const* vs, char leaf_names[][16])
     }
 } 
 
-int depth=0;
-void free_vs(VersionSpace* vs)
+void free_kids(VersionSpace* vs)
 {
     /* TODO: below assumes no multi-parent children.  FIX THIS!!  */
-    //for (int j=0; j!=depth; ++j) { printf(" "); }
-    //printf("freeing [");
-    //print_vs(vs, NULL);
-    //printf("]\n...");
     switch (vs->tag) {
         case VS_LEAF: break;
         case VS_VRBL: break; 
-        case VS_ABST: depth += 1;
-                      free_vs(vs->data.abst.body);
-                      depth -= 1;
+        case VS_ABST: free_kids(vs->data.abst.body); free(vs->data.abst.body);
                       break;
-        case VS_EVAL: depth += 1;
-                      free_vs(vs->data.eval.fun);              
-                      free_vs(vs->data.eval.arg);
-                      depth -= 1;
+        case VS_EVAL: free_kids(vs->data.eval.fun); free(vs->data.eval.fun); 
+                      free_kids(vs->data.eval.arg); free(vs->data.eval.arg);
                       break;
         case VS_DISJ: {
-            depth += 1;
             for (int i=0; i != vs->data.disj.len; ++i) {
-                free_vs(vs->data.disj.elts[i]);
-            }
-            depth -= 1;
-        }
-        break;
+                free_kids(vs->data.disj.elts[i]);
+                free(vs->data.disj.elts[i]);
+            };
+            free(vs->data.disj.elts);
+        } break;
     }
+}
 
+void free_vs(VersionSpace* vs)
+{
+    free_kids(vs);
     free(vs);
 }
+
+    // /* forward eta ... */
+    // if ( e->tag == ABST && e->data.abst.body->tag == EVAL ) {
+    //     LambExpr* fun = e->data.abst.body->data.eval.fun;
+    //     LambExpr* arg = e->data.abst.body->data.eval.arg;
+    //     if (
+    //         arg->tag==VRBL &&
+    //         arg->data.vrbl_idx==0 &&
+    //         !mentions_vrbl(0, fun)
+    //     ) {
+    //         LambExpr* new_exp = unwrap(0, fun);
+    //         update_vs(vs, rewrite(new_exp));
+    //         free_expr(new_exp);
+    //     }
+    // }
+
+

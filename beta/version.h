@@ -45,6 +45,7 @@ struct VersionSpace {
 
 VersionSpace* rewrite(LambExpr const* e);
 void print_vs(VersionSpace const* vs, char leaf_names[][16]);
+void free_kids(VersionSpace* vs);
 void free_vs(VersionSpace* vs);
 
 #endif//VERSION_H
