@@ -4,7 +4,7 @@ TODO
      >< adapt data structures to have only single-parent children
          >< thus solve segfault (see test_crash)
              () aha! we had a y combinator => unbounded number of allocs!
-     -- implement complete set of forward beta version-space construction rules
+     >< implement complete set of forward beta version-space construction rules
      -- add inverse beta rule
 
  -- legibility

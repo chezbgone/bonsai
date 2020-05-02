@@ -116,7 +116,7 @@ void print_expr(LambExpr* e, char leaf_names[][16])
     switch (e->tag) {
         case LEAF:
             crim(); 
-            if ( leaf_names == NULL) { printf("@%d", e->data.leaf_idx); }
+            if ( leaf_names == NULL) { printf("f%d", e->data.leaf_idx); }
             else { printf("%s", leaf_names[e->data.leaf_idx]); }
             defc();
             break;

@@ -27,9 +27,33 @@ void test_two_arg();
 
 void main()
 {
-    test_big();
+    //test_big();
     //test_two_arg();
-    //test_beta();
+    test_beta();
+}
+
+void test_beta()
+{
+    LambExpr l0 = {.tag=LEAF, .data={.leaf_idx=0}};
+    LambExpr l1 = {.tag=LEAF, .data={.leaf_idx=1}};
+    LambExpr v0 = {.tag=VRBL, .data={.vrbl_idx=0}};
+
+    LambExpr e0 = {.tag=EVAL, .data={.eval={.fun=&v0, .arg=&l0}}};
+    LambExpr a0 = {.tag=ABST, .data={.abst={.body=&e0}}};
+    LambExpr e1 = {.tag=EVAL, .data={.eval={.fun=&a0, .arg=&l1}}};
+
+    printf("expr: ");
+    print_expr(&e1, NULL);
+    printf("\n");
+
+    VerSpace* vs = rewrite(&e1);  
+
+    printf("vs: ");
+    print_vs(vs, NULL);
+    printf("\n");
+
+
+    free_vs(&vs);
 }
 
 void test_two_arg()
@@ -50,9 +74,9 @@ void test_two_arg()
     LambExpr e3 = {.tag=EVAL, .data={.eval={.fun = &e2 , .arg = &l2 }}};
 
     printf("\n expr:\n");        print_expr(&e3, my_leaf_names);
-    printf("\n rewriting...\n"); VersionSpace* vs = rewrite(&e3);  
+    printf("\n rewriting...\n"); VerSpace* vs = rewrite(&e3);  
     printf("\n vs:\n");          print_vs(vs, my_leaf_names);
-    printf("\n freeing...:\n");  free_vs(vs);
+    printf("\n freeing...:\n");  free_vs(&vs);
     printf("\n done!\n");
 }
 
@@ -90,13 +114,13 @@ void test_big()
     print_expr(&a3, my_leaf_names);
 
     printf("\nrewriting...\n");
-    VersionSpace* vs = rewrite(&a3);  
+    VerSpace* vs = rewrite(&a3);  
 
     printf("\nvs:\n");
     print_vs(vs, my_leaf_names);
 
     printf("\nfreeing...:\n");
-    free_vs(vs);
+    free_vs(&vs);
 
     printf("\n");
 }
@@ -114,29 +138,9 @@ void test_join()
     print_expr(&e1, my_leaf_names);
     printf("\n");
 
-    VersionSpace* vs = rewrite(&e1);  
+    VerSpace* vs = rewrite(&e1);  
     print_vs(vs, my_leaf_names);
-    free_vs(vs);
-
-    printf("\n");
-}
-
-void test_beta()
-{
-    LambExpr l0 = {.tag=LEAF, .data={.leaf_idx=0}};
-    LambExpr l1 = {.tag=LEAF, .data={.leaf_idx=1}};
-    LambExpr v0 = {.tag=VRBL, .data={.vrbl_idx=0}};
-
-    LambExpr e0 = {.tag=EVAL, .data={.eval={.fun=&v0, .arg=&l0}}};
-    LambExpr a0 = {.tag=ABST, .data={.abst={.body=&e0}}};
-    LambExpr e1 = {.tag=EVAL, .data={.eval={.fun=&a0, .arg=&l1}}};
-
-    print_expr(&e1, my_leaf_names);
-    printf("\n");
-
-    VersionSpace* vs = rewrite(&e1);  
-    print_vs(vs, my_leaf_names);
-    free_vs(vs);
+    free_vs(&vs);
 
     printf("\n");
 }
@@ -151,9 +155,9 @@ void test_eta()
     print_expr(&a0, my_leaf_names);
     printf("\n");
 
-    VersionSpace* vs = rewrite(&a0);  
+    VerSpace* vs = rewrite(&a0);  
     print_vs(vs, my_leaf_names);
-    free_vs(vs);
+    free_vs(&vs);
 
     printf("\n");
 }
