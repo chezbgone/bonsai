@@ -27,9 +27,9 @@ void test_two_arg();
 
 void main()
 {
-    //test_big();
+    test_big();
     //test_two_arg();
-    test_beta();
+    //test_beta();
 }
 
 void test_beta()

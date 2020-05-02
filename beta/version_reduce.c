@@ -28,8 +28,8 @@ VerSpace* rewrite(LambExpr const* e)
 {
     VerSpace* vs = vs_from_expr(e);
     beta_pass(vs);
-    beta_pass(vs);
-    beta_pass(vs);
+    //beta_pass(vs);
+    //beta_pass(vs);
     return vs;
 }
 
@@ -74,6 +74,7 @@ bool beta_pass(VerSpace* vs)
         if ( fun->tag == VS_ABST ) {
             /* TODO: UNWRAP VARIABLE INDICES!! */
             VerSpace* subbed = subs_vs(0, fun->data.abst.body, arg);
+            beta_pass(subbed);
 
             if ( !contains_term(vs, subbed) ) {
                 update_vs(vs, subbed);
