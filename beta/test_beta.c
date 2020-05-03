@@ -12,10 +12,10 @@
 #include "version.h"
 
 char my_leaf_names[][16] = {
-    "moo",
-    "chitter",
+    "moop",
+    "chit",
     "lump",
-    "bop",
+    "bopp",
 };
 
 void test_lambda();

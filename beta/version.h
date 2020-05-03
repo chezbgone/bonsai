@@ -73,6 +73,9 @@ void print_vs(VerSpace const* vs, char leaf_names[][16]);
 
 VerSpace* vs_from_expr(LambExpr const* e);
 bool beta_pass(VerSpace* vs);
+
+bool inv_beta_pass(VerSpace* vs);
+
 VerSpace* rewrite(LambExpr const* e);
 
 #endif//VERSION_H

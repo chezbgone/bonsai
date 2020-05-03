@@ -6,6 +6,9 @@ TODO
              () aha! we had a y combinator => unbounded number of allocs!
      >< implement complete set of forward beta version-space construction rules
      -- add inverse beta rule
+         -- correct use of contexts in inv_subs 
+         -- correct handling of unions in inv_subs 
+         -- test
 
  -- legibility
      -- document "unwrap" and "rewrite", clarifying mutations 
