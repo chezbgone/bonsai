@@ -1,7 +1,7 @@
 /*  author: samtenka
  *  change: 2020-04-26
  *  create: 2020-04-26
- *  descrp: dsl abstract syntax trees
+ *  descrp: interface for abstract syntax trees
  *  to use: 
  */
 
@@ -10,22 +10,23 @@
 
 #include <stdbool.h>
 
-/*=============================================================================
-======  1. PROGRAMS  ==========================================================
-=============================================================================*/
+/*===========================================================================*/
+/*====  0. TREE STRUCTURE  ==================================================*/
+/*===========================================================================*/
+
+#define LID data.leaf.idx
+#define VID data.vrbl.idx 
+#define BOD data.abst.bod
+#define FUN data.eval.fun 
+#define ARG data.eval.arg
 
 typedef struct LambExpr LambExpr;
 struct LambExpr {
     union {
-        int leaf_idx; 
-        int vrbl_idx;
-        struct {
-            LambExpr* body;
-        } abst; 
-        struct {
-            LambExpr* fun;
-            LambExpr* arg;
-        } eval; 
+        struct { int idx;                      } leaf;
+        struct { int idx;                      } vrbl
+        struct { LambExpr* bod;                } abst; 
+        struct { LambExpr* fun; LambExpr* arg; } eval; 
     } data;
     enum {
         LEAF = 0, 
@@ -33,21 +34,36 @@ struct LambExpr {
         ABST = 2, 
         EVAL = 3, 
     } tag;
+    int hash;
+    int height;
+    int weight;
 }; 
 
+/*===========================================================================*/
+/*====  1. CONSTRUCTORS AND DESTRUCTORS  ====================================*/
+/*===========================================================================*/
 
-LambExpr* leaf_expr(int leaf_idx);
-LambExpr* vrbl_expr(int vrbl_idx);
-LambExpr* abst_expr(LambExpr* body);
+LambExpr* leaf_expr(int lid);
+LambExpr* vrbl_expr(int vid);
+LambExpr* abst_expr(LambExpr* bod);
 LambExpr* eval_expr(LambExpr* fun, LambExpr* arg);
+
 void free_expr(LambExpr* e);
 
-bool mentions_vrbl(int vrbl_idx, LambExpr const* e);
-LambExpr* replace(int vrbl_idx, LambExpr const* exp, LambExpr const* val);
-LambExpr* unwrap(int vrbl_idx, LambExpr const* e);
-LambExpr* copy_expr(LambExpr const* e);
+/*===========================================================================*/
+/*====  2. BASIC OPERATIONS  ================================================*/
+/*===========================================================================*/
+
+bool same_expr(LambExpr const* lhs, int l_depth, LambExpr const* rhs, r_depth);
+LambExpr* subs(LambExpr* exp, LambExpr* val, int vid);
+bool mentions_vrbl(LambExpr* e, int vid_lo, int vid_hi);
 
 void print_expr(LambExpr* e, char leaf_names[][16]);
-void print_expr(LambExpr* e, char leaf_names[][16]);
+
+/*===========================================================================*/
+/*====  3. BETA REWRITES  ===================================================*/
+/*===========================================================================*/
+
+LambExpr* beta_normal(LambExpr* e);
 
 #endif//LAMBDA_H
