@@ -24,22 +24,26 @@ LambExpr* make(LambExpr val);
 
 LambExpr* leaf_expr(int lid)
 {
-    return make((LambExpr){.tag=LEAF, .data={.leaf={.idx=lid}}});
+    LambExpr e = {.tag=LEAF, .data={.leaf={.idx=lid}}};
+    return make(e);
 }
 
 LambExpr* vrbl_expr(int vid)
 {
-    return make((LambExpr){.tag=VRBL, .data={.vrbl={.idx=vid}}});
+    LambExpr e = {.tag=VRBL, .data={.vrbl={.idx=vid}}};
+    return make(e);
 }
 
 LambExpr* abst_expr(LambExpr* bod)
 {
-    return make((LambExpr){.tag=ABST, .data={.abst={.bod=body}}};
+    LambExpr e = {.tag=ABST, .data={.abst={.bod=bod}}};
+    return make(e);
 }
 
 LambExpr* eval_expr(LambExpr* fun, LambExpr* arg)
 {
-    return make((LambExpr){.tag=EVAL, .data={.eval={.fun=fun, .arg=arg}}});
+    LambExpr e = {.tag=EVAL, .data={.eval={.fun=fun, .arg=arg}}};
+    return make(e);
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -51,18 +55,19 @@ LambExpr* eval_expr(LambExpr* fun, LambExpr* arg)
 
 #define MAX(X,Y) ((X)<(Y) ? (Y) : (X))
 
-int memoize_hash(LambExpr const* e)
+int hash_step(LambExpr const* e)
 {
     switch ( e->tag ) {
-        case LEAF: return (e->data.LID + 1)<<8;
+        case LEAF: return (e->LID + 1)<<8;
         case VRBL: return 1;
         case ABST: return 1 + PRIME_A * e->BOD->hash;
         case EVAL: return 1 + PRIME_B * e->FUN->hash 
-                   return   + PRIME_C * e->ARG->hash;
+                            + PRIME_C * e->ARG->hash;
     }
 }
 
 int height_step(LambExpr const* e) 
+{
     switch ( e->tag ) {
         case LEAF: return 0;
         case VRBL: return 0;
@@ -72,6 +77,7 @@ int height_step(LambExpr const* e)
 }
 
 int weight_step(LambExpr const* e) 
+{
     switch ( e->tag ) {
         case LEAF: return 1;
         case VRBL: return 1;
@@ -113,7 +119,7 @@ void free_expr(LambExpr* e)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.0. Syntactic Equality  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-bool same_expr(LambExpr const* lhs, int l_depth, LambExpr const* rhs, r_depth)
+bool same_expr(LambExpr const* lhs, int l_depth, LambExpr const* rhs, int r_depth)
 {
     if ( lhs->hash != rhs->hash || lhs->tag != rhs->tag ) { return false; }
     switch ( lhs->tag ) {
@@ -135,24 +141,18 @@ bool same_expr(LambExpr const* lhs, int l_depth, LambExpr const* rhs, r_depth)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.1. Beta Substitution  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-LambExpr* create_gap(LambExpr* e, int vid); 
-LambExpr* subs_inner(LambExpr* exp, int vid, LambExpr* val, int depth);
+LambExpr* shift(LambExpr* e, int vid, int gap_size); 
 
 /*----------------  1.1.0. main loop  ---------------------------------------*/
 
-LambExpr* subs(LambExpr* exp, int vid, LambExpr* val)
-{
-    subs_inner(exp, vid, val, 0);
-}
-
-LambExpr* subs_inner(LambExpr* exp, int vid, LambExpr* val, int depth)
+LambExpr* subs(LambExpr* exp, int vid, LambExpr* val, int depth)
 {
     switch ( exp->tag ) {
         case LEAF: return exp;
         case VRBL: return exp->VID == vid+depth ? shift(val, 0, depth) : exp; 
-        case ABST: return abst_expr(subs_inner(exp->BOD, vid, val, depth+1));
-        case EVAL: return eval_expr(subs_inner(exp->FUN, vid, val, depth  ),
-                                    subs_inner(exp->ARG, vid, val, depth  ));
+        case ABST: return abst_expr(subs(exp->BOD, vid, val, depth+1));
+        case EVAL: return eval_expr(subs(exp->FUN, vid, val, depth  ),
+                                    subs(exp->ARG, vid, val, depth  ));
     }
 }
 
@@ -170,25 +170,28 @@ LambExpr* shift(LambExpr* e, int vid, int gap_size)
     switch ( e->tag ) {
         case LEAF: return e;
         case VRBL: return e->VID < vid ? e : vrbl_expr(e->VID + gap_size);
-        case ABST: return abst_expr(shift(e->BOD, vid+1);
-        case EVAL: return eval_expr(shift(e->FUN, vid  ),
-                                    shift(e->ARG, vid  ));
+        case ABST: return abst_expr(shift(e->BOD, vid+1, gap_size));
+        case EVAL: return eval_expr(shift(e->FUN, vid  , gap_size),
+                                    shift(e->ARG, vid  , gap_size));
     }
 }
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~  1.2. Dependency Querying  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 bool mentions_vrbl(LambExpr* e, int vid_lo, int vid_hi)
 {
     switch ( e->tag ) {
         case LEAF: return false;
-        case VRBL: return (vid_lo <= e->vid && e->VID < vid_hi);
-        case ABST: return abst_expr(shift(e->BOD, vid_lo+1, vid_hi+1);
+        case VRBL: return (vid_lo <= e->VID && e->VID < vid_hi);
+        case ABST: return abst_expr(shift(e->BOD, vid_lo+1, vid_hi+1));
         case EVAL: return eval_expr(shift(e->FUN, vid_lo  , vid_hi  ),
                                     shift(e->ARG, vid_lo  , vid_hi  ));
     }
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/*~~~~~~~~~~  1.2. Display  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~  1.3. Display  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 void print_expr(LambExpr* e, char leaf_nms[][16])
 {
@@ -207,11 +210,9 @@ void print_expr(LambExpr* e, char leaf_nms[][16])
             if ( wrap_fun ) { printf("("); } print_expr(e->FUN, leaf_nms);
             if ( wrap_fun ) { printf(")"); }
             printf(" "); 
-            if ( wrap_arg ) { printf("("); } print_expr(e->ARG, leaf_nms);
+            if ( wrap_arg ) { printf("("); } print_expr(e-> ARG, leaf_nms);
             if ( wrap_arg ) { printf(")"); }
             break;
         }
     }
 } 
-
-

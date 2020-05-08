@@ -24,7 +24,7 @@ typedef struct LambExpr LambExpr;
 struct LambExpr {
     union {
         struct { int idx;                      } leaf;
-        struct { int idx;                      } vrbl
+        struct { int idx;                      } vrbl;
         struct { LambExpr* bod;                } abst; 
         struct { LambExpr* fun; LambExpr* arg; } eval; 
     } data;
@@ -54,8 +54,8 @@ void free_expr(LambExpr* e);
 /*====  2. BASIC OPERATIONS  ================================================*/
 /*===========================================================================*/
 
-bool same_expr(LambExpr const* lhs, int l_depth, LambExpr const* rhs, r_depth);
-LambExpr* subs(LambExpr* exp, LambExpr* val, int vid);
+bool same_expr(LambExpr const* lhs, int l_depth, LambExpr const* rhs, int r_depth);
+LambExpr* subs(LambExpr* exp, int vid, LambExpr* val, int depth);
 bool mentions_vrbl(LambExpr* e, int vid_lo, int vid_hi);
 
 void print_expr(LambExpr* e, char leaf_names[][16]);

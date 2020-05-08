@@ -34,12 +34,12 @@ struct Fillers {
 /*====  1. EXTRACTION  ======================================================*/
 /*===========================================================================*/
 
-bool cull_sites(LambExpr* e, int depth, Fillers* sites, int syntax_depth);
-void populate_kids(LambExpr* e, Fillers kids, int syntax_depth);
-LambExpr* bod_from(LambExpr* e, int depth, Filler* val, int* count);
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.0. Extract from Single Program  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+bool cull_sites(LambExpr* e, int depth, Fillers* sites, int syntax_depth);
+void populate_kids(LambExpr* e, Fillers kids, int syntax_depth);
+LambExpr* bod_from(LambExpr* e, int depth, Filler* val);
 
 void extract_to(LambExpr const* e, ConceptTable* ct)
 {
@@ -50,28 +50,24 @@ void extract_to(LambExpr const* e, ConceptTable* ct)
     int nb_occurences, d_score;
     for ( int i=0; i != sites.len; ++i ) {
         LambExpr* val = &(sites.arr[i]);
-        nb_occurences = 0; 
-        LambExpr* bod = bod_from(e, 0, val, &nb_occurences); 
-        d_score = (bod->weight - 1) + (nb_occurences-1) * val->weight;
+        LambExpr* bod = bod_from(e, 0, val); 
+        d_score = e->weight - (bod->weight + val->weight + 2);
         update_table(ct, bod, d_score);
     }
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/*~~~~~~~~~~  1.1. Helper  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~  1.1. Helper: Perform Greedy Inverse Beta Substitution  ~~~~~~~~*/
 
-LambExpr* bod_from(LambExpr* e, int depth, Filler* val, int* count)
+LambExpr* bod_from(LambExpr* e, int depth, Filler* val)
 {
-    if ( same_expr(e, depth, val->val, val->depth) ) {
-        *count += 1;
-        return val->val;
-    }
+    if ( same_expr(e, depth, val->val, val->depth) ) { return vrbl_expr(0); }
     switch ( e->tag ) {
         case LEAF: return e;
-        case VRBL: return e;
-        case ABST: return abst_expr(bod_from(e->BOD, depth+1, val, count));
-        case EVAL: return eval_expr(bod_from(e->FUN, depth  , val, count),
-                                    bod_from(e->ARG, depth  , val, count));
+        case VRBL: return ( e->VID < depth ) ? e : vrbl_expr(e->VID+1);
+        case ABST: return abst_expr(bod_from(e->BOD, depth+1, val));
+        case EVAL: return eval_expr(bod_from(e->FUN, depth  , val),
+                                    bod_from(e->ARG, depth  , val));
     }
 }
 
@@ -129,7 +125,7 @@ void populate_kids(LambExpr* e, int depth, Fillers kids, int syntax_depth)
     /*  Assuming /e/ contains no targets, populate /sites/ with the set of S's.
     */
 {
-    bool is_replaceable = ! mentions_vrbl(e, 1, depth);
+    bool is_replaceable = ( ! mentions_vrbl(e, 1, depth) );
     if ( is_replaceable && syntax_depth != 0 ) {
         kids.arr[kids.len] = {.val = e, .depth = depth};
         kids.len += 1;
