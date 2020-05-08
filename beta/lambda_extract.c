@@ -18,18 +18,6 @@
 /*====  0. TEMPORARY STRUCTURES  ============================================*/
 /*===========================================================================*/
 
-typedef struct Filler Filler;
-struct Filler {
-    LambExpr* val;
-    int depth;
-};
-
-typedef struct Fillers Fillers;
-struct Fillers {
-    Filler arr[1<<(DEPTH+1)];
-    int len;
-}; 
-
 /*===========================================================================*/
 /*====  1. EXTRACTION  ======================================================*/
 /*===========================================================================*/
@@ -37,21 +25,27 @@ struct Fillers {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.0. Extract from Single Program  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-bool cull_sites(LambExpr* e, int depth, Fillers* sites, int syntax_depth);
-void populate_kids(LambExpr* e, Fillers kids, int syntax_depth);
-LambExpr* bod_from(LambExpr* e, int depth, Filler* val);
+typedef struct Nodes Nodes;
+struct Nodes {
+    Node arr[1<<(DEPTH+1)];
+    int len;
+}; 
 
-void extract_to(LambExpr const* e, ConceptTable* ct)
+bool cull_sites(LambExpr* e, int depth, Nodes* sites, int syntax_depth);
+void populate_kids(LambExpr* e, int depth, Nodes* kids, int syntax_depth);
+LambExpr* bod_from(LambExpr* e, int depth, Node val);
+
+void extract_to(LambExpr* e, CTable* ct)
 {
-    Fillers sites;
+    Nodes sites;
     bool has_target = cull_sites(e, 0, &sites, 0);
-    if ( ! has_target ) { populate_kids(e, 0, sites, 0); }
+    if ( ! has_target ) { populate_kids(e, 0, &sites, 0); }
 
     int nb_occurences, d_score;
     for ( int i=0; i != sites.len; ++i ) {
-        LambExpr* val = &(sites.arr[i]);
+        Node val = sites.arr[i];
         LambExpr* bod = bod_from(e, 0, val); 
-        d_score = e->weight - (bod->weight + val->weight + 2);
+        d_score = e->weight - (bod->weight + val.val->weight + 2);
         update_table(ct, bod, d_score);
     }
 }
@@ -59,9 +53,9 @@ void extract_to(LambExpr const* e, ConceptTable* ct)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.1. Helper: Perform Greedy Inverse Beta Substitution  ~~~~~~~~*/
 
-LambExpr* bod_from(LambExpr* e, int depth, Filler* val)
+LambExpr* bod_from(LambExpr* e, int depth, Node val)
 {
-    if ( same_expr(e, depth, val->val, val->depth) ) { return vrbl_expr(0); }
+    if ( same_node((Node){e, depth}, val) ) { return vrbl_expr(0); }
     switch ( e->tag ) {
         case LEAF: return e;
         case VRBL: return ( e->VID < depth ) ? e : vrbl_expr(e->VID+1);
@@ -121,14 +115,14 @@ LambExpr* bod_from(LambExpr* e, int depth, Filler* val)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  2.0. Targetless Case  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-void populate_kids(LambExpr* e, int depth, Fillers kids, int syntax_depth)
+void populate_kids(LambExpr* e, int depth, Nodes* kids, int syntax_depth)
     /*  Assuming /e/ contains no targets, populate /sites/ with the set of S's.
     */
 {
     bool is_replaceable = ( ! mentions_vrbl(e, 1, depth) );
     if ( is_replaceable && syntax_depth != 0 ) {
-        kids.arr[kids.len] = {.val = e, .depth = depth};
-        kids.len += 1;
+        kids->arr[kids->len] = (Node){.val = e, .depth = depth};
+        kids->len += 1;
     }
 
     if ( syntax_depth == DEPTH ) { return; }
@@ -145,10 +139,10 @@ void populate_kids(LambExpr* e, int depth, Fillers kids, int syntax_depth)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  2.1. Targetful Case  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-void intersect_to(Fillers const* as, Fillers const* bs, Fillers* shared);
-void copy_to(Fillers const* as, Fillers* shared);
+void intersect_to(Nodes const* as, Nodes const* bs, Nodes* shared);
+void copy_to(Nodes const* as, Nodes* shared);
 
-bool cull_sites(LambExpr* e, int depth, Fillers* sites, int syntax_depth)
+bool cull_sites(LambExpr* e, int depth, Nodes* sites, int syntax_depth)
     /*  If e has targets, populate /sites/ with the set of S's and return
         /true/.  Otherwise, erase /sites/ and return /false/.
     */
@@ -165,8 +159,8 @@ bool cull_sites(LambExpr* e, int depth, Fillers* sites, int syntax_depth)
                 has_target |= cull_sites(e->BOD, depth+1, sites, syntax_depth+1);
                 break; 
             case EVAL: {
-                Fillers as;
-                Fillers bs;
+                Nodes as;
+                Nodes bs;
                 bool a_has_target = cull_sites(e->FUN, depth, &as, syntax_depth+1);
                 bool b_has_target = cull_sites(e->ARG, depth, &bs, syntax_depth+1);
                 if ( a_has_target && b_has_target ) { intersect_to(&as, &bs, sites); }
@@ -180,7 +174,7 @@ bool cull_sites(LambExpr* e, int depth, Fillers* sites, int syntax_depth)
     if ( ! has_target ) {
         sites->len = 0;
     } else if ( is_replaceable && syntax_depth != 0 ) {
-        sites->arr[sites->len] = {.val = e, .depth = depth}; 
+        sites->arr[sites->len] = (Node){.val = e, .depth = depth}; 
         sites->len += 1;
         has_target |= true;
     }
@@ -191,21 +185,21 @@ bool cull_sites(LambExpr* e, int depth, Fillers* sites, int syntax_depth)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  2.2. Helpers  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-void copy_to(Fillers const* as, Fillers* shared)
+void copy_to(Nodes const* as, Nodes* shared)
 {
     for ( int i=0; i != as->len; ++i ) {
-        shared.arr[shared.len] = as->arr[i]; 
-        shared.len += 1;
+        shared->arr[shared->len] = as->arr[i]; 
+        shared->len += 1;
     }
 }
 
-void intersect_to(Fillers const* as, Fillers const* bs, Fillers* shared)
+void intersect_to(Nodes const* as, Nodes const* bs, Nodes* shared)
 {
-    for ( int i=0; i != as->len; ++i ) {        Filler a = as->arr[i]; 
-        for ( int j=0; j != bs->len; ++j ) {    Filler b = bs->arr[j]; 
-            if ( same_expr(a.val, a.depth, b.val, b.depth) ) { continue; }
-            shared.arr[shared.len] = a; 
-            shared.len += 1;
+    for ( int i=0; i != as->len; ++i ) {
+        for ( int j=0; j != bs->len; ++j ) {
+            if ( same_node(as->arr[i], bs->arr[j]) ) { continue; }
+            shared->arr[shared->len] = as->arr[i]; 
+            shared->len += 1;
             break;
         }
     }

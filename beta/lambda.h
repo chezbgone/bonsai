@@ -39,6 +39,12 @@ struct LambExpr {
     int weight;
 }; 
 
+typedef struct Node Node;
+struct Node {
+    LambExpr const* val;
+    int depth;
+};
+
 /*===========================================================================*/
 /*====  1. CONSTRUCTORS AND DESTRUCTORS  ====================================*/
 /*===========================================================================*/
@@ -54,7 +60,8 @@ void free_expr(LambExpr* e);
 /*====  2. BASIC OPERATIONS  ================================================*/
 /*===========================================================================*/
 
-bool same_expr(LambExpr const* lhs, int l_depth, LambExpr const* rhs, int r_depth);
+bool same_node(Node lhs, Node rhs);
+bool same_expr(LambExpr const* lhs, LambExpr const* rhs);
 LambExpr* subs(LambExpr* exp, int vid, LambExpr* val, int depth);
 bool mentions_vrbl(LambExpr* e, int vid_lo, int vid_hi);
 

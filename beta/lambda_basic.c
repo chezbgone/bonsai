@@ -119,22 +119,29 @@ void free_expr(LambExpr* e)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.0. Syntactic Equality  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-bool same_expr(LambExpr const* lhs, int l_depth, LambExpr const* rhs, int r_depth)
+bool same_expr(LambExpr const* lhs, LambExpr const* rhs)
 {
-    if ( lhs->hash != rhs->hash || lhs->tag != rhs->tag ) { return false; }
-    switch ( lhs->tag ) {
-        case LEAF: return lhs->LID == rhs->LID;
+    return same_node((Node){lhs, 0}, (Node){rhs, 0});
+}
+
+bool same_node(Node left, Node rght)
+{
+    LambExpr const* lx = left.val;   int ld = left.depth;  
+    LambExpr const* rx = rght.val;   int rd = left.depth;
+    if ( lx->hash != rx->hash || lx->tag != rx->tag ) { return false; }
+    switch ( lx->tag ) {
+        case LEAF: return lx->LID == rx->LID;
         case VRBL: {
-            bool l_outer = (lhs->VID <= l_depth);
-            bool r_outer = (rhs->VID <= r_depth);
+            bool l_outer = (lx->VID <= ld);
+            bool r_outer = (rx->VID <= rd);
             return (l_outer == r_outer) && (
-                lhs->VID + (l_outer ? 0 : -l_depth) == 
-                rhs->VID + (r_outer ? 0 : -r_depth)
+                lx->VID + (l_outer ? 0 : -ld) == 
+                rx->VID + (r_outer ? 0 : -rd)
             );
         }
-        case ABST: return same_expr(lhs->BOD, l_depth+1, rhs->BOD, r_depth+1);
-        case EVAL: return same_expr(lhs->FUN, l_depth  , rhs->FUN, r_depth  ) &&
-                          same_expr(lhs->ARG, l_depth  , rhs->ARG, r_depth  );
+        case ABST: return same_node((Node){lx->BOD, ld+1}, (Node){rx->BOD, rd+1});
+        case EVAL: return same_node((Node){lx->FUN, ld  }, (Node){rx->FUN, rd  }) &&
+                          same_node((Node){lx->ARG, ld  }, (Node){rx->ARG, rd  });
     }
 }
 

@@ -39,7 +39,7 @@ void free_table(CTable* ct)
 {
     for ( int i=0; i != ct->nb_bins; ++i ) { free_list(&(ct->arr[i])); }
     free(ct->arr);
-    *ct = {.arr = NULL, .nb_bins = 0, .nb_elts = 0};
+    *ct = (CTable){.arr = NULL, .nb_bins = 0, .nb_elts = 0};
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -56,25 +56,29 @@ LambExpr* best_concept(CTable* ct)
             best = *cr;
         }
     }
-    returb best.bod;
+    return best.bod;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.2. Update  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+void expand_table(CTable* ct);
+
 /*----------------  1.2.0. update  ------------------------------------------*/
 
-void update_table(CTable* ct, LambExpr* d_score)
+void update_table(CTable* ct, LambExpr* bod, int d_score)
 {
+    expand_table(ct);
+
     CList* cl = &(ct->arr[ bod->hash % ct->nb_bins ]);
     CRecord* cr = find_in_list(cl, bod); 
-    if ( cr == NULL ) { cr = insert_into_table(cl, bod); }
+    if ( cr == NULL ) { cr = insert_into_list(cl, bod); }
     cr->score += d_score;
 }
 
 /*----------------  1.2.0. private insertion helper  ------------------------*/
 
-void insert_into_table(CTable* ct, LambExpr* bod);
+void expand_table(CTable* ct)
 {
     if ( ! ( 3 * ct->nb_elts < ct->nb_bins ) ) { return; }
 
@@ -120,7 +124,7 @@ CRecord* find_in_list(CList* cl, LambExpr* bod)
 
 void init_list(CList* cl)
 {
-    *cl = {.arr=NULL, .cap=0, .len=0};
+    *cl = (CList){.arr=NULL, .cap=0, .len=0};
 }
 
 CRecord* insert_into_list(CList* cl, LambExpr* bod)
@@ -143,7 +147,7 @@ CRecord* insert_into_list(CList* cl, LambExpr* bod)
 void wipe_list(CList* cl)
 {
     free(cl->arr);
-    *cl = {.arr = NULL, .cap=0, .len=0};
+    *cl = (CList){.arr = NULL, .cap=0, .len=0};
 }
 
 void free_list(CList* cl)
