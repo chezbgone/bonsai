@@ -28,19 +28,19 @@ void main()
 
 void test_eval()
 {
-    LambExpr* v0 = vrbl_expr(0);
-    LambExpr* v1 = vrbl_expr(1);
+    LambExpr const* v0 = vrbl_expr(0);
+    LambExpr const* v1 = vrbl_expr(1);
 
-    LambExpr* l0 = leaf_expr(0);
-    LambExpr* l1 = leaf_expr(1);
-    LambExpr* l2 = leaf_expr(2);
-    LambExpr* l3 = leaf_expr(3);
+    LambExpr const* l0 = leaf_expr(0);
+    LambExpr const* l1 = leaf_expr(1);
+    LambExpr const* l2 = leaf_expr(2);
+    LambExpr const* l3 = leaf_expr(3);
 
-    LambExpr* e0 = eval_expr(l0, l1);
-    LambExpr* e1 = eval_expr(e0, l2);
+    LambExpr const* e0 = eval_expr(l0, l1);
+    LambExpr const* e1 = eval_expr(e0, l2);
 
-    LambExpr* e2 = eval_expr(l3, e1);
-    LambExpr* e3 = eval_expr(e2, e1);
+    LambExpr const* e2 = eval_expr(l3, e1);
+    LambExpr const* e3 = eval_expr(e2, e1);
 
     CTable ct;
 

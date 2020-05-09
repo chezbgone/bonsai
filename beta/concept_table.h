@@ -16,7 +16,7 @@
 
 typedef struct CRecord CRecord;
 struct CRecord {
-    LambExpr* bod;
+    LambExpr const* bod;
     int score; 
 };
 
@@ -40,8 +40,8 @@ struct CTable {
 
 void init_table(CTable* ct);
 void free_table(CTable* ct);
-void update_table(CTable* ct, LambExpr* bod, int d_score);
-LambExpr* best_concept(CTable* ct);
+void update_table(CTable* ct, LambExpr const* bod, int d_score);
+LambExpr const* best_concept(CTable* ct);
 
 void print_table(CTable const* ct, char leaf_names[][16]);
 

@@ -10,14 +10,51 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include"lambda.h"
 #include "concept_table.h"
 #include "extract.h"
-
+#include "lambda.h"
 
 /*===========================================================================*/
-/*====  0. TEMPORARY STRUCTURES  ============================================*/
+/*====  0. REWRITE  =========================================================*/
 /*===========================================================================*/
+
+bool matches_head(LambExpr const* e, LambExpr const* concept, int depth, Node** val) 
+{
+    if ( concept->tag == VRBL && concept->VID == depth ) {
+        Node new_val = {.val=e, .depth=depth};
+        if ( *val == NULL ) { **val = new_val; return true; }
+        else                { return same_node(**val, new_val); }
+    }
+
+    if ( e->tag != concept->tag ) { return false; }
+
+    switch ( e->tag ) {
+        case LEAF: return e->LID == concept->LID; 
+        case VRBL: return e->VID == concept->VID + (e->VID < depth ? 0 : -1);
+        case ABST: return matches_head(e->BOD, concept->BOD, depth+1, val);
+        case EVAL: return matches_head(e->FUN, concept->FUN, depth  , val) && 
+                          matches_head(e->ARG, concept->ARG, depth  , val);
+    }
+}
+
+LambExpr const* rewrite_given(LambExpr const* e, LambExpr const* concept)
+{
+    Node* val;
+    bool can_sub = matches_head(e, concept, 0, &val);
+    int savings = e->weight - (concept->weight + val->val->weight + 2);
+    if ( can_sub && 0 < savings ) {
+        // TODO: val's variables need to decrease by val->depth !! 
+        return eval_expr(abst_expr(concept), val->val); 
+    }
+
+    switch ( e->tag ) {
+        case LEAF: return e; 
+        case VRBL: return e; 
+        case ABST: return abst_expr(rewrite_given(e->BOD, concept)); 
+        case EVAL: return eval_expr(rewrite_given(e->FUN, concept),
+                                    rewrite_given(e->ARG, concept));
+    }
+}
 
 /*===========================================================================*/
 /*====  1. EXTRACTION  ======================================================*/
@@ -32,11 +69,11 @@ struct Nodes {
     int len;
 }; 
 
-bool cull_sites(LambExpr* e, int depth, Nodes* sites, int syntax_depth);
-void populate_kids(LambExpr* e, int depth, Nodes* kids, int syntax_depth);
-LambExpr* bod_from(LambExpr* e, int depth, Node val);
+bool cull_sites(LambExpr const* e, int depth, Nodes* sites, int syntax_depth);
+void populate_kids(LambExpr const* e, int depth, Nodes* kids, int syntax_depth);
+LambExpr const* bod_from(LambExpr const* e, int depth, Node val);
 
-void extract_to(LambExpr* e, CTable* ct)
+void extract_to(LambExpr const* e, CTable* ct)
 {
     Nodes sites;
     bool has_target = cull_sites(e, 0, &sites, 0);
@@ -49,7 +86,7 @@ void extract_to(LambExpr* e, CTable* ct)
     int nb_occurences, d_score;
     for ( int i=0; i != sites.len; ++i ) {
         Node val = sites.arr[i];
-        LambExpr* bod = bod_from(e, 0, val); 
+        LambExpr const* bod = bod_from(e, 0, val); 
         d_score = e->weight - (val.val->weight + 2);
         update_table(ct, bod, d_score);
     }
@@ -66,7 +103,7 @@ void extract_to(LambExpr* e, CTable* ct)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.1. Helper: Perform Greedy Inverse Beta Substitution  ~~~~~~~~*/
 
-LambExpr* bod_from(LambExpr* e, int depth, Node val)
+LambExpr const* bod_from(LambExpr const* e, int depth, Node val)
 {
     if ( same_node((Node){e, depth}, val) ) { return vrbl_expr(0); }
     switch ( e->tag ) {
@@ -128,7 +165,7 @@ LambExpr* bod_from(LambExpr* e, int depth, Node val)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  2.0. Targetless Case  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-void populate_kids(LambExpr* e, int depth, Nodes* kids, int syntax_depth)
+void populate_kids(LambExpr const* e, int depth, Nodes* kids, int syntax_depth)
     /*  Assuming /e/ contains no targets, populate /sites/ with the set of S's.
     */
 {
@@ -156,7 +193,7 @@ void populate_kids(LambExpr* e, int depth, Nodes* kids, int syntax_depth)
 void intersect_to(Nodes const* as, Nodes const* bs, Nodes* shared);
 void copy_to(Nodes const* as, Nodes* shared);
 
-bool cull_sites(LambExpr* e, int depth, Nodes* sites, int syntax_depth)
+bool cull_sites(LambExpr const* e, int depth, Nodes* sites, int syntax_depth)
     /*  If e has targets, populate /sites/ with the set of S's and return
         /true/.  Otherwise, erase /sites/ and return /false/.
     */
