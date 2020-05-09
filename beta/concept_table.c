@@ -37,8 +37,10 @@ void insert_into_table(CTable* ct, LambExpr* bod);
 
 void init_table(CTable* ct)
 {
-    ct->nb_bins = 256;
+    ct->nb_bins = 16;
+    ct->nb_elts = 0;
     ct->arr = malloc(sizeof(CList) * ct->nb_bins);
+    for ( int i=0; i != ct->nb_bins; ++i ) { init_list(&(ct->arr[i])); }
 }
 
 void free_table(CTable* ct)
@@ -91,7 +93,7 @@ void expand_table(CTable* ct);
 void update_table(CTable* ct, LambExpr* bod, int d_score)
 {
     // TODO: expand table!
-    //expand_table(ct);
+    expand_table(ct);
 
     CList* cl = &(ct->arr[ MOD(bod->hash, ct->nb_bins) ]);
     printf("    looking for ");  print_expr(bod, NULL); printf("; ");
@@ -111,9 +113,12 @@ void update_table(CTable* ct, LambExpr* bod, int d_score)
 
 void expand_table(CTable* ct)
 {
-    if ( ! ( 3 * ct->nb_elts < ct->nb_bins ) ) { return; }
+    if ( 3 * ct->nb_elts < ct->nb_bins ) { return; }
 
     int new_nb_bins = 3*ct->nb_bins + 1;
+
+    printf("expanding {%d}%d->%d...\n", ct->nb_elts, ct->nb_bins, new_nb_bins);
+
     CList* new_arr = malloc(sizeof(CList) * new_nb_bins);
     for ( int i=0; i != new_nb_bins; ++i ) {
         init_list(&(new_arr[i]));
@@ -123,10 +128,7 @@ void expand_table(CTable* ct)
         for ( int j=0; j != cl->len; ++j ) {
             CRecord* cr = &(cl->arr[j]); 
             CList* new_cl = &(new_arr[ MOD(cr->bod->hash, new_nb_bins) ]);
-            CRecord* new_cr = find_in_list(new_cl, cr->bod); 
-            if ( new_cr == NULL ) {
-                new_cr = insert_into_list(new_cl, cr->bod);
-            }
+            CRecord* new_cr = insert_into_list(new_cl, cr->bod);
             new_cr->score = cr->score;
         }
         wipe_list(cl);
