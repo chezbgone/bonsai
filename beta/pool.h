@@ -47,14 +47,16 @@ typedef struct BlockHeader BlockHeader;
 struct PoolHeader {
     PoolHeader* next_pool;  
     PoolHeader* prev_pool;  
+    BlockHeader* active;
 };
 
-#define WORDS_PER_BLOCK_HEADER 6
+#define WORDS_PER_BLOCK_HEADER 7
 struct BlockHeader {
     /* The following sizes include the size of the block header, not just    * 
      * the size of the data.                                                 */ 
     long size;
     long capacity;
+    PoolHeader* owner;
     BlockHeader* prev_block; 
     BlockHeader* next_block;
     BlockHeader* prev_avail; /* pointer to block with unused space */ 
