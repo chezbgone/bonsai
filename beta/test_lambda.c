@@ -22,7 +22,8 @@ void test_eval();
 
 void main()
 {
-    test_eval();
+    init_lamb_expr_pool(); test_eval();
+    free_lamb_expr_pool();
 }
 
 void test_eval()

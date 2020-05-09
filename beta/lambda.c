@@ -10,6 +10,12 @@
 
 #include "colors.h"
 #include "lambda.h"
+#include "pool.h"
+
+PoolHeader* LAMB_EXPR_POOL;  
+
+void init_lamb_expr_pool() { LAMB_EXPR_POOL = make_pool(NULL); }
+void free_lamb_expr_pool() { print_pool(LAMB_EXPR_POOL); free_pool(LAMB_EXPR_POOL); } 
 
 /*===========================================================================*/
 /*====  0. CONSTRUCTORS AND DESTRUCTORS  ====================================*/
@@ -88,7 +94,7 @@ int weight_step(LambExpr const* e)
 
 LambExpr* make(LambExpr val)
 {
-    LambExpr* e = malloc(sizeof(LambExpr)); 
+    LambExpr* e = MOO_ALLOC(LAMB_EXPR_POOL, LambExpr, 1); 
     *e = val;
     e->hash = hash_step(e);
     e->height = height_step(e);
@@ -101,15 +107,15 @@ LambExpr* make(LambExpr val)
 
 void free_expr(LambExpr* e)
 {
-    /* TODO: below assumes no multi-parent children.  FIX THIS!!  */
-    switch (e->tag) {
-        case LEAF: break;
-        case VRBL: break; 
-        case ABST: free_expr(e->BOD); break;
-        case EVAL: free_expr(e->FUN);              
-                   free_expr(e->ARG); break;
-    }
-    free(e);
+    ///* TODO: below assumes no multi-parent children.  FIX THIS!!  */
+    //switch (e->tag) {
+    //    case LEAF: break;
+    //    case VRBL: break; 
+    //    case ABST: free_expr(e->BOD); break;
+    //    case EVAL: free_expr(e->FUN);              
+    //               free_expr(e->ARG); break;
+    //}
+    //free(e);
 }
 
 /*===========================================================================*/

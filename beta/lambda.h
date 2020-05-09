@@ -49,6 +49,9 @@ struct Node {
 /*====  1. CONSTRUCTORS AND DESTRUCTORS  ====================================*/
 /*===========================================================================*/
 
+void init_lamb_expr_pool();
+void free_lamb_expr_pool();
+
 LambExpr* leaf_expr(int lid);
 LambExpr* vrbl_expr(int vid);
 LambExpr* abst_expr(LambExpr* bod);

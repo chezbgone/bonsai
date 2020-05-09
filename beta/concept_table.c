@@ -8,13 +8,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "lambda.h"
 #include "concept_table.h"
+#include "lambda.h"
 
 /*  On /MOD/: for positive /b/, /a % b/ can be negative but our /MOD(a, b)/
     will always be non-negative.  Thus, we use /MOD/ for hashing.
 */
 #define MOD(a, b) ( (((a)%(b))+(b)) % (b) ) 
+
+#define START_NB_BINS 16 
+
 
 /*===========================================================================*/
 /*====  0. DECLARE LIST METHODS (PRIVATE TO THIS FILE)  =====================*/
@@ -37,7 +40,7 @@ void insert_into_table(CTable* ct, LambExpr* bod);
 
 void init_table(CTable* ct)
 {
-    ct->nb_bins = 16;
+    ct->nb_bins = START_NB_BINS;
     ct->nb_elts = 0;
     ct->arr = malloc(sizeof(CList) * ct->nb_bins);
     for ( int i=0; i != ct->nb_bins; ++i ) { init_list(&(ct->arr[i])); }
@@ -92,7 +95,6 @@ void expand_table(CTable* ct);
 
 void update_table(CTable* ct, LambExpr* bod, int d_score)
 {
-    // TODO: expand table!
     expand_table(ct);
 
     CList* cl = &(ct->arr[ MOD(bod->hash, ct->nb_bins) ]);
