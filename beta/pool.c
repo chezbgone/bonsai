@@ -16,6 +16,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "colors.h"
 #include "pool.h"
 
 long available_words(BlockHeader* b);
@@ -214,9 +216,9 @@ void print_pool(PoolHeader* p)
         while ( cur != NULL ) {
 
             /*--------  2.1.0. print block, colored by whether it is full  --*/
-            printf( cur->size==cur->capacity ? "\033[32m" : "\033[33m");
+            if ( cur->size == cur->capacity )  { lime(); } else { gold(); }
             printf("[%d/%d]", (int) cur->size, (int) cur->capacity);
-            printf("\033[36m");
+            defc();
             cur = cur->next_block;
 
         } 

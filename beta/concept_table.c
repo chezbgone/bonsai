@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "colors.h"
 #include "concept_table.h"
 #include "lambda.h"
 
@@ -25,7 +26,6 @@
 
 void init_list(CList* cl);
 void wipe_list(CList* cl); /* shallow */
-void free_list(CList* cl); /* deep */
 CRecord* insert_into_list(CList* cl, LambExpr* bod);
 CRecord* find_in_list(CList* cl, LambExpr* bod);
 
@@ -46,9 +46,9 @@ void init_table(CTable* ct)
     for ( int i=0; i != ct->nb_bins; ++i ) { init_list(&(ct->arr[i])); }
 }
 
-void free_table(CTable* ct)
+void wipe_table(CTable* ct)
 {
-    for ( int i=0; i != ct->nb_bins; ++i ) { free_list(&(ct->arr[i])); }
+    for ( int i=0; i != ct->nb_bins; ++i ) { wipe_list(&(ct->arr[i])); }
     free(ct->arr);
     *ct = (CTable){.arr = NULL, .nb_bins = 0, .nb_elts = 0};
 }
@@ -98,15 +98,15 @@ void update_table(CTable* ct, LambExpr* bod, int d_score)
     expand_table(ct);
 
     CList* cl = &(ct->arr[ MOD(bod->hash, ct->nb_bins) ]);
-    printf("    looking for ");  print_expr(bod, NULL); printf("; ");
+    //printf("    looking for ");  print_expr(bod, NULL); printf("; ");
     CRecord* cr = find_in_list(cl, bod); 
     if ( cr == NULL ) {
-        printf("not found; ");
+        //printf("not found; ");
         cr = insert_into_list(cl, bod);
         ct->nb_elts += 1;
-        printf("inserted!\n");
+        //printf("inserted!\n");
     } else {
-        printf("found!\n");
+        //printf("found!\n");
     }
     cr->score += d_score;
 }
@@ -119,7 +119,11 @@ void expand_table(CTable* ct)
 
     int new_nb_bins = 3*ct->nb_bins + 1;
 
-    printf("expanding {%d}%d->%d...\n", ct->nb_elts, ct->nb_bins, new_nb_bins);
+    lava(); printf("expand: "); defc();
+    lime(); printf("%3d ", ct->nb_bins); defc();
+    printf("bins -> ");
+    lime(); printf("%3d ", new_nb_bins); defc();
+    printf("bins...\n");
 
     CList* new_arr = malloc(sizeof(CList) * new_nb_bins);
     for ( int i=0; i != new_nb_bins; ++i ) {
@@ -185,11 +189,3 @@ void wipe_list(CList* cl)
     free(cl->arr);
     *cl = (CList){.arr = NULL, .cap=0, .len=0};
 }
-
-void free_list(CList* cl)
-{
-    for ( int i=0; i != cl->len; ++i ) { free_expr(cl->arr[i].bod); }
-    wipe_list(cl);
-}
-
-

@@ -209,7 +209,7 @@ bool mentions_vrbl(LambExpr* e, int vid_lo, int vid_hi)
 void print_expr(LambExpr* e, char leaf_nms[][16])
 {
     switch ( e->tag ) {
-        case LEAF: crim(); { 
+        case LEAF: pink(); { 
             if ( leaf_nms == NULL) { printf("f%d", e->LID); }
             else { printf("%s", leaf_nms[e->LID]); }
         } defc(); break;

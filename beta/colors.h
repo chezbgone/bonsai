@@ -12,9 +12,13 @@
 ======  0. COLORS  ============================================================
 =============================================================================*/
 
-void skyb();
-void crim();
+void pink();
+void lava();
+void gold();
 void lime();
+void teal();
+void purp();
+
 void defc();
 
 #endif//COLORS_H

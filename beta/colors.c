@@ -14,9 +14,13 @@
 ======  0. COLORS  ============================================================
 =============================================================================*/
 
-void skyb() { printf("\033[36m"); }
-void crim() { printf("\033[31m"); }
-void lime() { printf("\033[32m"); }
-void defc() { skyb();             }
+void pink() { printf("\033[38;5;212m"); }
+void lava() { printf("\033[38;5;202m"); }
+void gold() { printf("\033[38;5;220m"); }
+void lime() { printf("\033[38;5;34m"); }
+void teal() { printf("\033[38;5;44m"); }
+void purp() { printf("\033[38;5;91m"); }
+
+void defc() { teal();             }
 
 #endif//COLORS_H

@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "colors.h"
 #include "concept_table.h"
 #include "extract.h"
 #include "lambda.h"
@@ -79,9 +80,10 @@ void extract_to(LambExpr* e, CTable* ct)
     bool has_target = cull_sites(e, 0, &sites, 0);
     if ( ! has_target ) { sites.len = 0; populate_kids(e, 0, &sites, 0); }
 
-    printf("extracting ");
+    purp(); printf("extract: "); defc(); 
+    printf("{weight "); lime(); printf("%3d", e->weight); defc(); printf("} ");
     print_expr(e, NULL);
-    printf(" {weight %d}\n", e->weight);
+    printf("\n");
 
     int nb_occurences, d_score;
     for ( int i=0; i != sites.len; ++i ) {

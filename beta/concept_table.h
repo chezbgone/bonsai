@@ -39,7 +39,7 @@ struct CTable {
 /*===========================================================================*/
 
 void init_table(CTable* ct);
-void free_table(CTable* ct);
+void wipe_table(CTable* ct); /* shallow destroy; don't free lambdas */
 void update_table(CTable* ct, LambExpr* bod, int d_score);
 LambExpr* best_concept(CTable* ct);
 

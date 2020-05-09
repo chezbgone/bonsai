@@ -48,6 +48,9 @@ void test_eval()
     printf("\nINIT:\n");    init_table(&ct);
     printf("\nEXTRACT:\n"); extract_to(e3, &ct);
     printf("\nPRINT:\n");   print_table(&ct, NULL);
-    //printf("\nFREE:\n");    free_table(&ct);
+
+    //LambExpr* rewrite_given(LambExpr* e, LambExpr* concept);
+
+    printf("\nWIPE:\n");    wipe_table(&ct);
     printf("\nDONE!\n");
 }
