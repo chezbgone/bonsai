@@ -19,12 +19,13 @@
 /*====  0. REWRITE  =========================================================*/
 /*===========================================================================*/
 
-bool matches_head(LambExpr* e, LambExpr* concept, int depth, Node** val) 
+bool matches_head(LambExpr* e, LambExpr* concept, int depth, Node* val) 
 {
+    
     if ( concept->tag == VRBL && concept->VID == depth ) {
         Node new_val = {.val=e, .depth=depth};
-        if ( *val == NULL ) { **val = new_val; return true; }
-        else                { return same_node(**val, new_val); }
+        if ( val->val ==  NULL ) { *val = new_val; return true; }
+        else                     { return same_node(*val, new_val); }
     }
 
     if ( e->tag != concept->tag ) { return false; }
@@ -40,20 +41,23 @@ bool matches_head(LambExpr* e, LambExpr* concept, int depth, Node** val)
 
 LambExpr* rewrite_given(LambExpr* e, LambExpr* concept)
 {
-    Node* val;
-    bool can_sub = matches_head(e, concept, 0, &val);
-    int savings = e->weight - (concept->weight + val->val->weight + 2);
-    if ( can_sub && 0 < savings ) {
-        // TODO: val's variables need to decrease by val->depth !! 
-        return eval_expr(abst_expr(concept), val->val); 
+    Node val = {.val = NULL, .depth = -1};
+    if ( matches_head(e, concept, 0, &val) ) {
+        int savings = e->weight - (concept->weight + val.val->weight + 2);
+        if (0 < savings) {
+            // TODO: val's variables need to decrease by val->depth !! 
+            return eval_expr(abst_expr(concept), val.val); 
+        }
     }
 
+    //printf("\n[[    "); print_expr(e, NULL); printf("\n]]");
+
     switch ( e->tag ) {
-        case LEAF: return e; 
-        case VRBL: return e; 
-        case ABST: return abst_expr(rewrite_given(e->BOD, concept)); 
-        case EVAL: return eval_expr(rewrite_given(e->FUN, concept),
-                                    rewrite_given(e->ARG, concept));
+        case LEAF: printf("l\n"); return e; 
+        case VRBL: printf("v\n"); return e; 
+        case ABST: printf("a\n"); return abst_expr(rewrite_given(e->BOD, concept)); 
+        case EVAL: printf("e\n"); return eval_expr(rewrite_given(e->FUN, concept),
+                                                   rewrite_given(e->ARG, concept));
     }
 }
 

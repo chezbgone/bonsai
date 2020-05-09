@@ -44,13 +44,17 @@ void test_eval()
 
     CTable ct;
 
-    printf("\nEXPR:\n");    print_expr(e3, NULL);
-    printf("\nINIT:\n");    init_table(&ct);
-    printf("\nEXTRACT:\n"); extract_to(e3, &ct);
-    printf("\nPRINT:\n");   print_table(&ct, NULL);
+    printf("EXPR:\n");    print_expr(e3, NULL);   printf("\n");
 
-    //LambExpr* rewrite_given(LambExpr* e, LambExpr* concept);
+    LambExpr* c = eval_expr(eval_expr(l3, v0), v0);  
+    LambExpr* hey = rewrite_given(e3, c); 
+    print_expr(hey, NULL);
 
-    printf("\nWIPE:\n");    wipe_table(&ct);
+    //printf("\nINIT:\n");    init_table(&ct);
+    //printf("\nEXTRACT:\n"); extract_to(e3, &ct);
+    //printf("\n:-)\n");
+
+    //printf("\nPRINT:\n");   print_table(&ct, NULL);
+    //printf("\nWIPE:\n");    wipe_table(&ct);
     printf("\nDONE!\n");
 }
