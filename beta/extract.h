@@ -18,7 +18,7 @@
 
 #define DEPTH 3 
 
-void extract_to(LambExpr const* e, CTable* ct);
-LambExpr const* rewrite_given(LambExpr const* e, LambExpr const* concept);
+void extract_to(LambExpr* e, CTable* ct);
+LambExpr* rewrite_given(LambExpr* e, LambExpr* concept);
 
 #endif//EXTRACT_H

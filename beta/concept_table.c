@@ -26,14 +26,14 @@
 void init_list(CList* cl);
 void wipe_list(CList* cl); /* shallow */
 void free_list(CList* cl); /* deep */
-CRecord* insert_into_list(CList* cl, LambExpr const* bod);
-CRecord* find_in_list(CList* cl, LambExpr const* bod);
+CRecord* insert_into_list(CList* cl, LambExpr* bod);
+CRecord* find_in_list(CList* cl, LambExpr* bod);
 
 /*===========================================================================*/
 /*====  1. TABLE METHODS  ===================================================*/
 /*===========================================================================*/
 
-void insert_into_table(CTable* ct, LambExpr const* bod);
+void insert_into_table(CTable* ct, LambExpr* bod);
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.0. Constructor and Destructor  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -56,7 +56,7 @@ void free_table(CTable* ct)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.1. Extract  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-LambExpr const* best_concept(CTable* ct)
+LambExpr* best_concept(CTable* ct)
 {
     CRecord best = {.bod=NULL, .score=-1};
     for ( int i=0; i != ct->nb_bins; ++i ) {
@@ -93,7 +93,7 @@ void expand_table(CTable* ct);
 
 /*----------------  1.2.0. update  ------------------------------------------*/
 
-void update_table(CTable* ct, LambExpr const* bod, int d_score)
+void update_table(CTable* ct, LambExpr* bod, int d_score)
 {
     expand_table(ct);
 
@@ -147,7 +147,7 @@ void expand_table(CTable* ct)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  2.0. Search  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-CRecord* find_in_list(CList* cl, LambExpr const* bod)
+CRecord* find_in_list(CList* cl, LambExpr* bod)
 {
     for ( int i=0; i != cl->len; ++i ) {
         if ( same_expr(bod, cl->arr[i].bod) ) { return &(cl->arr[i]); }
@@ -163,7 +163,7 @@ void init_list(CList* cl)
     *cl = (CList){.arr=NULL, .cap=0, .len=0};
 }
 
-CRecord* insert_into_list(CList* cl, LambExpr const* bod)
+CRecord* insert_into_list(CList* cl, LambExpr* bod)
 {
     while ( ! ( cl->len < cl->cap ) ) {
         int new_cap = (3*cl->cap)/2 + 1;

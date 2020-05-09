@@ -21,32 +21,32 @@ void free_lamb_expr_pool() { print_pool(LAMB_EXPR_POOL); free_pool(LAMB_EXPR_POO
 /*====  0. CONSTRUCTORS AND DESTRUCTORS  ====================================*/
 /*===========================================================================*/
 
-int memoize_hash(LambExpr const* e);
-int memoize_height(LambExpr const* e);
-LambExpr const* make(LambExpr val);
+int memoize_hash(LambExpr* e);
+int memoize_height(LambExpr* e);
+LambExpr* make(LambExpr val);
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  0.0. Provide Tree Structure  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-LambExpr const* leaf_expr(int lid)
+LambExpr* leaf_expr(int lid)
 {
     LambExpr e = {.tag=LEAF, .data={.leaf={.idx=lid}}};
     return make(e);
 }
 
-LambExpr const* vrbl_expr(int vid)
+LambExpr* vrbl_expr(int vid)
 {
     LambExpr e = {.tag=VRBL, .data={.vrbl={.idx=vid}}};
     return make(e);
 }
 
-LambExpr const* abst_expr(LambExpr const* bod)
+LambExpr* abst_expr(LambExpr* bod)
 {
     LambExpr e = {.tag=ABST, .data={.abst={.bod=bod}}};
     return make(e);
 }
 
-LambExpr const* eval_expr(LambExpr const* fun, LambExpr const* arg)
+LambExpr* eval_expr(LambExpr* fun, LambExpr* arg)
 {
     LambExpr e = {.tag=EVAL, .data={.eval={.fun=fun, .arg=arg}}};
     return make(e);
@@ -61,7 +61,7 @@ LambExpr const* eval_expr(LambExpr const* fun, LambExpr const* arg)
 
 #define MAX(X,Y) ((X)<(Y) ? (Y) : (X))
 
-int hash_step(LambExpr const* e)
+int hash_step(LambExpr* e)
 {
     switch ( e->tag ) {
         case LEAF: return (e->LID + 1)<<8;
@@ -72,7 +72,7 @@ int hash_step(LambExpr const* e)
     }
 }
 
-int height_step(LambExpr const* e) 
+int height_step(LambExpr* e) 
 {
     switch ( e->tag ) {
         case LEAF: return 0;
@@ -82,7 +82,7 @@ int height_step(LambExpr const* e)
     }
 }
 
-int weight_step(LambExpr const* e) 
+int weight_step(LambExpr* e) 
 {
     switch ( e->tag ) {
         case LEAF: return 1;
@@ -92,9 +92,9 @@ int weight_step(LambExpr const* e)
     }
 }
 
-LambExpr const* make(LambExpr val)
+LambExpr* make(LambExpr val)
 {
-    LambExpr* e = MOO_ALLOC(LAMB_EXPR_POOL, LambExpr, 1); 
+    struct LAMB_EXPR_MUT* e = MOO_ALLOC(LAMB_EXPR_POOL, LambExpr, 1); 
     *e = val;
     e->hash = hash_step(e);
     e->height = height_step(e);
@@ -105,7 +105,7 @@ LambExpr const* make(LambExpr val)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  0.2. Destructor  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-void free_expr(LambExpr const* e)
+void free_expr(LambExpr* e)
 {
     ///* TODO: below assumes no multi-parent children.  FIX THIS!!  */
     //switch (e->tag) {
@@ -125,15 +125,15 @@ void free_expr(LambExpr const* e)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.0. Syntactic Equality  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-bool same_expr(LambExpr const* lhs, LambExpr const* rhs)
+bool same_expr(LambExpr* lhs, LambExpr* rhs)
 {
     return same_node((Node){lhs, 0}, (Node){rhs, 0});
 }
 
 bool same_node(Node left, Node rght)
 {
-    LambExpr const* lx = left.val;   int ld = left.depth;  
-    LambExpr const* rx = rght.val;   int rd = left.depth;
+    LambExpr* lx = left.val;   int ld = left.depth;  
+    LambExpr* rx = rght.val;   int rd = left.depth;
     if ( lx->hash != rx->hash || lx->tag != rx->tag ) { return false; }
     switch ( lx->tag ) {
         case LEAF: return lx->LID == rx->LID;
@@ -154,11 +154,11 @@ bool same_node(Node left, Node rght)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.1. Beta Substitution  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-LambExpr const* shift(LambExpr const* e, int vid, int gap_size); 
+LambExpr* shift(LambExpr* e, int vid, int gap_size); 
 
 /*----------------  1.1.0. main loop  ---------------------------------------*/
 
-LambExpr const* subs(LambExpr const* exp, int vid, LambExpr const* val, int depth)
+LambExpr* subs(LambExpr* exp, int vid, LambExpr* val, int depth)
 {
     switch ( exp->tag ) {
         case LEAF: return exp;
@@ -171,7 +171,7 @@ LambExpr const* subs(LambExpr const* exp, int vid, LambExpr const* val, int dept
 
 /*----------------  1.1.1. beta substitution helper  ------------------------*/
 
-LambExpr const* shift(LambExpr const* e, int vid, int gap_size) 
+LambExpr* shift(LambExpr* e, int vid, int gap_size) 
     /*  /shift/: Create an expression analogous to /e/ except that references
         to outer variables (i.e. those /vid/ or more levels up) are displaced
         by /gap_size/.  For /gap_size/ positive, this creates a gap so that the
@@ -192,7 +192,7 @@ LambExpr const* shift(LambExpr const* e, int vid, int gap_size)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.2. Dependency Querying  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-bool mentions_vrbl(LambExpr const* e, int vid_lo, int vid_hi)
+bool mentions_vrbl(LambExpr* e, int vid_lo, int vid_hi)
 {
     switch ( e->tag ) {
         case LEAF: return false;
@@ -206,7 +206,7 @@ bool mentions_vrbl(LambExpr const* e, int vid_lo, int vid_hi)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.3. Display  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-void print_expr(LambExpr const* e, char leaf_nms[][16])
+void print_expr(LambExpr* e, char leaf_nms[][16])
 {
     switch ( e->tag ) {
         case LEAF: crim(); { 

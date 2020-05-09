@@ -20,13 +20,13 @@
 #define FUN data.eval.fun 
 #define ARG data.eval.arg
 
-typedef struct LambExpr LambExpr;
-struct LambExpr {
+typedef struct LAMB_EXPR_MUT const LambExpr;
+struct LAMB_EXPR_MUT {
     union {
         struct { int idx;                                  } leaf;
         struct { int idx;                                  } vrbl;
-        struct { LambExpr const* bod;                      } abst; 
-        struct { LambExpr const* fun; LambExpr const* arg; } eval; 
+        struct { LambExpr* bod;                      } abst; 
+        struct { LambExpr* fun; LambExpr* arg; } eval; 
     } data;
     enum {
         LEAF = 0, 
@@ -41,7 +41,7 @@ struct LambExpr {
 
 typedef struct Node Node;
 struct Node {
-    LambExpr const* val;
+    LambExpr* val;
     int depth;
 };
 
@@ -52,28 +52,28 @@ struct Node {
 void init_lamb_expr_pool();
 void free_lamb_expr_pool();
 
-LambExpr const* leaf_expr(int lid);
-LambExpr const* vrbl_expr(int vid);
-LambExpr const* abst_expr(LambExpr const* bod);
-LambExpr const* eval_expr(LambExpr const* fun, LambExpr const* arg);
+LambExpr* leaf_expr(int lid);
+LambExpr* vrbl_expr(int vid);
+LambExpr* abst_expr(LambExpr* bod);
+LambExpr* eval_expr(LambExpr* fun, LambExpr* arg);
 
-void free_expr(LambExpr const* e);
+void free_expr(LambExpr* e);
 
 /*===========================================================================*/
 /*====  2. BASIC OPERATIONS  ================================================*/
 /*===========================================================================*/
 
 bool same_node(Node lhs, Node rhs);
-bool same_expr(LambExpr const* lhs, LambExpr const* rhs);
-LambExpr const* subs(LambExpr const* exp, int vid, LambExpr const* val, int depth);
-bool mentions_vrbl(LambExpr const* e, int vid_lo, int vid_hi);
+bool same_expr(LambExpr* lhs, LambExpr* rhs);
+LambExpr* subs(LambExpr* exp, int vid, LambExpr* val, int depth);
+bool mentions_vrbl(LambExpr* e, int vid_lo, int vid_hi);
 
-void print_expr(LambExpr const* e, char leaf_names[][16]);
+void print_expr(LambExpr* e, char leaf_names[][16]);
 
 /*===========================================================================*/
 /*====  3. BETA REWRITES  ===================================================*/
 /*===========================================================================*/
 
-LambExpr* beta_normal(LambExpr const* e);
+LambExpr* beta_normal(LambExpr* e);
 
 #endif//LAMBDA_H
