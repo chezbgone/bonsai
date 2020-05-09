@@ -6,9 +6,15 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "lambda.h"
 #include "concept_table.h"
+
+/*  On /MOD/: for positive /b/, /a % b/ can be negative but our /MOD(a, b)/
+    will always be non-negative.  Thus, we use /MOD/ for hashing.
+*/
+#define MOD(a, b) ( (((a)%(b))+(b)) % (b) ) 
 
 /*===========================================================================*/
 /*====  0. DECLARE LIST METHODS (PRIVATE TO THIS FILE)  =====================*/
@@ -51,12 +57,28 @@ LambExpr* best_concept(CTable* ct)
     for ( int i=0; i != ct->nb_bins; ++i ) {
         CList cl = ct->arr[i];
         for ( int j=0; j != cl.len; ++j ) {
-            CRecord* cr = &(cl.arr[i]);
+            CRecord* cr = &(cl.arr[j]);
             if ( cr->score <= best.score ) { continue; }
             best = *cr;
         }
     }
     return best.bod;
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~  1.2. Display  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+void print_table(CTable const* ct, char leaf_names[][16])
+{
+    for ( int i=0; i != ct->nb_bins; ++i ) {
+        CList cl = ct->arr[i];
+        for ( int j=0; j != cl.len; ++j ) {
+            CRecord* cr = &(cl.arr[j]);
+            printf("%3d : ", cr->score);
+            print_expr(cr->bod, leaf_names);
+            printf("\n");
+        }
+    }
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -68,11 +90,20 @@ void expand_table(CTable* ct);
 
 void update_table(CTable* ct, LambExpr* bod, int d_score)
 {
-    expand_table(ct);
+    // TODO: expand table!
+    //expand_table(ct);
 
-    CList* cl = &(ct->arr[ bod->hash % ct->nb_bins ]);
+    CList* cl = &(ct->arr[ MOD(bod->hash, ct->nb_bins) ]);
+    printf("    looking for ");  print_expr(bod, NULL); printf("; ");
     CRecord* cr = find_in_list(cl, bod); 
-    if ( cr == NULL ) { cr = insert_into_list(cl, bod); }
+    if ( cr == NULL ) {
+        printf("not found; ");
+        cr = insert_into_list(cl, bod);
+        ct->nb_elts += 1;
+        printf("inserted!\n");
+    } else {
+        printf("found!\n");
+    }
     cr->score += d_score;
 }
 
@@ -91,7 +122,7 @@ void expand_table(CTable* ct)
         CList* cl = &(ct->arr[i]);
         for ( int j=0; j != cl->len; ++j ) {
             CRecord* cr = &(cl->arr[j]); 
-            CList* new_cl = &(new_arr[ cr->bod->hash % new_nb_bins ]);
+            CList* new_cl = &(new_arr[ MOD(cr->bod->hash, new_nb_bins) ]);
             CRecord* new_cr = find_in_list(new_cl, cr->bod); 
             if ( new_cr == NULL ) {
                 new_cr = insert_into_list(new_cl, cr->bod);
@@ -101,7 +132,8 @@ void expand_table(CTable* ct)
         wipe_list(cl);
     }
     free(ct->arr);
-    *ct = (CTable){.arr = new_arr, .nb_bins = new_nb_bins};
+    ct->arr = new_arr;
+    ct->nb_bins = new_nb_bins;
 }
 
 /*===========================================================================*/
@@ -136,7 +168,7 @@ CRecord* insert_into_list(CList* cl, LambExpr* bod)
         free(cl->arr); cl->arr = new_arr; 
         cl->cap = new_cap;
     } 
-    cl->arr[cl->len] = (CRecord){.bod = bod, .score=0};
+    cl->arr[cl->len] = (CRecord){.bod = bod, .score = -(1 + bod->weight)};
     cl->len += 1; 
     return &(cl->arr[cl->len-1]); 
 }

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 
 #include "lambda.h"
+#include "extract.h"
 
 char my_leaf_names[][16] = {
     "moop",
@@ -17,30 +18,35 @@ char my_leaf_names[][16] = {
     "bopp",
 };
 
-void test_two_arg();
+void test_eval();
 
 void main()
 {
-    test_two_arg();
+    test_eval();
 }
 
-void test_two_arg()
+void test_eval()
 {
-    LambExpr v0 = {.tag=VRBL, .data={.vrbl={.idx = 0 }}};
-    LambExpr v1 = {.tag=VRBL, .data={.vrbl={.idx = 1 }}};
+    LambExpr* v0 = vrbl_expr(0);
+    LambExpr* v1 = vrbl_expr(1);
 
-    LambExpr l0 = {.tag=LEAF, .data={.leaf={.idx = 0 }}};
-    LambExpr l1 = {.tag=LEAF, .data={.leaf={.idx = 1 }}};
-    LambExpr l2 = {.tag=LEAF, .data={.leaf={.idx = 2 }}};
+    LambExpr* l0 = leaf_expr(0);
+    LambExpr* l1 = leaf_expr(1);
+    LambExpr* l2 = leaf_expr(2);
+    LambExpr* l3 = leaf_expr(3);
 
-    LambExpr e0 = {.tag=EVAL, .data={.eval={.fun = &v0 , .arg = &l0 }}};
-    LambExpr e1 = {.tag=EVAL, .data={.eval={.fun = &e0 , .arg = &v1 }}};
-    LambExpr a0 = {.tag=ABST, .data={.abst={.bod = &e1              }}};
-    LambExpr a1 = {.tag=ABST, .data={.abst={.bod = &a0              }}};
+    LambExpr* e0 = eval_expr(l0, l1);
+    LambExpr* e1 = eval_expr(e0, l2);
 
-    LambExpr e2 = {.tag=EVAL, .data={.eval={.fun = &a1 , .arg = &l1 }}};
-    LambExpr e3 = {.tag=EVAL, .data={.eval={.fun = &e2 , .arg = &l2 }}};
+    LambExpr* e2 = eval_expr(l3, e1);
+    LambExpr* e3 = eval_expr(e2, e1);
 
-    printf("\nexpr:\n");    print_expr(&e3, my_leaf_names);
-    printf("\ndone!\n");
+    CTable ct;
+
+    printf("\nEXPR:\n");    print_expr(e3, NULL);
+    printf("\nINIT:\n");    init_table(&ct);
+    printf("\nEXTRACT:\n"); extract_to(e3, &ct);
+    printf("\nPRINT:\n");   print_table(&ct, NULL);
+    //printf("\nFREE:\n");    free_table(&ct);
+    printf("\nDONE!\n");
 }

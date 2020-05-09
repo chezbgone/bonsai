@@ -43,4 +43,6 @@ void free_table(CTable* ct);
 void update_table(CTable* ct, LambExpr* bod, int d_score);
 LambExpr* best_concept(CTable* ct);
 
+void print_table(CTable const* ct, char leaf_names[][16]);
+
 #endif//CONCEPT_TABLE_H
