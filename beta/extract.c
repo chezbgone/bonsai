@@ -109,7 +109,7 @@ void extract_to(LambExpr* e, CTable* ct)
 
 LambExpr* bod_from(LambExpr* e, int depth, Node val)
 {
-    if ( same_node((Node){e, depth}, val) ) { return vrbl_expr(0); }
+    if ( same_node((Node){e, depth}, val) ) { return vrbl_expr(depth); }
     switch ( e->tag ) {
         case LEAF: return e;
         case VRBL: return ( e->VID < depth ) ? e : vrbl_expr(e->VID+1);
@@ -175,7 +175,7 @@ void populate_kids(LambExpr* e, int depth, Nodes* kids, int syntax_depth)
 {
     bool is_replaceable = ( ! mentions_vrbl(e, 1, depth) );
 
-    if ( is_replaceable && syntax_depth != 0 ) {
+    if ( is_replaceable /*&& syntax_depth != 0*/ ) {
         kids->arr[kids->len] = (Node){.val = e, .depth = depth};
         kids->len += 1;
     }
@@ -231,7 +231,7 @@ bool cull_sites(LambExpr* e, int depth, Nodes* sites, int syntax_depth)
 
     if ( ! has_target ) {
         sites->len = 0;
-    } else if ( is_replaceable && syntax_depth != 0 ) {
+    } else if ( is_replaceable /*&& syntax_depth != 0*/ ) {
         sites->arr[sites->len] = (Node){.val = e, .depth = depth}; 
         sites->len += 1;
         has_target |= true;

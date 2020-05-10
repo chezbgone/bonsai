@@ -23,9 +23,9 @@
 typedef struct LAMB_EXPR_MUT const LambExpr;
 struct LAMB_EXPR_MUT {
     union {
-        struct { int idx;                                  } leaf;
-        struct { int idx;                                  } vrbl;
-        struct { LambExpr* bod;                      } abst; 
+        struct { int idx;                      } leaf;
+        struct { int idx;                      } vrbl;
+        struct { LambExpr* bod;                } abst; 
         struct { LambExpr* fun; LambExpr* arg; } eval; 
     } data;
     enum {
@@ -65,8 +65,18 @@ void free_expr(LambExpr* e);
 
 bool same_node(Node lhs, Node rhs);
 bool same_expr(LambExpr* lhs, LambExpr* rhs);
+
 LambExpr* subs(LambExpr* exp, int vid, LambExpr* val, int depth);
 bool mentions_vrbl(LambExpr* e, int vid_lo, int vid_hi);
+
+/*  /shift/: Create an expression analogous to /e/ except that references to
+    outer variables (i.e. those /vid/ or more levels up) are displaced by
+    /gap_size/.  When /gap_size/ is positive, this creates a gap so that the
+    resulting expression makes no reference to the variable /vid/ levels up
+    from /e/.  When /gap_size/ equals -1, this removes a gap, e.g. the gap
+    created upon beta-elimination of an abstraction whose body is /e/.     
+*/
+LambExpr* shift(LambExpr* e, int vid, int gap_size); 
 
 void print_expr(LambExpr* e, char leaf_names[][16]);
 

@@ -125,15 +125,27 @@ void free_expr(LambExpr* e)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.0. Syntactic Equality  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+bool same_node_inner(LambExpr* lx, int ld, LambExpr* rx, int rd);
+
 bool same_expr(LambExpr* lhs, LambExpr* rhs)
 {
-    return same_node((Node){lhs, 0}, (Node){rhs, 0});
+    return same_node_inner(lhs, 0, rhs, 0);
 }
 
 bool same_node(Node left, Node rght)
 {
-    LambExpr* lx = left.val;   int ld = left.depth;  
-    LambExpr* rx = rght.val;   int rd = left.depth;
+    bool same = same_node_inner(left.val, left.depth, rght.val, rght.depth);
+    if ( same ) { lava(); }
+    printf("[[");
+    print_expr(left.val, NULL); printf("{%d}", left.depth);
+    printf("%s", same ? " == " : " != ");
+    print_expr(rght.val, NULL); printf("{%d}", rght.depth);
+    printf("]]\n");
+    return same;
+}
+
+bool same_node_inner(LambExpr* lx, int ld, LambExpr* rx, int rd)
+{
     if ( lx->hash != rx->hash || lx->tag != rx->tag ) { return false; }
     switch ( lx->tag ) {
         case LEAF: return lx->LID == rx->LID;
@@ -145,16 +157,14 @@ bool same_node(Node left, Node rght)
                 rx->VID + (r_outer ? -rd : 0)
             );
         }
-        case ABST: return same_node((Node){lx->BOD, ld+1}, (Node){rx->BOD, rd+1});
-        case EVAL: return same_node((Node){lx->FUN, ld  }, (Node){rx->FUN, rd  }) &&
-                          same_node((Node){lx->ARG, ld  }, (Node){rx->ARG, rd  });
+        case ABST: return same_node_inner(lx->BOD, ld+1, rx->BOD, rd+1);
+        case EVAL: return same_node_inner(lx->FUN, ld  , rx->FUN, rd  ) &&
+                          same_node_inner(lx->ARG, ld  , rx->ARG, rd  );
     }
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.1. Beta Substitution  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-LambExpr* shift(LambExpr* e, int vid, int gap_size); 
 
 /*----------------  1.1.0. main loop  ---------------------------------------*/
 
@@ -169,16 +179,9 @@ LambExpr* subs(LambExpr* exp, int vid, LambExpr* val, int depth)
     }
 }
 
-/*----------------  1.1.1. beta substitution helper  ------------------------*/
+/*----------------  1.1.1. mutate dependencies  -----------------------------*/
 
 LambExpr* shift(LambExpr* e, int vid, int gap_size) 
-    /*  /shift/: Create an expression analogous to /e/ except that references
-        to outer variables (i.e. those /vid/ or more levels up) are displaced
-        by /gap_size/.  For /gap_size/ positive, this creates a gap so that the
-        resulting expression makes no reference to the variable /vid/ levels up
-        from /e/.  For /gap_size/ equal to -1, this removes a gap, e.g. the gap
-        created upon beta-elimination of an abstraction whose body is /e/.      
-    */
 {
     switch ( e->tag ) {
         case LEAF: return e;
@@ -189,8 +192,7 @@ LambExpr* shift(LambExpr* e, int vid, int gap_size)
     }
 }
 
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/*~~~~~~~~~~  1.2. Dependency Querying  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*----------------  1.1.2. query dependencies   -----------------------------*/
 
 bool mentions_vrbl(LambExpr* e, int vid_lo, int vid_hi)
 {
@@ -204,7 +206,7 @@ bool mentions_vrbl(LambExpr* e, int vid_lo, int vid_hi)
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/*~~~~~~~~~~  1.3. Display  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~  1.2. Display  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 void print_expr(LambExpr* e, char leaf_nms[][16])
 {

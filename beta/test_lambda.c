@@ -18,15 +18,102 @@ char my_leaf_names[][16] = {
     "bopp",
 };
 
+LambExpr* make_nested_eval();
+LambExpr* make_eval_conc();
 void test_eval();
+
+LambExpr* make_nested_abst();
+LambExpr* make_abst_conc();
+void test_abst();
 
 void main()
 {
-    init_lamb_expr_pool(); test_eval();
+    init_lamb_expr_pool();
+    test_abst();
     free_lamb_expr_pool();
 }
 
+void test_abst()
+{
+    LambExpr* outer = make_nested_abst();
+    //LambExpr* conc = make_abst_conc();
+
+    CTable ct;
+
+    printf("EXPR:\n");    print_expr(outer, NULL);  printf("\n");
+    printf("INIT:\n");    init_table(&ct);          printf("\n"); 
+    printf("EXTRACT:\n"); extract_to(outer, &ct);   printf("\n"); 
+    printf("PRINT:\n");   print_table(&ct, NULL);   printf("\n"); 
+    printf("WIPE:\n");    wipe_table(&ct);          printf("\n");
+    printf("DONE!\n");
+
+    //printf("EXPR:\n");    print_expr(outer, NULL);  printf("\n");
+    //print_expr(rewrite_given(outer, conc), NULL);   printf("\n");
+}
+
+LambExpr* make_nested_abst()
+{
+    LambExpr* v0 = vrbl_expr(0);      
+    LambExpr* v1 = vrbl_expr(1);
+
+    LambExpr* l0 = leaf_expr(0);  
+    LambExpr* l3 = leaf_expr(3);  
+
+    LambExpr* inner = abst_expr(eval_expr(v0, v1));  
+    LambExpr* outer = abst_expr(eval_expr(v0, inner));
+
+    return outer;
+}
+//LambExpr* make_nested_abst()
+//{
+//    LambExpr* v0 = vrbl_expr(0);      
+//
+//    LambExpr* l0 = leaf_expr(0);  
+//    LambExpr* l1 = leaf_expr(1);  
+//    LambExpr* l2 = leaf_expr(2);  
+//    LambExpr* l3 = leaf_expr(3);  
+//
+//    LambExpr* e30 = eval_expr(l3, v0);
+//    LambExpr* e022 = eval_expr(eval_expr(l0, l2), l2);
+//    LambExpr* f1  = abst_expr(eval_expr(e30, eval_expr(l1, v0))); 
+//    LambExpr* f02 = abst_expr(eval_expr(e30, eval_expr(e022, v0))); 
+//
+//    LambExpr* outer = eval_expr(eval_expr(l3, f1), f02);  
+//
+//    return f1;
+//}
+
+LambExpr* make_abst_conc()
+{
+    LambExpr* v0 = vrbl_expr(0);      
+    LambExpr* v1 = vrbl_expr(1);      
+    LambExpr* l3 = leaf_expr(3);
+
+    LambExpr* e30 = eval_expr(l3, v0);
+    LambExpr* c   = abst_expr(abst_expr(eval_expr(e30, eval_expr(v1, v0))));
+
+    return c;
+}
+
+/*---------------------------------------------------------------------------*/
+
 void test_eval()
+{
+    LambExpr* outer = make_nested_eval();
+    LambExpr* conc = make_eval_conc();
+
+    CTable ct;
+
+    printf("EXPR:\n");    print_expr(outer, NULL);  printf("\n");
+    printf("INIT:\n");    init_table(&ct);          printf("\n"); 
+    printf("EXTRACT:\n"); extract_to(outer, &ct);   printf("\n"); 
+    printf("PRINT:\n");   print_table(&ct, NULL);   printf("\n"); 
+    print_expr(rewrite_given(outer, conc), NULL);   printf("\n");
+    printf("WIPE:\n");    wipe_table(&ct);          printf("\n");
+    printf("DONE!\n");
+}
+
+LambExpr* make_nested_eval()
 {
     LambExpr* v0 = vrbl_expr(0); 
 
@@ -39,20 +126,13 @@ void test_eval()
     LambExpr* inner_b = eval_expr(eval_expr(l2, l1), l0);
     LambExpr* medi = eval_expr(eval_expr(l3, inner_a), inner_a); 
     LambExpr* outer = eval_expr(eval_expr(l3, medi), medi);
+    return outer;
+}
 
-    LambExpr* conc = eval_expr(eval_expr(l3, v0), v0);  
+LambExpr* make_eval_conc()
+{
+    LambExpr* v0 = vrbl_expr(0); 
+    LambExpr* l3 = leaf_expr(3); 
 
-    CTable ct;
-
-    printf("EXPR:\n");    print_expr(outer, NULL);  printf("\n");
-
-    printf("INIT:\n");    init_table(&ct);          printf("\n"); 
-    printf("EXTRACT:\n"); extract_to(outer, &ct);   printf("\n"); 
-    printf("PRINT:\n");   print_table(&ct, NULL);   printf("\n"); 
-
-    LambExpr* hey = rewrite_given(outer, conc); 
-    print_expr(hey, NULL); printf("\n");
-
-    printf("WIPE:\n");    wipe_table(&ct);          printf("\n");
-    printf("DONE!\n");
+    return eval_expr(eval_expr(l3, v0), v0);  
 }
