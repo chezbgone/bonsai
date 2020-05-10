@@ -39,23 +39,23 @@ bool matches_head(LambExpr* e, LambExpr* concept, int depth, Node* val)
     }
 }
 
-LambExpr* rewrite_given(LambExpr* e, LambExpr* concept)
+LambExpr* rewrite_given(LambExpr* e, LambExpr* concept, LambExpr* name)
 {
     Node val = {.val = NULL, .depth = -1};
     if ( matches_head(e, concept, 0, &val) ) {
-        int savings = e->weight - (concept->weight + val.val->weight + 2);
+        int savings = e->weight - (val.val->weight + 2);
         if (0 < savings) {
             // TODO: val's variables need to decrease by val->depth !! 
-            return eval_expr(abst_expr(concept), rewrite_given(val.val, concept)); 
+            return eval_expr(name, rewrite_given(val.val, concept, name)); 
         }
     }
 
     switch ( e->tag ) {
         case LEAF: return e; 
         case VRBL: return e; 
-        case ABST: return abst_expr(rewrite_given(e->BOD, concept)); 
-        case EVAL: return eval_expr(rewrite_given(e->FUN, concept),
-                                                   rewrite_given(e->ARG, concept));
+        case ABST: return abst_expr(rewrite_given(e->BOD, concept, name)); 
+        case EVAL: return eval_expr(rewrite_given(e->FUN, concept, name),
+                                    rewrite_given(e->ARG, concept, name));
     }
 }
 

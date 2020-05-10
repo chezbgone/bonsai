@@ -79,7 +79,10 @@ void print_table(CTable const* ct, char leaf_names[][16])
         CList cl = ct->arr[i];
         for ( int j=0; j != cl.len; ++j ) {
             CRecord* cr = &(cl.arr[j]);
-            printf("%3d : ", cr->score);
+            if ( 0 < cr->score ) { lava(); } 
+            printf("%+3d", cr->score);
+            defc();
+            printf(" : ");
             print_expr(cr->bod, leaf_names);
             printf("\n");
         }

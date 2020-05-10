@@ -135,12 +135,12 @@ bool same_expr(LambExpr* lhs, LambExpr* rhs)
 bool same_node(Node left, Node rght)
 {
     bool same = same_node_inner(left.val, left.depth, rght.val, rght.depth);
-    if ( same ) { lava(); }
-    printf("[[");
-    print_expr(left.val, NULL); printf("{%d}", left.depth);
-    printf("%s", same ? " == " : " != ");
-    print_expr(rght.val, NULL); printf("{%d}", rght.depth);
-    printf("]]\n");
+    //if ( same ) { lava(); }
+    //printf("[[");
+    //print_expr(left.val, NULL); printf("{%d}", left.depth);
+    //printf("%s", same ? " == " : " != ");
+    //print_expr(rght.val, NULL); printf("{%d}", rght.depth);
+    //printf("]]\n");
     return same;
 }
 
