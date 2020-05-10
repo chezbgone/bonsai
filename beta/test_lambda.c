@@ -71,16 +71,19 @@ LambExpr* make_nested_abst()
 {
     LambExpr* v0 = vrbl_expr(0);
     LambExpr* v1 = vrbl_expr(1);
+    LambExpr* v2 = vrbl_expr(2);
 
     LambExpr* l0 = leaf_expr(0);  
-    LambExpr* l2 = leaf_expr(2);  
     LambExpr* l3 = leaf_expr(3);  
 
-    LambExpr* e022 = eval_expr(eval_expr(l0, l2), l2);
-    LambExpr* f0  = abst_expr(eval_expr(eval_expr(l3, v0), abst_expr(eval_expr(v0, v1)))); 
-    LambExpr* f02 = eval_expr(eval_expr(l3, e022), abst_expr(eval_expr(v0, e022))); 
+    LambExpr* xa0 = eval_expr(l0, v0);
+    LambExpr* xa1 = eval_expr(l0, v1);
+    LambExpr* xb = eval_expr(eval_expr(l0, v2), v2);
 
-    LambExpr* outer = eval_expr(eval_expr(l3, f0), f02);  
+    LambExpr* fa = eval_expr(eval_expr(l3, xa0), abst_expr(eval_expr(v0, xa1))); 
+    LambExpr* fb = eval_expr(eval_expr(l3, xb), abst_expr(eval_expr(v0, xb))); 
+
+    LambExpr* outer = abst_expr(eval_expr(eval_expr(v0, fa), abst_expr(fb)));
 
     return outer;
 }
