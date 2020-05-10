@@ -46,17 +46,15 @@ LambExpr* rewrite_given(LambExpr* e, LambExpr* concept)
         int savings = e->weight - (concept->weight + val.val->weight + 2);
         if (0 < savings) {
             // TODO: val's variables need to decrease by val->depth !! 
-            return eval_expr(abst_expr(concept), val.val); 
+            return eval_expr(abst_expr(concept), rewrite_given(val.val, concept)); 
         }
     }
 
-    //printf("\n[[    "); print_expr(e, NULL); printf("\n]]");
-
     switch ( e->tag ) {
-        case LEAF: printf("l\n"); return e; 
-        case VRBL: printf("v\n"); return e; 
-        case ABST: printf("a\n"); return abst_expr(rewrite_given(e->BOD, concept)); 
-        case EVAL: printf("e\n"); return eval_expr(rewrite_given(e->FUN, concept),
+        case LEAF: return e; 
+        case VRBL: return e; 
+        case ABST: return abst_expr(rewrite_given(e->BOD, concept)); 
+        case EVAL: return eval_expr(rewrite_given(e->FUN, concept),
                                                    rewrite_given(e->ARG, concept));
     }
 }
@@ -84,10 +82,10 @@ void extract_to(LambExpr* e, CTable* ct)
     bool has_target = cull_sites(e, 0, &sites, 0);
     if ( ! has_target ) { sites.len = 0; populate_kids(e, 0, &sites, 0); }
 
-    purp(); printf("extract: "); defc(); 
-    printf("{weight "); lime(); printf("%3d", e->weight); defc(); printf("} ");
-    print_expr(e, NULL);
-    printf("\n");
+    //purp(); printf("extract: "); defc(); 
+    //printf("{weight "); lime(); printf("%3d", e->weight); defc(); printf("} ");
+    //print_expr(e, NULL);
+    //printf("\n");
 
     int nb_occurences, d_score;
     for ( int i=0; i != sites.len; ++i ) {

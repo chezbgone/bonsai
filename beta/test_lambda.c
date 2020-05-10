@@ -28,33 +28,31 @@ void main()
 
 void test_eval()
 {
-    LambExpr* v0 = vrbl_expr(0);
-    LambExpr* v1 = vrbl_expr(1);
+    LambExpr* v0 = vrbl_expr(0); 
 
-    LambExpr* l0 = leaf_expr(0);
-    LambExpr* l1 = leaf_expr(1);
-    LambExpr* l2 = leaf_expr(2);
-    LambExpr* l3 = leaf_expr(3);
+    LambExpr* l0 = leaf_expr(0); 
+    LambExpr* l1 = leaf_expr(1); 
+    LambExpr* l2 = leaf_expr(2); 
+    LambExpr* l3 = leaf_expr(3); 
 
-    LambExpr* e0 = eval_expr(l0, l1);
-    LambExpr* e1 = eval_expr(e0, l2);
+    LambExpr* inner_a = eval_expr(eval_expr(l0, l1), l2);
+    LambExpr* inner_b = eval_expr(eval_expr(l2, l1), l0);
+    LambExpr* medi = eval_expr(eval_expr(l3, inner_a), inner_a); 
+    LambExpr* outer = eval_expr(eval_expr(l3, medi), medi);
 
-    LambExpr* e2 = eval_expr(l3, e1);
-    LambExpr* e3 = eval_expr(e2, e1);
+    LambExpr* conc = eval_expr(eval_expr(l3, v0), v0);  
 
     CTable ct;
 
-    printf("EXPR:\n");    print_expr(e3, NULL);   printf("\n");
+    printf("EXPR:\n");    print_expr(outer, NULL);  printf("\n");
 
-    LambExpr* c = eval_expr(eval_expr(l3, v0), v0);  
-    LambExpr* hey = rewrite_given(e3, c); 
-    print_expr(hey, NULL);
+    printf("INIT:\n");    init_table(&ct);          printf("\n"); 
+    printf("EXTRACT:\n"); extract_to(outer, &ct);   printf("\n"); 
+    printf("PRINT:\n");   print_table(&ct, NULL);   printf("\n"); 
 
-    //printf("\nINIT:\n");    init_table(&ct);
-    //printf("\nEXTRACT:\n"); extract_to(e3, &ct);
-    //printf("\n:-)\n");
+    LambExpr* hey = rewrite_given(outer, conc); 
+    print_expr(hey, NULL); printf("\n");
 
-    //printf("\nPRINT:\n");   print_table(&ct, NULL);
-    //printf("\nWIPE:\n");    wipe_table(&ct);
-    printf("\nDONE!\n");
+    printf("WIPE:\n");    wipe_table(&ct);          printf("\n");
+    printf("DONE!\n");
 }
