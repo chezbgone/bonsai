@@ -1,7 +1,7 @@
 /*  author: samtenka
- *  change: 2020-03-06
+ *  change: 2020-05-09
  *  create: 2020-03-04
- *  descrp: 
+ *  descrp: interface for decision trees 
  *  to use: 
  */
 
@@ -9,16 +9,8 @@
 
 #define VERBOSE_TREE 1
 
-#define NT_PRED 1 
-#define NT_LEAF 0 
-
 #define NAY 0
 #define YEA 1
-
-#define OP_AND      0
-#define OP_OR       1
-#define OP_XOR      2
-#define OP_IMPLIES  3
 
 typedef struct DecTree DecTree; 
 struct DecTree {
@@ -28,7 +20,10 @@ struct DecTree {
         int didx;
         char value;
     } annotation;
-    char node_type;
+    enum {
+        NT_LEAF = 0,
+        NT_PRED = 1 
+    } node_type;
 }; 
 
 typedef struct DimPair DimPair; 
@@ -41,7 +36,12 @@ typedef struct NewDim NewDim;
 struct NewDim {
     int didx_a;  
     int didx_b;  
-    char op;
+    enum {
+        OP_AND     = 0,
+        OP_OR      = 1,
+        OP_XOR     = 2,
+        OP_IMPLIES = 3
+    } op;
 }; 
 
 #define TREE

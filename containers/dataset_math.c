@@ -19,7 +19,7 @@ void populate_math(Tasks* tsp)
 
     init_tasks(tsp, nb_tasks);
 
-    for (int ti=0; ti!=nb_tasks; ++ti) {
+    for ( int ti = 0; ti != nb_tasks; ++ti ) {
         Task t = {
             make_charss(nb_samples/2),
             make_charss(nb_samples/2),
@@ -27,7 +27,7 @@ void populate_math(Tasks* tsp)
         };
         push_tasks(tsp, t);
 
-        for (int si=0; si!=nb_samples; ++si) {
+        for ( int si = 0; si != nb_samples; ++si ) {
             char label = (
                 //ti <  6 ? ((((si>>ti)%2) ^ ((si>>((ti+5)%6))%2)) ? 1 : 0) :
                   ti < 24 ? (si%(3)==0 ? 1 : 0) : 0
@@ -44,7 +44,7 @@ void populate_math(Tasks* tsp)
             );
             push_charss(points, make_chars(pt_dim));
 
-            for (int di=0; di!=pt_dim; ++di) {
+            for ( int di = 0; di != pt_dim; ++di ) {
                 push_chars(&(points->data[points->len-1]),
                     ((si & (1<<di)) ?  1 : 0)
                 );
@@ -57,28 +57,26 @@ void print_math_feature(TaskView const* tvp, int didx)
 {
     char labels[128];
     int i;
-    for (i=0; i!=128; ++i) {
-        labels[i] = 0;
-    } 
+    for ( i=0; i != 128; ++i ) { labels[i] = 0; } 
 
     chars* point;
     i=0;
     for each (point, tvp->negpoints) {
         int pt_val = 0;
-        for (int d=0; d!=7; ++d) {
+        for ( int d = 0; d != 7; ++d ) {
             pt_val += (point->data[d] ? 1 : 0) << d;
         }
         labels[pt_val] = point->data[didx]==1 ? +1 : -1;
     } 
     for each (point, tvp->pospoints) {
         int pt_val = 0;
-        for (int d=0; d!=7; ++d) {
+        for ( int d = 0; d != 7; ++d ) {
             pt_val += (point->data[d] ? 1 : 0) << d;
         }
         labels[pt_val] = point->data[didx]==1 ? +1 : -1;
     } 
     printf("%3d[", didx);
-    for (i=0; i!=128; ++i) {
+    for ( i = 0; i != 128; ++i ) {
         printf("%s", (
             (labels[i] == -1) ? "\033[31m." :
             (labels[i] == +1) ? "\033[32m@" :
@@ -92,28 +90,26 @@ void print_math(TaskView const* tvp)
 {
     char labels[128];
     int i;
-    for (i=0; i!=128; ++i) {
-        labels[i] = 0;
-    } 
+    for ( i = 0; i != 128; ++i ) { labels[i] = 0; } 
 
     chars* point;
     i=0;
     for each (point, tvp->negpoints) {
         int pt_val = 0;
-        for (int didx=0; didx!=7; ++didx) {
+        for ( int didx = 0; didx != 7; ++didx ) {
             pt_val += (point->data[didx] ? 1 : 0) << didx;
         }
         labels[pt_val] = -1;
     } 
     for each (point, tvp->pospoints) {
         int pt_val = 0;
-        for (int didx=0; didx!=7; ++didx) {
+        for ( int didx = 0; didx != 7; ++didx ) {
             pt_val += (point->data[didx] ? 1 : 0) << didx;
         }
         labels[pt_val] = +1;
     } 
     printf("[");
-    for (i=0; i!=128; ++i) {
+    for ( i = 0; i != 128; ++i ) {
         printf("%s", (
             (labels[i] == -1) ? "\033[31m." :
             (labels[i] == +1) ? "\033[32m@" :
@@ -126,15 +122,15 @@ void print_math(TaskView const* tvp)
 int is_square(int n)
 {
     int s = n/2 + 1;
-    while (s*s > n) { --s; }
-    return (s*s==n) ? 1 : 0;
+    while ( s*s > n ) { --s; }
+    return (s*s == n) ? 1 : 0;
 }
 
 int gcd(int a, int b)
 {
-    while (a && b) {
-        if (a<b) {b %= a;}
-        else     {a %= b;}
+    while ( a && b ) {
+        if ( a<b ) { b %= a; }
+        else       { a %= b; }
     }
     return a+b;
 }

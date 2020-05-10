@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-03-06
+ *  change: 2020-05-09
  *  create: 2020-03-04
  *  descrp: 
  *  to use: 
@@ -23,36 +23,29 @@ void print_tree_row(DecTree const* dtp, int row);
 
 int nb_leaves(DecTree const* dtp)
 {
-    switch (dtp->node_type) {
-        case NT_LEAF :
-            return 1;
-        case NT_PRED :
-            return (
-                nb_leaves(dtp->left) +
-                nb_leaves(dtp->rght)
-            );
+    switch ( dtp->node_type ) {
+        case NT_LEAF: return 1;
+        case NT_PRED: return nb_leaves(dtp->left) + 
+                             nb_leaves(dtp->rght);
     }
 }
+
 int nb_nodes(DecTree const* dtp)
 {
-    switch (dtp->node_type) {
-        case NT_LEAF :
-            return 1;
-        case NT_PRED :
-            return (
-                nb_nodes(dtp->left) + 1 +
-                nb_nodes(dtp->rght)
-            );
+    switch ( dtp->node_type ) {
+        case NT_LEAF: return 1;
+        case NT_PRED: return 1 + nb_nodes(dtp->left)
+                               + nb_nodes(dtp->rght);
     }
 }
 
 int depth(DecTree const* dtp)
 {
     int dleft, dright;
-    switch (dtp->node_type) {
-        case NT_LEAF :
+    switch ( dtp->node_type ) {
+        case NT_LEAF:
             return 0;
-        case NT_PRED :
+        case NT_PRED:
             dleft  = depth(dtp->left);
             dright = depth(dtp->rght);
             return (dleft<dright ? dright : dleft) + 1;
@@ -62,24 +55,20 @@ int depth(DecTree const* dtp)
 void print_tree(DecTree const* dtp)
 {
     int j;
-    for (j=0; j!=nb_nodes(dtp); ++j) {
-        printf("-");
-    }
+    for ( j = 0; j != nb_nodes(dtp); ++j ) { printf("-"); }
     printf("\n");
-    for (int r=0; r!=depth(dtp)+1; ++r) {
+    for ( int r = 0; r != depth(dtp)+1; ++r ) {
         print_tree_row(dtp, r);
         printf("\n");
     }
-    for (j=0; j!=nb_nodes(dtp); ++j) {
-        printf("-");
-    }
+    for ( j = 0; j != nb_nodes(dtp); ++j ) { printf("-"); }
     printf("\n");
 }
 
 void print_tree_row(DecTree const* dtp, int row)
 {
-    if (row) {
-        switch (dtp->node_type) {
+    if ( row ) {
+        switch ( dtp->node_type ) {
             case NT_LEAF:
                 printf(" ");
                 return;
@@ -91,29 +80,21 @@ void print_tree_row(DecTree const* dtp, int row)
         }
     } else {
         int j;
-        switch (dtp->node_type) {
-            case NT_LEAF :
+        switch ( dtp->node_type ) {
+            case NT_LEAF:
                 printf("%s",
                     dtp->annotation.value==+1 ?
                     "\033[32m+\033[36m" :
                     "\033[31m-\033[36m"
                 );
                 return;
-            case NT_PRED :
-                for (j=0; j!=nb_nodes(dtp->left)-1; ++j) {
-                    printf(" ");
-                }
+            case NT_PRED:
+                for ( j = 0; j != nb_nodes(dtp->left)-1; ++j ) { printf(" "); }
                 int didx = dtp->annotation.didx;
-                if (didx < 10) {
-                    printf(" %d ", didx);
-                } else if (didx < 100) {
-                    printf("%d ", didx);
-                } else {
-                    printf("%d", didx);
-                }
-                for (j=0; j!=nb_nodes(dtp->rght)-1; ++j) {
-                    printf(" ");
-                }
+                if      ( didx <  10 ) { printf(" %d ", didx); }
+                else if ( didx < 100 ) { printf("%d ",  didx); }
+                else                   { printf("%d",   didx); }
+                for ( j = 0; j != nb_nodes(dtp->rght)-1; ++j ) { printf(" "); }
                 return;
         }
     }
@@ -128,7 +109,7 @@ DecTree* malloc_tree()
 
 void grow_tree(DecTree* dtp)
 {
-    if (dtp->node_type == NT_LEAF) { 
+    if ( dtp->node_type == NT_LEAF ) { 
         dtp->left = malloc_tree(); 
         dtp->rght = malloc_tree(); 
         dtp->node_type = NT_PRED; 
@@ -139,7 +120,7 @@ void grow_tree(DecTree* dtp)
 
 float entropy_extensive(int A, int B)
 {
-    if (A+B == 0) { return 0.0; }
+    if ( A+B == 0 ) { return 0.0; }
     float ratio = ((float)A)/(A+B);
     float quad = ratio * (1.0-ratio);
     /* good approximation of shannon entropy times (A+B): */
@@ -148,23 +129,19 @@ float entropy_extensive(int A, int B)
 
 float info_of(TaskView const* tvp)
 {
-    return entropy_extensive(
-        tvp->negpoints.len,
-        tvp->pospoints.len
-    );
+    return entropy_extensive(tvp->negpoints.len,
+                             tvp->pospoints.len);
 }
 
 float gain_from_op(TaskView const* tvp, DecTree const* dtp, NewDim const* new_dim)
 {
-    if (dtp->node_type == NT_LEAF) { 
-        return 0.0;
-    }
+    if ( dtp->node_type == NT_LEAF ) { return 0.0; }
     
     int didx = dtp->annotation.didx;
     int didx_a = new_dim->didx_a; 
     int didx_b = new_dim->didx_b; 
 
-    if (didx != didx_a && didx != didx_b) {
+    if ( didx != didx_a && didx != didx_b ) {
         TaskView left;
         TaskView rght;
         split_at(tvp, didx, &left, &rght);
@@ -211,15 +188,9 @@ float gain_from_op(TaskView const* tvp, DecTree const* dtp, NewDim const* new_di
             }
         }
 
-        //float baseline_a = info_of_split(tvp, didx_a);
-        //float baseline_b = info_of_split(tvp, didx_b);
-        //float min_baseline = baseline_a < baseline_b ? baseline_a : baseline_b;
-
         float baseline = info_of_split(tvp, didx);
-        return baseline - (
-            entropy_extensive(yea_neg, yea_pos) + 
-            entropy_extensive(nay_neg, nay_pos)   
-        );
+        return baseline - ( entropy_extensive(yea_neg, yea_pos) + 
+                            entropy_extensive(nay_neg, nay_pos) );
     }
 }
 
@@ -285,22 +256,22 @@ void train_subtree(DecTree* dtp, TaskView const* tvp, int depth)
     /* mask.len bounds info from above  */
 
     float best_info = info_of(tvp);
-    if (best_info==0.0) {
+    if ( best_info == 0.0 ) {
         dtp->annotation.value = tvp->pospoints.len ? +1 : -1;
         return;
     }
 
-    int best_didx=rand() % tvp->pt_dim; // = depth % tvp->pt_dim; 
+    int best_didx = rand() % tvp->pt_dim; // = depth % tvp->pt_dim; 
 
-    for (int didx=0; didx!=tvp->pt_dim; ++didx) {
+    for ( int didx = 0; didx != tvp->pt_dim; ++didx ) {
         float info = info_of_split(tvp, didx);
-        if (!(info < best_info)) { continue; }
-        if (info == best_info && (rand()%2)) { continue; }
+        if ( !(info < best_info) ) { continue; }
+        if ( info == best_info && (rand()%2) ) { continue; }
         best_info = info;
         best_didx = didx;
     }
 
-    for (int j=0; j!=depth; ++j) {
+    for ( int j = 0; j != depth; ++j ) {
         BARK(VERBOSE_DECTREE_TRAIN, "| ");
     }
     BARK(VERBOSE_DECTREE_TRAIN,
@@ -319,7 +290,7 @@ void train_subtree(DecTree* dtp, TaskView const* tvp, int depth)
     wipe_taskview(&left);
     wipe_taskview(&rght);
 
-    for (int j=0; j!=depth; ++j) {
+    for ( int j = 0; j != depth; ++j ) {
         BARK(VERBOSE_DECTREE_TRAIN, "| ");
     }
     BARK(VERBOSE_DECTREE_TRAIN,
@@ -329,7 +300,7 @@ void train_subtree(DecTree* dtp, TaskView const* tvp, int depth)
 
 void free_tree(DecTree* dtp)
 {
-    if (dtp->node_type == NT_PRED) {
+    if ( dtp->node_type == NT_PRED ) {
         free_tree(dtp->left);
         free_tree(dtp->rght);
         free(dtp->left);
@@ -354,15 +325,15 @@ NewDim best_new_dim(Tasks const* tasks, Trees const* trees, int max_len, int pt_
 
         NewDim nd = {didx_a, didx_b, -1};
 
-        for (char op=0; op!=4; ++op) {
+        for ( char op=0; op != 4; ++op ) {
             nd.op = op;
 
             float total_gain = 0.0;
-            for (int i=0; i!=tasks->len; ++i) {
+            for ( int i=0; i!=tasks->len; ++i ) {
                 TaskView tv;
                 cons_taskview(&tv, &(tasks->data[i]));
                 float gain = gain_from_op(&tv, &(trees->data[i]), &nd);
-                if (0.0 < gain) {
+                if ( 0.0 < gain ) {
                     total_gain += gain;
                 }
                 wipe_taskview(&tv);
@@ -390,15 +361,15 @@ void count_edges(DecTree const* tp, Counter* C, int pt_dim)
     if ( tp->left->node_type == NT_PRED ) {
         int didx_a = tp->annotation.didx; 
         int didx_b = tp->left->annotation.didx; 
-        if (didx_a < didx_b) { counter_observe(C, pt_dim * didx_a + didx_b); }//printf("add %d\n", pt_dim * didx_a + didx_b); }
-        else                 { counter_observe(C, pt_dim * didx_b + didx_a); }//printf("add %d\n", pt_dim * didx_b + didx_a); }
+        if (didx_a < didx_b) { counter_observe(C, pt_dim * didx_a + didx_b); }
+        else                 { counter_observe(C, pt_dim * didx_b + didx_a); }
         count_edges(tp->left, C, pt_dim);
     }
     if ( tp->rght->node_type == NT_PRED ) {
         int didx_a = tp->annotation.didx; 
         int didx_b = tp->rght->annotation.didx; 
-        if (didx_a < didx_b) { counter_observe(C, pt_dim * didx_a + didx_b); }//printf("add %d\n", pt_dim * didx_a + didx_b); }
-        else                 { counter_observe(C, pt_dim * didx_b + didx_a); }//printf("add %d\n", pt_dim * didx_b + didx_a); }
+        if (didx_a < didx_b) { counter_observe(C, pt_dim * didx_a + didx_b); }
+        else                 { counter_observe(C, pt_dim * didx_b + didx_a); }
         count_edges(tp->rght, C, pt_dim);
     }
 }
@@ -412,10 +383,9 @@ void most_popular_pairs(Trees const* tsp, DimPairs* psp, int max_len, int pt_dim
     for each (tp, *tsp) {
         count_edges(tp, &C, pt_dim);
     }
-    for (int i=0; i!=max_len; ++i) {
+    for ( int i=0; i != max_len; ++i ) {
         if ( C.len == 0 ) { break; }
         int best_j = pop_most_frequent(&C).fst;
-        //printf("found %d", best_j);
         DimPair p = { best_j/pt_dim, best_j%pt_dim };
         push_dimpairs(psp, p); 
     }
