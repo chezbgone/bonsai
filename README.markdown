@@ -8,18 +8,29 @@
 
 ## Implementation 
 
+### Tree Compression
+
+### Program Compression 
+
 ### Code Structure  
 
-       vector       pair       mapping  
-          |           |           |
-          |           |           |
-       dataset        |        counter
-           \________  |  ________/
-                    \ | /
-                   dectree
-                      | 
-                      |
-                    main
+                                pool                                            
+                           _____/  \____                                        
+                       ___/             \___                                    
+                      /                     \                                   
+       mapping     dectree     dataset     lambda       table                    
+          |        / |         _/  \          | \__       |                     
+          |      _/  |        /     \         |    \      |                     
+          |     /    |       /       \        |     \     |                     
+       counter /     |    __/   types \  interpreter \_   |                         
+          |  _/      |   /         \   \___   |        \  |                     
+          | /        |  /           \____  \  |         \ |                     
+          |/         | /                 \  \ |          \|                     
+        boole     infogain               enumerator    church                   
+           \           \_______       ______/          /                        
+            \_________________ \     / _______________/     
+                              \ \   / /                                            
+                               BONSAI!                                            
 
 ### Guide to Containers
 
