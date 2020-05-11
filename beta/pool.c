@@ -71,7 +71,6 @@ void free_pool(PoolHeader* p)
 
 long* moo_alloc(PoolHeader* p, int nb_words)
 {
-    fprintf(stderr, "{{");
     long requested_words = nb_words + WORDS_PER_BLOCK_HEADER; 
     BlockHeader* prv;
     BlockHeader* cur; 
@@ -85,14 +84,12 @@ long* moo_alloc(PoolHeader* p, int nb_words)
 
         while ( prv == NULL || available_words(prv) < requested_words ) {
             if ( prv == NULL ) { 
-                fprintf(stderr, "A");
                 /*----  1.0.0. go to next pool, creating it if necessary  ---*/
                 if ( p->next_pool == NULL ) { p->next_pool = make_pool(p); }
                 p = p->next_pool;
                 found = false; 
                 prv = p->active;
             } else {
-                fprintf(stderr, "B");
                 if ( !found && available_words(prv) ) {
                     found = true;
                     p->active = prv;
@@ -101,17 +98,11 @@ long* moo_alloc(PoolHeader* p, int nb_words)
                 /*----  1.0.1. go to next block in pool  --------------------*/
                 prv = prv->next_avail;  
             }
-            fprintf(stderr, "?");
-            if ( prv == NULL ) { fprintf(stderr, "*"); }
-            else { int s = available_words(prv); }
-            fprintf(stderr, "! ");
         }
 
         cur = (BlockHeader*) ( ((long*)prv) + prv->size );
         nxt = prv->next_block; 
     }
-
-    fprintf(stderr, ":");
 
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
     /*~~~~~~~~  1.1. Update Size Data  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -123,8 +114,6 @@ long* moo_alloc(PoolHeader* p, int nb_words)
         prv->capacity = prv->size; 
     }
     
-    fprintf(stderr, "#");
-
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
     /*~~~~~~~~  1.2. Insert /cur/ into the Sparse Chain of Free Blocks  ~~~~~*/
     {
@@ -137,8 +126,6 @@ long* moo_alloc(PoolHeader* p, int nb_words)
             cur->prev_avail = prv->prev_avail; 
         }
     }
-
-    fprintf(stderr, "&");
 
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
     /*~~~~~~~~  1.3. Insert /cur/ into the Dense Chain of All Blocks  ~~~~~~~*/
@@ -157,7 +144,6 @@ long* moo_alloc(PoolHeader* p, int nb_words)
         }
     }
 
-    fprintf(stderr, "}} ");
     return ((long*)cur) + WORDS_PER_BLOCK_HEADER;
 } 
 

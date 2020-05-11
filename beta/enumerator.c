@@ -60,23 +60,17 @@ LambList free_all_but(LambsByEType* lbt, EType target)
 void pass(float eval_score, LambList* funs, LambList* outs, LambList* args, float min_score)
 { 
     for ( int fun_i = 0; fun_i != funs->active_hi; ++fun_i ) {
-        printf("s%d\n", fun_i);
         ScoredLamb fun = funs->arr[fun_i]; 
         int arg_start = (fun_i < funs->active_lo) ? args->active_lo : 0;
         for ( int arg_i = arg_start; arg_i != args->active_hi; ++arg_i ) {
-            printf("t%d %d %d\n", arg_i, args->active_hi, args->len);
             ScoredLamb arg = args->arr[arg_i]; 
-            printf("z\n");
             float new_score = eval_score + fun.score + arg.score; 
             if ( new_score < min_score ) { continue; }
-            printf("zz\n");
             ScoredLamb new_prog = {
                 .score = new_score,
                 .e = eval_expr(fun.e, arg.e)
             };
-            printf("zzz\n");
             insert(outs, new_prog);
-            printf("zzzz\n");
         }
     }
 }
@@ -95,19 +89,19 @@ LambList enumerate(Grammar const* G, float min_score, EType target)
     while ( found ) {
         found = false;
         for ( EType fun_t = 0; fun_t != NB_TYPES; ++fun_t ) {
-            printf("A%d\n", fun_t);
             if ( ! is_func[fun_t] ) { continue; }
             LambList* funs = &(lbt->arr[fun_t]);
             LambList* args = &(lbt->arr[arg_type[fun_t]]);
             LambList* outs = &(lbt->arr[out_type[fun_t]]);
-            printf("B%d, %d, %d, %d\n", funs->len, args->len, outs->len, fun_t);
 
+            printf(
+                "pass (%d):     fun %6d        arg %6d        out %6d\n",
+                fun_t, funs->len, args->len, outs->len
+            );
             int old_len = outs->len;
             pass(G->eval_score[fun_t], funs, outs, args, min_score); 
             found |= ( outs->len != old_len );
-            printf("C\n");
         }
-        printf("D\n");
         for ( int t = 0; t != NB_TYPES; ++t ) {
             lbt->arr[t].active_lo = lbt->arr[t].active_hi;
             lbt->arr[t].active_hi = lbt->arr[t].len;

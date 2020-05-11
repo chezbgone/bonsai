@@ -94,9 +94,7 @@ int weight_step(LambExpr* e)
 
 LambExpr* make(LambExpr val)
 {
-    printf("G\n");
     struct LAMB_EXPR_MUT* e = MOO_ALLOC(LAMB_EXPR_POOL, LambExpr, 1); 
-    printf("H\n");
     *e = val;
     e->hash = hash_step(e);
     e->height = height_step(e);
