@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  create: 2020-05-08
+ *  create: 2020-05-10
  *  change: 2020-04-28
  *  descrp: Custom allocator to improve cache efficiency.
  *
@@ -71,6 +71,7 @@ void free_pool(PoolHeader* p)
 
 long* moo_alloc(PoolHeader* p, int nb_words)
 {
+    fprintf(stderr, "{{");
     long requested_words = nb_words + WORDS_PER_BLOCK_HEADER; 
     BlockHeader* prv;
     BlockHeader* cur; 
@@ -79,25 +80,38 @@ long* moo_alloc(PoolHeader* p, int nb_words)
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
     /*~~~~~~~~  1.0. Search for a Sufficiently Large Free Block  ~~~~~~~~~~~~*/
     {
-        prv = p->active;//fst_block_of(p);
+        bool found = false; 
+        prv = p->active;
 
-        while ( prv==NULL || available_words(prv) < requested_words ) {
+        while ( prv == NULL || available_words(prv) < requested_words ) {
             if ( prv == NULL ) { 
+                fprintf(stderr, "A");
                 /*----  1.0.0. go to next pool, creating it if necessary  ---*/
                 if ( p->next_pool == NULL ) { p->next_pool = make_pool(p); }
                 p = p->next_pool;
-                prv = fst_block_of(p);
+                found = false; 
+                prv = p->active;
             } else {
+                fprintf(stderr, "B");
+                if ( !found && available_words(prv) ) {
+                    found = true;
+                    p->active = prv;
+                }
+
                 /*----  1.0.1. go to next block in pool  --------------------*/
                 prv = prv->next_avail;  
             }
+            fprintf(stderr, "?");
+            if ( prv == NULL ) { fprintf(stderr, "*"); }
+            else { int s = available_words(prv); }
+            fprintf(stderr, "! ");
         }
 
         cur = (BlockHeader*) ( ((long*)prv) + prv->size );
         nxt = prv->next_block; 
-
-        p->active = cur;
     }
+
+    fprintf(stderr, ":");
 
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
     /*~~~~~~~~  1.1. Update Size Data  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -108,6 +122,8 @@ long* moo_alloc(PoolHeader* p, int nb_words)
 
         prv->capacity = prv->size; 
     }
+    
+    fprintf(stderr, "#");
 
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
     /*~~~~~~~~  1.2. Insert /cur/ into the Sparse Chain of Free Blocks  ~~~~~*/
@@ -118,8 +134,11 @@ long* moo_alloc(PoolHeader* p, int nb_words)
         } else {
             /*--------  1.2.1. /cur/ isn't full, so update /prv/'s forward  -*/
             prv->next_avail = cur; 
+            cur->prev_avail = prv->prev_avail; 
         }
     }
+
+    fprintf(stderr, "&");
 
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
     /*~~~~~~~~  1.3. Insert /cur/ into the Dense Chain of All Blocks  ~~~~~~~*/
@@ -130,9 +149,15 @@ long* moo_alloc(PoolHeader* p, int nb_words)
 
         /*------------  1.3.0. link /nxt/ with /cur/  -----------------------*/
         cur->next_block = nxt;
-        if ( nxt!=NULL ) { nxt->prev_block = cur; }
+        if ( nxt == NULL ) {
+            cur->next_avail = NULL;
+        } else {
+            nxt->prev_block = cur;
+            cur->next_avail = nxt; 
+        }
     }
 
+    fprintf(stderr, "}} ");
     return ((long*)cur) + WORDS_PER_BLOCK_HEADER;
 } 
 
@@ -215,13 +240,14 @@ void print_pool(PoolHeader* p)
         cur = fst_block_of(p);
         while ( cur != NULL ) {
 
+            if ( cur == p->active ) { lava(); printf("*"); }
             /*--------  2.1.0. print block, colored by whether it is full  --*/
             if ( cur->size == cur->capacity )  { lime(); } else { gold(); }
             printf("[%d/%d]", (int) cur->size, (int) cur->capacity);
-            defc();
             cur = cur->next_block;
 
         } 
+        defc();
         printf("\n");
         p = p->next_pool; 
     }

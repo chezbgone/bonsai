@@ -15,7 +15,7 @@
 PoolHeader* LAMB_EXPR_POOL;  
 
 void init_lamb_expr_pool() { LAMB_EXPR_POOL = make_pool(NULL); }
-void free_lamb_expr_pool() { print_pool(LAMB_EXPR_POOL); free_pool(LAMB_EXPR_POOL); } 
+void free_lamb_expr_pool() { free_pool(LAMB_EXPR_POOL); } 
 
 /*===========================================================================*/
 /*====  0. CONSTRUCTORS AND DESTRUCTORS  ====================================*/
@@ -94,7 +94,9 @@ int weight_step(LambExpr* e)
 
 LambExpr* make(LambExpr val)
 {
+    printf("G\n");
     struct LAMB_EXPR_MUT* e = MOO_ALLOC(LAMB_EXPR_POOL, LambExpr, 1); 
+    printf("H\n");
     *e = val;
     e->hash = hash_step(e);
     e->height = height_step(e);
