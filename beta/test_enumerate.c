@@ -30,22 +30,22 @@ float plog(float p)
     return bulk - remainder; 
 }
 
-char leaf_names[][16] = {"zero","succ","pred","times"};
+char leaf_names[][16] = {"cow","raccoon","lump","fluffy","shivering","hugs","loves"};
 
 void main()
 {
     init_lamb_expr_pool();
 
-    float leaf_scores[] = {plog(0.8), plog(0.333), plog(0.333), 0.0};
-    EType leaf_types[] = {TINT, TINT_FRM_INT, TINT_FRM_INT, TINT_FRM_INT_FRM_INT};
+    float leaf_scores[] = {plog(0.23), plog(0.12), plog(0.11), plog(0.4), plog(0.3), plog(0.4), plog(0.6)};
+    EType leaf_types[] = {TINT, TINT, TINT, TINT_FRM_INT, TINT_FRM_INT, TINT_FRM_INT_FRM_INT, TINT_FRM_INT_FRM_INT};
     Grammar G = {
-        .nb_leaves = 4,
+        .nb_leaves = 7,
         .leaf_scores = leaf_scores,
         .leaf_types  = leaf_types,
-        .eval_score  = {0.0, plog(0.2), plog(0.333)}
+        .eval_score  = {0.0, plog(0.54), plog(0.7)}
     };
 
-    LambList ll = enumerate(&G, -10.5, TINT); 
+    LambList ll = enumerate(&G, -6, TINT); 
     for ( int pi = 0; pi != ll.len; ++pi ) {
         lava();
         printf("%8.4f ", ll.arr[pi].score);
