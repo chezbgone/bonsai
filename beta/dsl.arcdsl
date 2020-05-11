@@ -1,0 +1,72 @@
+// author: samtenka
+// change: 2020-05-11 
+// create: 2020-05-11
+// descrp: Overview of basic, Tom-inspired DSL for Bonsai Arc programs  
+// to use: Read as a plain text file, preferably with the .arcdsl syntax
+//         highlighter for Vim. 
+
+
+// REGULARIZED LOOP -----------------------------------------------------------
+// note: We perform at most max(height, width) many steps, in case the dir     
+//       is zero.  We also stop upon encountering an out_of_bounds cell.  The
+//       following conventions are both defensible; we choose the latter:
+//        A. return the last cell that didn't satisfy the predicate
+//        B. return the first cell that satisfies the predicate
+//       The reason we choose (B) is that (A) doesn't uniformly treat the edge
+//       case in which the initial cell satisfies the predicate.  
+scan    : cell <- cell <- (bool <- cell) <- dir
+
+// READING THE GRID
+// note: This is the only primitive that connects the geometric world of
+//       /cell/ and /dir/ to the world of /color/.  It is our main bridge. 
+view    : color <- cell
+
+// (CELL, DIR)'S Z-AFFINE STRUCTURE -------------------------------------------
+// note: we do not 
+offset  : cell <- cell <- dir 
+diff    : dir <- cell <- cell 
+plus    : dir <- dir <- dir
+negate  : dir <- dir
+
+// LOGICAL OPERATIONS --------------------------------------------------------
+// note: These will sometimes be redundant with the decision tree.  They will   
+//       *not* be redundant when used in a predicate fed into /scan/.  Also,
+//       some redundancy is useful so that the logical concepts we learn from
+//       compressing decision trees can be written purely in the dsl for nodes.
+not     : bool <- bool
+or      : bool <- bool <- bool
+and     : bool <- bool <- bool
+
+// PRIMITIVE TYPES' EQUALITY CHECKS -------------------------------------------
+// note: In some sense, these are /bool/'s base constructors.   
+eq_color: bool <- color <- color
+eq_dir  : bool <- dir <- dir  
+eq_cell : bool <- cell <- cell 
+
+// COLOR's BASE CONSTRUCTORS --------------------------------------------------
+// note: We view /outside/ as the color of an out-of-bounds cell.  We view 
+//       these... 
+outside : color
+black   : color
+gray    : color
+//       ... as more fundamental and hence more likely than the following ...
+brown   : color
+red     : color
+yellow  : color
+orange  : color
+green   : color
+teal    : color
+blue    : color
+purple  : color
+
+// DIRECTION's BASE CONSTRUCTORS ----------------------------------------------
+// note: We view these...
+east    : dir
+north   : dir
+west    : dir
+south   : dir
+// ... as more fundamental and hence more likely than the following ...
+n_east  : dir
+n_west  : dir
+s_west  : dir
+s_east  : dir
