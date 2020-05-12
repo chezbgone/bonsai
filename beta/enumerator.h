@@ -15,7 +15,7 @@
 // TODO: replace by type.h's construct
 
 //#define NB_TYPES 3 
-#define NB_TYPES 21
+#define NB_TYPES 20
 typedef enum EType EType;
 enum EType {
     //TINT                 = 0,
@@ -35,18 +35,16 @@ enum EType {
     TCELL                    =  9,
 
     TCELL_CELL               = 10,
-    TCELL_CELL_BOOLCELL      = 11,
-    TCELL_CELL_BOOLCELL_DRCT = 12,
-    TCELL_CELL_DRCT          = 13,
-    TCOLOR                   = 14,
+    TCELL_CELL_DRCT          = 11,
+    TCELL_CELL_DRCT_BOOLCELL = 12,
+    TCOLOR                   = 13,
+    TCOLOR_CELL              = 14,
 
-    TCOLOR_CELL              = 15,
-    TDRCT                    = 16,                     
-    TDRCT_CELL               = 17,
-    TDRCT_CELL_CELL          = 18,   
-    TDRCT_DRCT               = 19,
-
-    TDRCT_DRCT_DRCT          = 20, 
+    TDRCT                    = 15,                     
+    TDRCT_CELL               = 16,
+    TDRCT_CELL_CELL          = 17,   
+    TDRCT_DRCT               = 18,
+    TDRCT_DRCT_DRCT          = 19, 
 };
 
 extern bool is_func[];

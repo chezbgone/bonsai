@@ -18,25 +18,22 @@
 bool is_func[] = {
     false   , true      , true                  , true          , true      ,
     true    , true      , true                  , true          , false     ,
-    true    , true      , true                  , true          , false     ,
-    true    , false     , true                  , true          , true      ,  
-    true    ,
+    true    , true      , true                  , false         , true      ,
+    false   , true      , true                  , true          , true
 };
 
 EType arg_type[] = { 
     -1      , TBOOL     , TBOOL                 , TCELL         , TCELL     , 
     TCOLOR  , TCOLOR    , TDRCT                 , TDRCT         , -1        ,
-    TCELL   , TBOOLCELL , TDRCT                 , TDRCT         , -1        ,
-    TCELL   , -1        , TCELL                 , TCELL         , TDRCT     ,
-    TDRCT  
+    TCELL   , TDRCT     , TBOOLCELL             , -1            , TCELL     ,
+    -1      , TCELL     , TCELL                 , TDRCT         , TDRCT
 };
 
 EType out_type[] = { 
     -1      , TBOOL     , TBOOLBOOL             , TBOOL         , TBOOLCELL ,
     TBOOL   , TBOOLCOLOR, TBOOL                 , TBOOLDRCT     , -1        ,
-    TCELL   , TCELL_CELL, TCELL_CELL_BOOLCELL   , TCELL_CELL    , -1        ,
-    TCOLOR  , -1        , TDRCT                 , TDRCT_CELL    , TDRCT     ,
-    TDRCT_DRCT
+    TCELL   , TCELL_CELL, TCELL_CELL_DRCT       , -1            , TCOLOR    ,
+    -1      , TDRCT     , TDRCT_CELL            , TDRCT         , TDRCT_DRCT
 };
 
 void insert(LambList* ll, ScoredLamb e)
