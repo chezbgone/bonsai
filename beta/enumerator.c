@@ -11,9 +11,33 @@
 #include "type.h" 
 #include "enumerator.h" 
 
-bool is_func[]   = {false,true,true};
-EType arg_type[] = {-1,TINT,TINT};
-EType out_type[] = {-1,TINT,TINT_FRM_INT};
+//bool is_func[] = {false,true,true};
+//EType arg_type[] = {-1,TINT,TINT};
+//EType out_type[] = {-1,TINT,TINT_FRM_INT};
+
+bool is_func[] = {
+    false   , true      , true                  , true          , true      ,
+    true    , true      , true                  , true          , false     ,
+    true    , true      , true                  , true          , false     ,
+    true    , false     , true                  , true          , true      ,  
+    true    ,
+};
+
+EType arg_type[] = { 
+    -1      , TBOOL     , TBOOL                 , TCELL         , TCELL     , 
+    TCOLOR  , TCOLOR    , TDRCT                 , TDRCT         , -1        ,
+    TCELL   , TBOOLCELL , TDRCT                 , TDRCT         , -1        ,
+    TCELL   , -1        , TCELL                 , TCELL         , TDRCT     ,
+    TDRCT  
+};
+
+EType out_type[] = { 
+    -1      , TBOOL     , TBOOLBOOL             , TBOOL         , TBOOLCELL ,
+    TBOOL   , TBOOLCOLOR, TBOOL                 , TBOOLDRCT     , -1        ,
+    TCELL   , TCELL_CELL, TCELL_CELL_BOOLCELL   , TCELL_CELL    , -1        ,
+    TCOLOR  , -1        , TDRCT                 , TDRCT_CELL    , TDRCT     ,
+    TDRCT_DRCT
+};
 
 void insert(LambList* ll, ScoredLamb e)
 {
@@ -59,6 +83,7 @@ LambList free_all_but(LambsByEType* lbt, EType target)
 
 void pass(float eval_score, LambList* funs, LambList* outs, LambList* args, float min_score)
 { 
+    //fprintf(stderr, "pass\n");
     for ( int fun_i = 0; fun_i != funs->active_hi; ++fun_i ) {
         ScoredLamb fun = funs->arr[fun_i]; 
         int arg_start = (fun_i < funs->active_lo) ? args->active_lo : 0;
@@ -94,10 +119,10 @@ LambList enumerate(Grammar const* G, float min_score, EType target)
             LambList* args = &(lbt->arr[arg_type[fun_t]]);
             LambList* outs = &(lbt->arr[out_type[fun_t]]);
 
-            printf(
-                "pass (%d):     fun %6d        arg %6d        out %6d\n",
-                fun_t, funs->len, args->len, outs->len
-            );
+            //printf(
+            //    "pass (%d):     fun %6d        arg %6d        out %6d\n",
+            //    fun_t, funs->len, args->len, outs->len
+            //);
             int old_len = outs->len;
             pass(G->eval_score[fun_t], funs, outs, args, min_score); 
             found |= ( outs->len != old_len );
@@ -106,7 +131,15 @@ LambList enumerate(Grammar const* G, float min_score, EType target)
             lbt->arr[t].active_lo = lbt->arr[t].active_hi;
             lbt->arr[t].active_hi = lbt->arr[t].len;
         }
+        for ( int t = 0; t != NB_TYPES; ++t ) {
+            printf("(%2d : %2d)", t, lbt->arr[t].len);
+        }
+        printf("\n");
     }
 
     return free_all_but(lbt, target);
 } 
+
+
+
+

@@ -1,7 +1,7 @@
 /*  author: samtenka
- *  change: 2020-05-09
+ *  change: 2020-05-10
  *  create: 2020-05-09
- *  descrp: interface for bootom-up program enumeration
+ *  descrp: interface for bottom-up program enumeration
  *  to use: 
  */
 
@@ -13,23 +13,52 @@
 //#include "type.h" 
 
 // TODO: replace by type.h's construct
+
+//#define NB_TYPES 3 
+#define NB_TYPES 21
 typedef enum EType EType;
 enum EType {
-    TINT                = 0,
-    TINT_FRM_INT        = 1, 
-    TINT_FRM_INT_FRM_INT= 2, 
-};
-#define NB_TYPES 3 
+    //TINT                 = 0,
+    //TINT_FRM_INT         = 1, 
+    //TINT_FRM_INT_FRM_INT = 2, 
 
-bool is_func[NB_TYPES];
-EType arg_type[NB_TYPES];
-EType out_type[NB_TYPES];
+    TBOOL                    =  0,
+    TBOOLBOOL                =  1,
+    TBOOLBOOL_BOOL           =  2,
+    TBOOLCELL                =  3,
+    TBOOLCELL_CELL           =  4,
+
+    TBOOLCOLOR               =  5,
+    TBOOLCOLOR_COLOR         =  6, 
+    TBOOLDRCT                =  7,
+    TBOOLDRCT_DRCT           =  8,
+    TCELL                    =  9,
+
+    TCELL_CELL               = 10,
+    TCELL_CELL_BOOLCELL      = 11,
+    TCELL_CELL_BOOLCELL_DRCT = 12,
+    TCELL_CELL_DRCT          = 13,
+    TCOLOR                   = 14,
+
+    TCOLOR_CELL              = 15,
+    TDRCT                    = 16,                     
+    TDRCT_CELL               = 17,
+    TDRCT_CELL_CELL          = 18,   
+    TDRCT_DRCT               = 19,
+
+    TDRCT_DRCT_DRCT          = 20, 
+};
+
+extern bool is_func[];
+extern EType arg_type[];
+extern EType out_type[];
 
 /*===========================================================================*/
 /*====  0. GRAMMAR and PROGRAM LIST  ========================================*/
 /*===========================================================================*/
 
-// Bottom up ENUMERATION: no abstractions for now
+// TODO: note that right now we do bottom up enumeration with no abstractions
+//       for now
 
 typedef struct Grammar Grammar;
 struct Grammar {
@@ -57,3 +86,4 @@ struct LambsByEType { LambList arr[NB_TYPES]; };
 LambList enumerate(Grammar const* G, float min_score, EType target);
 
 #endif//ENUMERATOR_H
+
