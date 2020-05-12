@@ -60,7 +60,12 @@ LambsByEType* init_lbt(Grammar const* G)
         lbt->arr[t] = (LambList){.arr = malloc(sizeof(ScoredLamb)*1), .len = 0, .cap = 1};
     }
     for ( int l = 0; l != G->nb_leaves; ++l ) {
-        ScoredLamb sp = {.score = G->leaf_scores[l], .e = leaf_expr(l)};  
+        ScoredLamb sp = {
+            .score = G->leaf_scores[l],
+            .e = leaf_expr(l),
+            .is_const = G->is_const[l],
+            .needs_nonconst = G->needs_nonconst[l] 
+        };  
         insert(&(lbt->arr[G->leaf_types[l]]), sp);
     }
     for ( int t = 0; t != NB_TYPES; ++t ) {
@@ -81,19 +86,29 @@ LambList free_all_but(LambsByEType* lbt, EType target)
     return remaining;
 }
 
-void pass(float eval_score, LambList* funs, LambList* outs, LambList* args, float min_score)
+void pass(Grammar const* G, float eval_score, LambList* funs, LambList* outs, LambList* args, float min_score, bool penultimate)
 { 
-    //fprintf(stderr, "pass\n");
     for ( int fun_i = 0; fun_i != funs->active_hi; ++fun_i ) {
         ScoredLamb fun = funs->arr[fun_i]; 
         int arg_start = (fun_i < funs->active_lo) ? args->active_lo : 0;
         for ( int arg_i = arg_start; arg_i != args->active_hi; ++arg_i ) {
             ScoredLamb arg = args->arr[arg_i]; 
+
+            if ( penultimate && fun.needs_nonconst && arg.is_const ) { continue; }
+            if ( fun.e->tag == EVAL && fun.e->FUN->tag == LEAF && G->commutes[fun.e->FUN->LID] ) {
+                if ( ! ( fun.e->ARG->hash <= arg.e->hash ) ) { continue; }   
+            }
+            if ( fun.e->tag == EVAL && fun.e->FUN->tag == LEAF && G->needs_unequal[fun.e->FUN->LID] ) {
+                if ( same_expr(fun.e->ARG, arg.e) ) { continue; }   
+            }
+
             float new_score = eval_score + fun.score + arg.score; 
             if ( new_score < min_score ) { continue; }
             ScoredLamb new_prog = {
                 .score = new_score,
-                .e = eval_expr(fun.e, arg.e)
+                .e = eval_expr(fun.e, arg.e),
+                .is_const = fun.is_const && arg.is_const,
+                .needs_nonconst = fun.needs_nonconst && arg.is_const,
             };
             insert(outs, new_prog);
         }
@@ -119,12 +134,10 @@ LambList enumerate(Grammar const* G, float min_score, EType target)
             LambList* args = &(lbt->arr[arg_type[fun_t]]);
             LambList* outs = &(lbt->arr[out_type[fun_t]]);
 
-            //printf(
-            //    "pass (%d):     fun %6d        arg %6d        out %6d\n",
-            //    fun_t, funs->len, args->len, outs->len
-            //);
+            bool penultimate = is_func[fun_t] && ! is_func[out_type[fun_t]];  
+
             int old_len = outs->len;
-            pass(G->eval_score[fun_t], funs, outs, args, min_score); 
+            pass(G, G->eval_score[fun_t], funs, outs, args, min_score, penultimate); 
             found |= ( outs->len != old_len );
         }
         for ( int t = 0; t != NB_TYPES; ++t ) {

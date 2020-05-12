@@ -53,8 +53,8 @@ Primitive my_prims[] = {
     {"scan"     , TCELL_CELL_BOOLCELL_DRCT  , 99 ,     16    }, 
 
     {"view"     , TCOLOR_CELL               , 99 ,        64 },
-    {"outside"  , TCOLOR                    , 99 ,     16    },
-    {"black"    , TCOLOR                    , 99 ,     16    },
+    {"outside"  , TCOLOR                    , 99 ,   4       },
+    {"black"    , TCOLOR                    , 99 ,   4       },
     {"gray"     , TCOLOR                    , 99 ,   4       },
     {"blue"     , TCOLOR                    , 99 , 1         },
     {"brown"    , TCOLOR                    , 99 , 1         },
@@ -81,10 +81,46 @@ float eval_scores[NB_TYPES];
 char leaf_names[][16] = {
     "not"    , "and"    , "or"     , "eq_dir" , "eq_color" , "eq_cell" ,
     "base"   , "offset" , "scan"   , "view"   , "outside"  , "black"   ,
-    "gray"   , "blue"   , "brown"  , "green"  , "orange"   , 
-    "purple" , "red"    , "teal"   , "yellow" , "diff"     , "negate"  ,
-    "plus"   , "east"   , "north"  , "west"   , "south"    , "n_east"  ,
-    "n_west" , "s_west" , "s_east"   
+    "gray"   , "blue"   , "brown"  , "green"  , "orange"   , "purple"  ,
+    "red"    , "teal"   , "yellow" , "diff"   , "negate"   , "plus"    ,
+    "east"   , "north"  , "west"   , "south"  , "n_east"   , "n_west"  ,
+    "s_west" , "s_east"   
+};
+
+bool is_const[] = {
+    true     , true     , true     , true     , true       , true      ,
+    false/**/, true     , true     , true     , true       , true      ,
+    true     , true     , true     , true     , true       , true      ,
+    true     , true     , true     , true     , true       , true      ,
+    true     , true     , true     , true     , true       , true      ,
+    true     , true
+};
+
+bool needs_nonconst[] = {
+    false    , false    , false    , true/**/ , true/**/   , true/**/  ,
+    false    , false    , false    , false    , false      , false     ,
+    false    , false    , false    , false    , false      , false     ,
+    false    , false    , false    , true/**/ , false      , false     ,
+    false    , false    , false    , false    , false      , false     ,
+    false    , false
+};
+
+bool commutes[] = {
+    false    , true/**/ , true/**/ , true/**/ , true/**/   , true/**/  ,
+    false    , false    , false    , false    , false      , false     ,
+    false    , false    , false    , false    , false      , false     ,
+    false    , false    , false    , false    , false      , true/**/  ,
+    false    , false    , false    , false    , false      , false     ,
+    false    , false
+};
+
+bool needs_unequal[] = {
+    false    , true/**/ , true/**/ , true/**/ , true/**/   , true/**/  ,
+    false    , false    , false    , false    , false      , false     ,
+    false    , false    , false    , false    , false      , false     ,
+    false    , false    , false    , true/**/ , false      , false     ,
+    false    , false    , false    , false    , false      , false     ,
+    false    , false
 };
 
 void initialize_primitive_scores()
@@ -129,6 +165,10 @@ void main()
         .nb_leaves   = NB_PRIMITIVES,
         .leaf_scores = leaf_scores,
         .leaf_types  = leaf_types,
+        .is_const    = is_const,
+        .needs_nonconst = needs_nonconst,
+        .commutes    = commutes,
+        .needs_unequal = needs_unequal,
     };
     for ( int t = 0; t != NB_TYPES; ++t ) {
         G.eval_score[t] = eval_scores[t];
@@ -137,7 +177,7 @@ void main()
 
     fprintf(stderr, "hi!\n");
 
-    LambList ll = enumerate(&G, -12, TBOOL); 
+    LambList ll = enumerate(&G, -8 , TBOOL); 
     for ( int pi = 0; pi != ll.len; ++pi ) {
         lava();
         printf("%8.4f ", ll.arr[pi].score);

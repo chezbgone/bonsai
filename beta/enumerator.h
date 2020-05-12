@@ -66,10 +66,15 @@ struct Grammar {
     float const* leaf_scores; 
     EType const* leaf_types; 
     float eval_score[NB_TYPES];
+
+    bool const* is_const;
+    bool const* needs_nonconst;
+    bool const* commutes;
+    bool const* needs_unequal;
 };
 
 typedef struct ScoredLamb ScoredLamb;
-struct ScoredLamb { float score; LambExpr* e; }; 
+struct ScoredLamb { float score; LambExpr* e; bool is_const; bool needs_nonconst; }; 
 
 typedef struct LambList LambList; 
 struct LambList {
