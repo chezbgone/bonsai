@@ -64,6 +64,7 @@ struct Grammar {
     float const* leaf_scores; 
     EType const* leaf_types; 
     float eval_score[NB_TYPES];
+    float abst_score;
 
     bool const* is_const;
     bool const* needs_nonconst;

@@ -7,6 +7,7 @@
 
 #include <stdlib.h> 
 #include <stdio.h> 
+#include "colors.h" 
 #include "lambda.h" 
 #include "type.h" 
 #include "enumerator.h" 
@@ -83,8 +84,31 @@ LambList free_all_but(LambsByEType* lbt, EType target)
     return remaining;
 }
 
-void pass(Grammar const* G, float eval_score, LambList* funs, LambList* outs, LambList* args, float min_score, bool penultimate)
+void abst_pass(Grammar const* G, LambList* funs, LambList* bods, float min_score)
 { 
+    for ( int bod_i = bods->active_lo; bod_i != bods->active_hi; ++bod_i ) {
+        ScoredLamb bod = bods->arr[bod_i]; 
+
+        if ( bod.is_const ) { continue; }
+
+        float new_score = G->abst_score + bod.score;
+
+        if ( new_score < min_score ) { continue; }
+
+        ScoredLamb new_prog = {
+            .score = new_score,
+            .e = abst_expr(bod.e),
+            .is_const = bod.is_const, /* for now, guarded above as false */
+            .needs_nonconst = bod.needs_nonconst,
+        };
+        //print_expr(new_prog.e, NULL);printf("\n");
+        insert(funs, new_prog);
+    }
+}
+
+void eval_pass(Grammar const* G, EType fun_t, LambList* funs, LambList* outs, LambList* args, float min_score, bool penultimate)
+{ 
+    float eval_score = G->eval_score[fun_t];
     for ( int fun_i = 0; fun_i != funs->active_hi; ++fun_i ) {
         ScoredLamb fun = funs->arr[fun_i]; 
         int arg_start = (fun_i < funs->active_lo) ? args->active_lo : 0;
@@ -133,16 +157,36 @@ LambList enumerate(Grammar const* G, float min_score, EType target)
 
             bool penultimate = is_func[fun_t] && ! is_func[out_type[fun_t]];  
 
-            int old_len = outs->len;
-            pass(G, G->eval_score[fun_t], funs, outs, args, min_score, penultimate); 
-            found |= ( outs->len != old_len );
+            /* eval */
+            {
+                int old_len = outs->len;
+                eval_pass(G, fun_t, funs, outs, args, min_score, penultimate); 
+                found |= ( outs->len != old_len );
+            }
+
+            if ( fun_t != TBOOLCELL ) { continue; }
+
+            /* abst */
+            {
+                int old_len = funs->len;
+                abst_pass(G, funs, outs, min_score);
+                found |= ( funs->len != old_len );
+            }
         }
         for ( int t = 0; t != NB_TYPES; ++t ) {
             lbt->arr[t].active_lo = lbt->arr[t].active_hi;
             lbt->arr[t].active_hi = lbt->arr[t].len;
         }
         for ( int t = 0; t != NB_TYPES; ++t ) {
-            printf("(%2d : %2d)", t, lbt->arr[t].len);
+            printf("("           );
+            lava();
+            printf( "%02d"       , t);
+            defc();
+            printf(     " : "    );
+            lime();
+            printf(        "%4d" , lbt->arr[t].len);
+            defc();
+            printf(           ")");
         }
         printf("\n");
     }

@@ -40,47 +40,51 @@ struct Primitive {
     float weight;
 };
 
+const float ABST_PROB = 0.9;
+
 const int NB_PRIMITIVES = 32;
 Primitive my_prims[] = {
-    {"not"      , TBOOLBOOL                 , 99 , 1       },
-    {"and"      , TBOOLBOOL_BOOL            , 99 , 1       },
-    {"or"       , TBOOLBOOL_BOOL            , 99 , 1       },
-    {"eq_dir"   , TBOOLDRCT_DRCT            , 99 , 1       },
-    {"eq_color" , TBOOLCOLOR_COLOR          , 99 ,       8 },
-    {"eq_cell"  , TBOOLCELL_CELL            , 99 , 1       },
+    {"not"      , TBOOLBOOL                 , 99 , 1         },
+    {"and"      , TBOOLBOOL_BOOL            , 99 , 1         },
+    {"or"       , TBOOLBOOL_BOOL            , 99 , 1         },
+    {"eq_dir"   , TBOOLDRCT_DRCT            , 99 , 1         },
+    {"eq_color" , TBOOLCOLOR_COLOR          , 99 ,     16    },
 
-    {"base"     , TCELL                     , 99 ,       8 }, 
-    {"offset"   , TCELL_CELL_DRCT           , 99 ,     4   }, 
-    {"scan"     , TCELL_CELL_DRCT_BOOLCELL  , 99 , 1       }, 
+    //{"eq_cell"  , TBOOLCELL_CELL            , 99 , 1         },
+    {"dummy"    , TBOOL                     , 99 , 1         },
 
-    {"view"     , TCOLOR_CELL               , 99 ,       8 },
-    {"outside"  , TCOLOR                    , 99 ,     4   },
-    {"black"    , TCOLOR                    , 99 ,     4   },
-    {"gray"     , TCOLOR                    , 99 ,   2     },
-    {"blue"     , TCOLOR                    , 99 , 1       },
-    {"brown"    , TCOLOR                    , 99 , 1       },
-    {"green"    , TCOLOR                    , 99 , 1       },
-    {"orange"   , TCOLOR                    , 99 , 1       },
-    {"purple"   , TCOLOR                    , 99 , 1       },
-    {"red"      , TCOLOR                    , 99 , 1       },
-    {"teal"     , TCOLOR                    , 99 , 1       },
-    {"yellow"   , TCOLOR                    , 99 , 1       }, 
+    {"base"     , TCELL                     , 99 ,        64 }, 
+    {"offset"   , TCELL_CELL_DRCT           , 99 ,     16    }, 
+    {"scan"     , TCELL_CELL_DRCT_BOOLCELL  , 99 ,   4       }, 
 
-    {"diff"     , TDRCT_CELL_CELL           , 99 , 1       },
-    {"negate"   , TDRCT_DRCT                , 99 , 1       },
-    {"plus"     , TDRCT_DRCT_DRCT           , 99 ,   2     },
-    {"east"     , TDRCT                     , 99 ,       8 },
-    {"north"    , TDRCT                     , 99 ,       8 },
-    {"west"     , TDRCT                     , 99 ,       8 },
-    {"south"    , TDRCT                     , 99 ,       8 },
-    {"n_east"   , TDRCT                     , 99 ,     4   },
-    {"n_west"   , TDRCT                     , 99 ,     4   },
-    {"s_west"   , TDRCT                     , 99 ,     4   },
-    {"s_east"   , TDRCT                     , 99 ,     4   },
+    {"view"     , TCOLOR_CELL               , 99 ,     16    },
+    {"outside"  , TCOLOR                    , 99 ,   4       },
+    {"black"    , TCOLOR                    , 99 ,   4       },
+    {"gray"     , TCOLOR                    , 99 ,   4       },
+    {"blue"     , TCOLOR                    , 99 , 1         },
+    {"brown"    , TCOLOR                    , 99 , 1         },
+    {"green"    , TCOLOR                    , 99 , 1         },
+    {"orange"   , TCOLOR                    , 99 , 1         },
+    {"purple"   , TCOLOR                    , 99 , 1         },
+    {"red"      , TCOLOR                    , 99 , 1         },
+    {"teal"     , TCOLOR                    , 99 , 1         },
+    {"yellow"   , TCOLOR                    , 99 , 1         }, 
+
+    {"diff"     , TDRCT_CELL_CELL           , 99 , 1         },
+    {"negate"   , TDRCT_DRCT                , 99 , 1         },
+    {"plus"     , TDRCT_DRCT_DRCT           , 99 ,   4       },
+    {"east"     , TDRCT                     , 99 ,     16    },
+    {"north"    , TDRCT                     , 99 ,     16    },
+    {"west"     , TDRCT                     , 99 ,     16    },
+    {"south"    , TDRCT                     , 99 ,     16    },
+    {"n_east"   , TDRCT                     , 99 ,   4       },
+    {"n_west"   , TDRCT                     , 99 ,   4       },
+    {"s_west"   , TDRCT                     , 99 ,   4       },
+    {"s_east"   , TDRCT                     , 99 ,   4       },
 };
 float eval_scores[NB_TYPES];
 char leaf_names[][16] = {
-    "not"    , "and"    , "or"     , "eq_dir" , "eq_color" , "eq_cell" ,
+    "not"    , "and"    , "or"     , "eq_dir" , "eq_color" , "dummy"   ,
     "base"   , "offset" , "scan"   , "view"   , "outside"  , "black"   ,
     "gray"   , "blue"   , "brown"  , "green"  , "orange"   , "purple"  ,
     "red"    , "teal"   , "yellow" , "diff"   , "negate"   , "plus"    ,
@@ -147,8 +151,8 @@ void initialize_primitive_scores()
 
     for ( int t = 0; t != NB_TYPES; ++t) {
         eval_scores[t] = plog(
-            is_func[t] ? weight_to[t] / weight_to[out_type[t]] 
-                       : 0.0
+            ( ( t == TBOOLCELL ) ? (1-ABST_PROB) : 1.0 ) *
+            ( is_func[t] ? ( weight_to[t] / weight_to[out_type[t]]) : 0.0 )
         );
     }
 }
@@ -177,6 +181,8 @@ void main()
         .needs_nonconst = needs_nonconst,
         .commutes    = commutes,
         .needs_unequal = needs_unequal,
+
+        .abst_score = plog(ABST_PROB),
     };
     for ( int t = 0; t != NB_TYPES; ++t ) {
         G.eval_score[t] = eval_scores[t];
@@ -185,7 +191,7 @@ void main()
 
     fprintf(stderr, "hi!\n");
 
-    LambList ll = enumerate(&G, -11, TBOOL); 
+    LambList ll = enumerate(&G, -11, TCELL); 
     for ( int pi = 0; pi != ll.len; ++pi ) {
         lava();
         printf("%8.4f ", ll.arr[pi].score);
