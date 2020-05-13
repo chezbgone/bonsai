@@ -40,7 +40,7 @@ struct Primitive {
     float weight;
 };
 
-const float ABST_PROB = 0.9;
+const float ABST_PROB = 0.5;
 
 const int NB_PRIMITIVES = 32;
 Primitive my_prims[] = {
@@ -48,10 +48,8 @@ Primitive my_prims[] = {
     {"and"      , TBOOLBOOL_BOOL            , 99 , 1         },
     {"or"       , TBOOLBOOL_BOOL            , 99 , 1         },
     {"eq_dir"   , TBOOLDRCT_DRCT            , 99 , 1         },
-    {"eq_color" , TBOOLCOLOR_COLOR          , 99 ,     16    },
-
-    //{"eq_cell"  , TBOOLCELL_CELL            , 99 , 1         },
-    {"dummy"    , TBOOL                     , 99 , 1         },
+    {"eq_color" , TBOOLCOLOR_COLOR          , 99 ,        64 },
+    {"sees"     , TBOOLCELL_DRCT_BOOLCOLOR  , 99 ,     16    }, 
 
     {"base"     , TCELL                     , 99 ,        64 }, 
     {"offset"   , TCELL_CELL_DRCT           , 99 ,     16    }, 
@@ -60,7 +58,7 @@ Primitive my_prims[] = {
     {"view"     , TCOLOR_CELL               , 99 ,     16    },
     {"outside"  , TCOLOR                    , 99 ,   4       },
     {"black"    , TCOLOR                    , 99 ,   4       },
-    {"gray"     , TCOLOR                    , 99 ,   4       },
+    {"gray"     , TCOLOR                    , 99 , 1         },
     {"blue"     , TCOLOR                    , 99 , 1         },
     {"brown"    , TCOLOR                    , 99 , 1         },
     {"green"    , TCOLOR                    , 99 , 1         },
@@ -72,19 +70,19 @@ Primitive my_prims[] = {
 
     {"diff"     , TDRCT_CELL_CELL           , 99 , 1         },
     {"negate"   , TDRCT_DRCT                , 99 , 1         },
-    {"plus"     , TDRCT_DRCT_DRCT           , 99 ,   4       },
-    {"east"     , TDRCT                     , 99 ,     16    },
-    {"north"    , TDRCT                     , 99 ,     16    },
-    {"west"     , TDRCT                     , 99 ,     16    },
-    {"south"    , TDRCT                     , 99 ,     16    },
-    {"n_east"   , TDRCT                     , 99 ,   4       },
-    {"n_west"   , TDRCT                     , 99 ,   4       },
-    {"s_west"   , TDRCT                     , 99 ,   4       },
-    {"s_east"   , TDRCT                     , 99 ,   4       },
+    {"plus"     , TDRCT_DRCT_DRCT           , 99 ,        64 },
+    {"east"     , TDRCT                     , 99 ,        64 },
+    {"north"    , TDRCT                     , 99 ,        64 },
+    {"west"     , TDRCT                     , 99 ,        64 },
+    {"south"    , TDRCT                     , 99 ,        64 },
+    {"n_east"   , TDRCT                     , 99 , 1         },
+    {"n_west"   , TDRCT                     , 99 , 1         },
+    {"s_west"   , TDRCT                     , 99 , 1         },
+    {"s_east"   , TDRCT                     , 99 , 1         },
 };
 float eval_scores[NB_TYPES];
 char leaf_names[][16] = {
-    "not"    , "and"    , "or"     , "eq_dir" , "eq_color" , "dummy"   ,
+    "not"    , "and"    , "or"     , "eq_dir" , "eq_color" , "sees"    ,
     "base"   , "offset" , "scan"   , "view"   , "outside"  , "black"   ,
     "gray"   , "blue"   , "brown"  , "green"  , "orange"   , "purple"  ,
     "red"    , "teal"   , "yellow" , "diff"   , "negate"   , "plus"    ,
@@ -105,13 +103,13 @@ bool needs_nonconst[] = {
     false    , false    , false    , true/**/ , true/**/   , true/**/  ,
     false    , false    , false    , false    , false      , false     ,
     false    , false    , false    , false    , false      , false     ,
-    false    , false    , false    , true/**/ , false      , false     ,
+    false    , false    , false    , true/**/ , true/**/   , false     ,
     false    , false    , false    , false    , false      , false     ,
     false    , false
 };
 
 bool commutes[] = {
-    false    , true/**/ , true/**/ , true/**/ , true/**/   , true/**/  ,
+    false    , true/**/ , true/**/ , true/**/ , true/**/   , false     ,
     false    , false    , false    , false    , false      , false     ,
     false    , false    , false    , false    , false      , false     ,
     false    , false    , false    , false    , false      , true/**/  ,
@@ -120,13 +118,24 @@ bool commutes[] = {
 };
 
 bool needs_unequal[] = {
-    false    , true/**/ , true/**/ , true/**/ , true/**/   , true/**/  ,
+    false    , true/**/ , true/**/ , true/**/ , true/**/   , false     ,
     false    , false    , false    , false    , false      , false     ,
     false    , false    , false    , false    , false      , false     ,
     false    , false    , false    , true/**/ , false      , false     ,
     false    , false    , false    , false    , false      , false     ,
     false    , false
 };
+
+bool is_monoid_action[] = {
+    false    , false    , false    , false    , false      , false     ,
+    false    , true/**/ , false    , false    , false      , false     ,
+    false    , false    , false    , false    , false      , false     ,
+    false    , false    , false    , false    , false      , false     ,
+    false    , false    , false    , false    , false      , false     ,
+    false    , false
+};
+
+
 
 void initialize_primitive_scores()
 {
@@ -181,6 +190,7 @@ void main()
         .needs_nonconst = needs_nonconst,
         .commutes    = commutes,
         .needs_unequal = needs_unequal,
+        .is_monoid_action = is_monoid_action,
 
         .abst_score = plog(ABST_PROB),
     };
@@ -191,7 +201,7 @@ void main()
 
     fprintf(stderr, "hi!\n");
 
-    LambList ll = enumerate(&G, -11, TCELL); 
+    LambList ll = enumerate(&G, -12, TBOOL); 
     for ( int pi = 0; pi != ll.len; ++pi ) {
         lava();
         printf("%8.4f ", ll.arr[pi].score);

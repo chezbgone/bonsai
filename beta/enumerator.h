@@ -15,7 +15,7 @@
 // TODO: replace by type.h's construct
 
 //#define NB_TYPES 3 
-#define NB_TYPES 20
+#define NB_TYPES 22
 typedef enum EType EType;
 enum EType {
     //TINT                 = 0,
@@ -45,6 +45,9 @@ enum EType {
     TDRCT_CELL_CELL          = 17,   
     TDRCT_DRCT               = 18,
     TDRCT_DRCT_DRCT          = 19, 
+
+    TBOOLCELL_DRCT_BOOLCOLOR = 20,
+    TBOOLCELL_DRCT           = 21,
 };
 
 extern bool is_func[];
@@ -70,6 +73,7 @@ struct Grammar {
     bool const* needs_nonconst;
     bool const* commutes;
     bool const* needs_unequal;
+    bool const* is_monoid_action;
 };
 
 typedef struct ScoredLamb ScoredLamb;
