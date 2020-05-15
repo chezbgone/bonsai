@@ -36,113 +36,65 @@ typedef struct Primitive Primitive;
 struct Primitive {
     char name[16];
     EType type;
-    float score;
     float weight;
+    bool is_const;
+    bool needs_nonconst;
+    bool commutes;
+    bool needs_unequal;
+    bool absorbs_self;
 };
 
-const float ABST_PROB = 0.5;
+const float ABST_PROB = 0.0;
 
-const int NB_PRIMITIVES = 32;
-Primitive my_prims[] = {
-    {"not"      , TBOOLBOOL                 , 99 , 1         },
-    {"and"      , TBOOLBOOL_BOOL            , 99 , 1         },
-    {"or"       , TBOOLBOOL_BOOL            , 99 , 1         },
-    {"eq_dir"   , TBOOLDRCT_DRCT            , 99 , 1         },
-    {"eq_color" , TBOOLCOLOR_COLOR          , 99 ,        64 },
-    {"sees"     , TBOOLCELL_DRCT_BOOLCOLOR  , 99 ,     16    }, 
-
-    {"base"     , TCELL                     , 99 ,        64 }, 
-    {"offset"   , TCELL_CELL_DRCT           , 99 ,     16    }, 
-    {"scan"     , TCELL_CELL_DRCT_BOOLCELL  , 99 ,   4       }, 
-
-    {"view"     , TCOLOR_CELL               , 99 ,     16    },
-    {"outside"  , TCOLOR                    , 99 ,   4       },
-    {"black"    , TCOLOR                    , 99 ,   4       },
-    {"gray"     , TCOLOR                    , 99 , 1         },
-    {"blue"     , TCOLOR                    , 99 , 1         },
-    {"brown"    , TCOLOR                    , 99 , 1         },
-    {"green"    , TCOLOR                    , 99 , 1         },
-    {"orange"   , TCOLOR                    , 99 , 1         },
-    {"purple"   , TCOLOR                    , 99 , 1         },
-    {"red"      , TCOLOR                    , 99 , 1         },
-    {"teal"     , TCOLOR                    , 99 , 1         },
-    {"yellow"   , TCOLOR                    , 99 , 1         }, 
-
-    {"diff"     , TDRCT_CELL_CELL           , 99 , 1         },
-    {"negate"   , TDRCT_DRCT                , 99 , 1         },
-    {"plus"     , TDRCT_DRCT_DRCT           , 99 ,        64 },
-    {"east"     , TDRCT                     , 99 ,        64 },
-    {"north"    , TDRCT                     , 99 ,        64 },
-    {"west"     , TDRCT                     , 99 ,        64 },
-    {"south"    , TDRCT                     , 99 ,        64 },
-    {"n_east"   , TDRCT                     , 99 , 1         },
-    {"n_west"   , TDRCT                     , 99 , 1         },
-    {"s_west"   , TDRCT                     , 99 , 1         },
-    {"s_east"   , TDRCT                     , 99 , 1         },
+#define NB_PRIMITIVES 23
+Primitive my_prims[] = {                         /*const  nnonc  comm   uneq   absbs*/
+    {"here"     , tCEL                ,      64 , false, 1    , 0    , 0    , 0    }, 
+    {"offset"   , tCEL_CEL_DIR        ,   16    , 1    , 1    , 0    , 0    , true }, 
+    /*{"scan"     , tCEL_CEL_DIR_TWOCEL , 4       , 1    , 1    , 0    , 0    , 0    }, */
+                  
+    {"east"     , tDIR                ,      64 , 1    , 1    , 0    , 0    , 0    },
+    {"north"    , tDIR                ,      64 , 1    , 1    , 0    , 0    , 0    },
+    {"south"    , tDIR                ,      64 , 1    , 1    , 0    , 0    , 0    },
+    {"west"     , tDIR                ,      64 , 1    , 1    , 0    , 0    , 0    },
+    {"plus"     , tDIR_DIR_DIR        ,      64 , 1    , false, true , 0    , 0    },
+    {"diff"     , tDIR_CEL_CEL        , 4       , 1    , 1    , 0    , true , 0    },
+    {"negate"   , tDIR_DIR            , 4       , 1    , 1    , 0    , 0    , 0/**/},
+                  
+    {"black"    , tHUE                ,      64 , 1    , 1    , 0    , 0    , 0    },
+    {"outside"  , tHUE                ,      64 , 1    , 1    , 0    , 0    , 0    },
+    {"view"     , tHUE_CEL            ,      64 , 1    , 1    , 0    , 0    , 0    },
+    {"blue"     , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"brown"    , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"gray"     , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"green"    , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"orange"   , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"purple"   , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"red"      , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"teal"     , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"yellow"   , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    }, 
+                  
+    {"has_hue"  , tTWOCEL_HUE         ,      64 , 1    , 1    , 0    , 0    , 0    }, 
+    {"sees"     , tTWOCEL_DIR_TWOCEL  ,   16    , 1    , 1    , 0    , 0    , 0    }, 
 };
 float eval_scores[NB_TYPES];
-char leaf_names[][16] = {
-    "not"    , "and"    , "or"     , "eq_dir" , "eq_color" , "sees"    ,
-    "base"   , "offset" , "scan"   , "view"   , "outside"  , "black"   ,
-    "gray"   , "blue"   , "brown"  , "green"  , "orange"   , "purple"  ,
-    "red"    , "teal"   , "yellow" , "diff"   , "negate"   , "plus"    ,
-    "east"   , "north"  , "west"   , "south"  , "n_east"   , "n_west"  ,
-    "s_west" , "s_east"   
-};
+float leaf_scores[NB_PRIMITIVES];
+EType leaf_types[NB_PRIMITIVES];
 
-bool is_const[] = {
-    true     , true     , true     , true     , true       , true      ,
-    false/**/, true     , true     , true     , true       , true      ,
-    true     , true     , true     , true     , true       , true      ,
-    true     , true     , true     , true     , true       , true      ,
-    true     , true     , true     , true     , true       , true      ,
-    true     , true
-};
-
-bool needs_nonconst[] = {
-    false    , false    , false    , true/**/ , true/**/   , true/**/  ,
-    false    , false    , false    , false    , false      , false     ,
-    false    , false    , false    , false    , false      , false     ,
-    false    , false    , false    , true/**/ , true/**/   , false     ,
-    false    , false    , false    , false    , false      , false     ,
-    false    , false
-};
-
-bool commutes[] = {
-    false    , true/**/ , true/**/ , true/**/ , true/**/   , false     ,
-    false    , false    , false    , false    , false      , false     ,
-    false    , false    , false    , false    , false      , false     ,
-    false    , false    , false    , false    , false      , true/**/  ,
-    false    , false    , false    , false    , false      , false     ,
-    false    , false
-};
-
-bool needs_unequal[] = {
-    false    , true/**/ , true/**/ , true/**/ , true/**/   , false     ,
-    false    , false    , false    , false    , false      , false     ,
-    false    , false    , false    , false    , false      , false     ,
-    false    , false    , false    , true/**/ , false      , false     ,
-    false    , false    , false    , false    , false      , false     ,
-    false    , false
-};
-
-bool is_monoid_action[] = {
-    false    , false    , false    , false    , false      , false     ,
-    false    , true/**/ , false    , false    , false      , false     ,
-    false    , false    , false    , false    , false      , false     ,
-    false    , false    , false    , false    , false      , false     ,
-    false    , false    , false    , false    , false      , false     ,
-    false    , false
-};
-
-
+char leaf_names[NB_PRIMITIVES][16];
+bool is_const[NB_PRIMITIVES];
+bool needs_nonconst[NB_PRIMITIVES];
+bool commutes[NB_PRIMITIVES];
+bool needs_unequal[NB_PRIMITIVES];
+bool absorbs_self[NB_PRIMITIVES];
 
 void initialize_primitive_scores()
 {
     float weight_to[NB_TYPES];
 
+    fprintf(stderr, "hi!\n");
     for ( int t = 0; t != NB_TYPES; ++t ) { weight_to[t] = 0.0; }
 
+    fprintf(stderr, "hi!\n");
     for ( int l = 0; l != NB_PRIMITIVES; ++l ) {
         Primitive p = my_prims[l];
         EType t = p.type; 
@@ -152,15 +104,25 @@ void initialize_primitive_scores()
         }; 
     }
 
+    fprintf(stderr, "hi!\n");
     for ( int l = 0; l != NB_PRIMITIVES; ++l ) {
         Primitive* p = &(my_prims[l]);
         EType t = p->type;
-        p->score = plog( p->weight / weight_to[t] );
+        leaf_types[l] = t;
+        leaf_scores[l] = plog( p->weight / weight_to[t] );
+
+        strcpy(leaf_names[l], p->name); 
+        is_const[l] = p->is_const;
+        needs_nonconst[l] = p->needs_nonconst;
+        commutes[l] = p->commutes;
+        needs_unequal[l] = p->needs_unequal;
+        absorbs_self[l] = p->absorbs_self;
     }
 
+    fprintf(stderr, "hi!\n");
     for ( int t = 0; t != NB_TYPES; ++t) {
         eval_scores[t] = plog(
-            ( ( t == TBOOLCELL ) ? (1-ABST_PROB) : 1.0 ) *
+            /*  ( ( t == TTWOCEL ) ? (1-ABST_PROB) : 1.0 ) *   */
             ( is_func[t] ? ( weight_to[t] / weight_to[out_type[t]]) : 0.0 )
         );
     }
@@ -169,19 +131,10 @@ void initialize_primitive_scores()
 void main()
 {
     initialize_primitive_scores();
-    //for ( int l = 0; l != NB_PRIMITIVES; ++l ) {
-    //    Primitive p = my_prims[l];
-    //    printf("%10s : %f\n", p.name, p.score);
-    //}
 
+    fprintf(stderr, "hi!\n");
     init_lamb_expr_pool();
 
-    float leaf_scores[NB_PRIMITIVES];
-    EType leaf_types[NB_PRIMITIVES];
-    for ( int l = 0; l != NB_PRIMITIVES; ++l ) {
-        leaf_scores[l] = my_prims[l].score;
-        leaf_types[l] = my_prims[l].type;
-    }
     Grammar G = {
         .nb_leaves   = NB_PRIMITIVES,
         .leaf_scores = leaf_scores,
@@ -190,8 +143,7 @@ void main()
         .needs_nonconst = needs_nonconst,
         .commutes    = commutes,
         .needs_unequal = needs_unequal,
-        .is_monoid_action = is_monoid_action,
-
+        .absorbs_self = absorbs_self,
         .abst_score = plog(ABST_PROB),
     };
     for ( int t = 0; t != NB_TYPES; ++t ) {
@@ -201,18 +153,23 @@ void main()
 
     fprintf(stderr, "hi!\n");
 
-    LambList ll = enumerate(&G, -12, TBOOL); 
+    LambList ll = enumerate(&G, -12, tTWO); 
+    printf("%d elts\n", ll.len);
     for ( int pi = 0; pi != ll.len; ++pi ) {
+        printf("%4d : ", pi);
         lava();
         printf("%8.4f ", ll.arr[pi].score);
         print_expr(ll.arr[pi].e, leaf_names);
         printf("\n");
+
+        if ( (pi+1) % 50 ) { continue; }
+        char c; scanf("%c", &c);
     }
-    printf("%d elts\n", ll.len);
     free(ll.arr);
 
     free_lamb_expr_pool();
 }
+
 
 
 

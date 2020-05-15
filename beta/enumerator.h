@@ -14,43 +14,31 @@
 
 // TODO: replace by type.h's construct
 
-//#define NB_TYPES 3 
-#define NB_TYPES 22
+#define NB_TYPES 16
 typedef enum EType EType;
 enum EType {
-    //TINT                 = 0,
-    //TINT_FRM_INT         = 1, 
-    //TINT_FRM_INT_FRM_INT = 2, 
+    tCEL                =  0,
+    tCEL_CEL            =  1,
+    tCEL_CEL_DIR        =  2,
+    tCEL_CEL_DIR_TWOCEL =  3,
 
-    TBOOL                    =  0,
-    TBOOLBOOL                =  1,
-    TBOOLBOOL_BOOL           =  2,
-    TBOOLCELL                =  3,
-    TBOOLCELL_CELL           =  4,
+    tDIR                =  4,
+    tDIR_CEL            =  5,
+    tDIR_CEL_CEL        =  6,
+    tDIR_DIR            =  7,
 
-    TBOOLCOLOR               =  5,
-    TBOOLCOLOR_COLOR         =  6, 
-    TBOOLDRCT                =  7,
-    TBOOLDRCT_DRCT           =  8,
-    TCELL                    =  9,
+    tDIR_DIR_DIR        =  8,
+    tHUE                =  9,
+    tHUE_CEL            = 10,
+    tTWO                = 11,
 
-    TCELL_CELL               = 10,
-    TCELL_CELL_DRCT          = 11,
-    TCELL_CELL_DRCT_BOOLCELL = 12,
-    TCOLOR                   = 13,
-    TCOLOR_CELL              = 14,
-
-    TDRCT                    = 15,                     
-    TDRCT_CELL               = 16,
-    TDRCT_CELL_CELL          = 17,   
-    TDRCT_DRCT               = 18,
-    TDRCT_DRCT_DRCT          = 19, 
-
-    TBOOLCELL_DRCT_BOOLCOLOR = 20,
-    TBOOLCELL_DRCT           = 21,
-};
-
-extern bool is_func[];
+    tTWOCEL             = 12,
+    tTWOCEL_DIR         = 13,
+    tTWOCEL_DIR_TWOCEL  = 14,
+    tTWOCEL_HUE         = 15,
+};                       
+                         
+extern bool is_func[];   
 extern EType arg_type[];
 extern EType out_type[];
 
@@ -73,7 +61,7 @@ struct Grammar {
     bool const* needs_nonconst;
     bool const* commutes;
     bool const* needs_unequal;
-    bool const* is_monoid_action;
+    bool const* absorbs_self;
 };
 
 typedef struct ScoredLamb ScoredLamb;

@@ -50,7 +50,8 @@ void main()
         lava();
         printf("%8.4f ", ll.arr[pi].score);
         print_expr(ll.arr[pi].e, leaf_names);
-        printf("\n");
+        printf("%d\n", pi);
+
     }
     printf("%d elts\n", ll.len);
     free(ll.arr);

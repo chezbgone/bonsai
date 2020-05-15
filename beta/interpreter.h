@@ -11,30 +11,24 @@
 #include <stdbool.h>
 #include "lambda.h" 
 
-/*===========================================================================*/
-/*====  0. GRAMMAR and PROGRAM LIST  ========================================*/
-/*===========================================================================*/
+typedef struct ValGrid ValGrid;
+typedef ValGrid* (*Routine)(ValGrid const, ValGrid const*);
 
-typedef struct Closure Closure;
-struct Closure {
-};
+struct ValGrid {
+    char* grid;
+    char* grid_b;
+    int height;
+    int width;
+    enum {
+        BOOL = 0
+        CELL = 1,
+        COLOR= 2,
+        DRCT = 3,
+    } tag;
+};   
 
-void* eval(LambExpr* fun, LambExpr* arg)
-{
-}
+/* assume for now that there are no abstractions */
 
-void* interpret(LambExpr* e)
-{
-    /* assume for now that there are no abstractions */
-    switch ( e->tag ) {
-        case LEAF: return interpret_leaf[e->LID]; 
-        case VRBL: return var_stack.arr[var_stack.len-1 - e->VID]; 
-        case EVAL: {
-            return interpret(apply(interpret(e->FUN),
-                                   interpret(e->ARG)));
-        }
-        case ABST: return ; 
-    }
-}
+ValGrid* evaluate(LambExpr* e);
 
 endif//ENUMERATOR_H

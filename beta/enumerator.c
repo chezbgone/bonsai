@@ -12,35 +12,25 @@
 #include "type.h" 
 #include "enumerator.h" 
 
-//bool is_func[] = {false,true,true};
-//EType arg_type[] = {-1,TINT,TINT};
-//EType out_type[] = {-1,TINT,TINT_FRM_INT};
-
 bool is_func[] = {
-    false   , true      , true                  , true          , true      ,
-    true    , true      , true                  , true          , false     ,
-    true    , true      , true                  , false         , true      ,
-    false   , true      , true                  , true          , true      ,
-    true,   //TBOOLCELL_DRCT_BOOLCOLOR = 20,
-    true,   //TBOOLCELL_DRCT           = 21,
+    false           , 1             , 1             , 1             ,
+    false           , 1             , 1             , 1             ,
+    1               , false         , 1             , false         ,
+    1               , 1             , 1             , 1             ,
 };
 
 EType arg_type[] = { 
-    -1      , TBOOL     , TBOOL                 , TCELL         , TCELL     , 
-    TCOLOR  , TCOLOR    , TDRCT                 , TDRCT         , -1        ,
-    TCELL   , TDRCT     , TBOOLCELL             , -1            , TCELL     ,
-    -1      , TCELL     , TCELL                 , TDRCT         , TDRCT     ,
-    TBOOLCOLOR,
-    TDRCT,
+    -1              , tCEL          , tDIR          , tTWOCEL       ,
+    -1              , tCEL          , tCEL          , tDIR          ,
+    tDIR            , -1            , tCEL          , -1            ,
+    tCEL            , tDIR          , tTWOCEL       , tHUE          ,
 };
 
 EType out_type[] = { 
-    -1      , TBOOL     , TBOOLBOOL             , TBOOL         , TBOOLCELL ,
-    TBOOL   , TBOOLCOLOR, TBOOL                 , TBOOLDRCT     , -1        ,
-    TCELL   , TCELL_CELL, TCELL_CELL_DRCT       , -1            , TCOLOR    ,
-    -1      , TDRCT     , TDRCT_CELL            , TDRCT         , TDRCT_DRCT,
-    TBOOLCELL_DRCT,
-    TBOOLCELL,
+    -1              , tCEL          , tCEL_CEL      , tCEL_CEL_DIR  ,
+    -1              , tDIR          , tDIR_CEL      , tDIR          ,
+    tDIR_DIR        , -1            , tHUE          , -1            ,
+    tTWO            , tTWOCEL       , tTWOCEL_DIR   , tTWOCEL       ,
 };
 
 void insert(LambList* ll, ScoredLamb e)
@@ -66,7 +56,7 @@ LambsByEType* init_lbt(Grammar const* G)
     for ( int l = 0; l != G->nb_leaves; ++l ) {
         ScoredLamb sp = {
             .score = G->leaf_scores[l],
-            .e = (l == 6) ? vrbl_expr(0) /*BASE*/ : leaf_expr(l),
+            .e = (l == 0) ? vrbl_expr(0) /*BASE*/ : leaf_expr(l),
             .is_const = G->is_const[l],
             .needs_nonconst = G->needs_nonconst[l] 
         };  
@@ -129,7 +119,7 @@ void eval_pass(Grammar const* G, EType fun_t, LambList* funs, LambList* outs, La
             if ( fun.e->tag == EVAL && fun.e->FUN->tag == LEAF && G->needs_unequal[fun.e->FUN->LID] ) {
                 if ( same_expr(fun.e->ARG, arg.e) ) { continue; }   
             }
-            if ( fun.e->tag == EVAL && fun.e->FUN->tag == LEAF && G->is_monoid_action[fun.e->FUN->LID] ) {
+            if ( fun.e->tag == EVAL && fun.e->FUN->tag == LEAF && G->absorbs_self[fun.e->FUN->LID] ) {
                 if ( arg.e->tag == EVAL && arg.e->FUN->tag == EVAL ) {
                     if ( arg.e->FUN->tag == EVAL && arg.e->FUN->FUN->tag == LEAF && arg.e->FUN->FUN->LID == fun.e->FUN->LID ) {
                         continue;
@@ -178,14 +168,14 @@ LambList enumerate(Grammar const* G, float min_score, EType target)
                 found |= ( outs->len != old_len );
             }
 
-            if ( fun_t != TBOOLCELL ) { continue; }
+            //if ( fun_t != TBOOLCELL ) { continue; }
 
-            /* abst */
-            {
-                int old_len = funs->len;
-                abst_pass(G, funs, outs, min_score);
-                found |= ( funs->len != old_len );
-            }
+            ///* abst */
+            //{
+            //    int old_len = funs->len;
+            //    abst_pass(G, funs, outs, min_score);
+            //    found |= ( funs->len != old_len );
+            //}
         }
         for ( int t = 0; t != NB_TYPES; ++t ) {
             lbt->arr[t].active_lo = lbt->arr[t].active_hi;
