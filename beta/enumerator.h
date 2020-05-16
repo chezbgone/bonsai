@@ -1,6 +1,6 @@
 /*  author: samtenka
  *  change: 2020-05-10
- *  create: 2020-05-09
+ *  create: 2020-05-02
  *  descrp: interface for bottom-up program enumeration
  *  to use: 
  */
@@ -10,51 +10,19 @@
 
 #include <stdbool.h>
 #include "lambda.h" 
-//#include "type.h" 
-
-// TODO: replace by type.h's construct
-
-#define NB_TYPES 16
-typedef enum EType EType;
-enum EType {
-    tCEL                =  0,
-    tCEL_CEL            =  1,
-    tCEL_CEL_DIR        =  2,
-    tCEL_CEL_DIR_TWOCEL =  3,
-
-    tDIR                =  4,
-    tDIR_CEL            =  5,
-    tDIR_CEL_CEL        =  6,
-    tDIR_DIR            =  7,
-
-    tDIR_DIR_DIR        =  8,
-    tHUE                =  9,
-    tHUE_CEL            = 10,
-    tTWO                = 11,
-
-    tTWOCEL             = 12,
-    tTWOCEL_DIR         = 13,
-    tTWOCEL_DIR_TWOCEL  = 14,
-    tTWOCEL_HUE         = 15,
-};                       
-                         
-extern bool is_func[];   
-extern EType arg_type[];
-extern EType out_type[];
+#include "type.h" 
+//#include "interpreter.h" 
 
 /*===========================================================================*/
 /*====  0. GRAMMAR and PROGRAM LIST  ========================================*/
 /*===========================================================================*/
-
-// TODO: note that right now we do bottom up enumeration with no abstractions
-//       for now
 
 typedef struct Grammar Grammar;
 struct Grammar {
     int nb_leaves;
     float const* leaf_scores; 
     EType const* leaf_types; 
-    float eval_score[NB_TYPES];
+    float const* eval_score;
     float abst_score;
 
     bool const* is_const;
@@ -65,7 +33,17 @@ struct Grammar {
 };
 
 typedef struct ScoredLamb ScoredLamb;
-struct ScoredLamb { float score; LambExpr* e; bool is_const; bool needs_nonconst; }; 
+struct ScoredLamb {
+    float score;
+    LambExpr* e;
+
+    // the following are useful during interpretation:
+    bool is_const;
+    bool needs_nonconst;
+    ScoredLamb* fst_kid; 
+    ScoredLamb* snd_kid; 
+    //ValGrid* val_grid; 
+}; 
 
 typedef struct LambList LambList; 
 struct LambList {

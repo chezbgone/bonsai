@@ -1,6 +1,6 @@
 /*  author: samtenka
  *  change: 2020-05-10
- *  create: 2020-05-10
+ *  create: 2020-05-02
  *  descrp: 
  *  to use: 
  */
@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 
 #include "colors.h"
 #include "enumerator.h"
@@ -50,7 +51,6 @@ const float ABST_PROB = 0.0;
 Primitive my_prims[] = {                         /*const  nnonc  comm   uneq   absbs*/
     {"here"     , tCEL                ,      64 , false, 1    , 0    , 0    , 0    }, 
     {"offset"   , tCEL_CEL_DIR        ,   16    , 1    , 1    , 0    , 0    , true }, 
-    /*{"scan"     , tCEL_CEL_DIR_TWOCEL , 4       , 1    , 1    , 0    , 0    , 0    }, */
                   
     {"east"     , tDIR                ,      64 , 1    , 1    , 0    , 0    , 0    },
     {"north"    , tDIR                ,      64 , 1    , 1    , 0    , 0    , 0    },
@@ -74,7 +74,7 @@ Primitive my_prims[] = {                         /*const  nnonc  comm   uneq   a
     {"yellow"   , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    }, 
                   
     {"has_hue"  , tTWOCEL_HUE         ,      64 , 1    , 1    , 0    , 0    , 0    }, 
-    {"sees"     , tTWOCEL_DIR_TWOCEL  ,   16    , 1    , 1    , 0    , 0    , 0    }, 
+    {"sees"     , tTWOCEL_DIR_TWOCEL  , 4       , 1    , 1    , 0    , 0    , 0    }, 
 };
 float eval_scores[NB_TYPES];
 float leaf_scores[NB_PRIMITIVES];
@@ -128,46 +128,50 @@ void initialize_primitive_scores()
     }
 }
 
+void handle_interrupt(int sig)
+{
+    free_lamb_expr_pool();
+    lava(); printf("cleaned lambda pool!\n"); defc();
+    exit(0);
+}
+
 void main()
 {
     initialize_primitive_scores();
 
-    fprintf(stderr, "hi!\n");
+    lava(); printf("hello!\n"); defc();
+
     init_lamb_expr_pool();
-
-    Grammar G = {
-        .nb_leaves   = NB_PRIMITIVES,
-        .leaf_scores = leaf_scores,
-        .leaf_types  = leaf_types,
-        .is_const    = is_const,
-        .needs_nonconst = needs_nonconst,
-        .commutes    = commutes,
-        .needs_unequal = needs_unequal,
-        .absorbs_self = absorbs_self,
-        .abst_score = plog(ABST_PROB),
-    };
-    for ( int t = 0; t != NB_TYPES; ++t ) {
-        G.eval_score[t] = eval_scores[t];
-        printf("::%d %f\n", t, G.eval_score[t]);
+    signal(SIGINT, handle_interrupt);
+    {
+        Grammar G = {
+            .nb_leaves   = NB_PRIMITIVES,
+            .leaf_scores = leaf_scores,
+            .leaf_types  = leaf_types,
+            .eval_score = eval_scores,
+            .is_const    = is_const,
+            .needs_nonconst = needs_nonconst,
+            .commutes    = commutes,
+            .needs_unequal = needs_unequal,
+            .absorbs_self = absorbs_self,
+            .abst_score = plog(ABST_PROB),
+        };
+   
+        LambList ll = enumerate(&G, -12, tTWO); 
+        printf("%d elts\n", ll.len);
+        for ( int pi = 0; pi != ll.len; ++pi ) {
+            printf("%4d : ", pi);
+            lava();
+            printf("%8.4f ", ll.arr[pi].score);
+            print_expr(ll.arr[pi].e, leaf_names);
+            printf("\n");
+    
+            if ( (pi+1) % 50 ) { continue; }
+            char c; scanf("%c", &c);
+        }
+        free(ll.arr);
     }
-
-    fprintf(stderr, "hi!\n");
-
-    LambList ll = enumerate(&G, -12, tTWO); 
-    printf("%d elts\n", ll.len);
-    for ( int pi = 0; pi != ll.len; ++pi ) {
-        printf("%4d : ", pi);
-        lava();
-        printf("%8.4f ", ll.arr[pi].score);
-        print_expr(ll.arr[pi].e, leaf_names);
-        printf("\n");
-
-        if ( (pi+1) % 50 ) { continue; }
-        char c; scanf("%c", &c);
-    }
-    free(ll.arr);
-
-    free_lamb_expr_pool();
+    handle_interrupt(0);
 }
 
 

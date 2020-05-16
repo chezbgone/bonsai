@@ -1,6 +1,6 @@
 /*  author: samtenka
  *  change: 2020-05-09
- *  create: 2020-05-09
+ *  create: 2020-05-02
  *  descrp: interface for best-first program enumeration
  *  to use: 
  */
@@ -11,27 +11,6 @@
 #include "lambda.h" 
 #include "type.h" 
 #include "enumerator.h" 
-
-bool is_func[] = {
-    false           , 1             , 1             , 1             ,
-    false           , 1             , 1             , 1             ,
-    1               , false         , 1             , false         ,
-    1               , 1             , 1             , 1             ,
-};
-
-EType arg_type[] = { 
-    -1              , tCEL          , tDIR          , tTWOCEL       ,
-    -1              , tCEL          , tCEL          , tDIR          ,
-    tDIR            , -1            , tCEL          , -1            ,
-    tCEL            , tDIR          , tTWOCEL       , tHUE          ,
-};
-
-EType out_type[] = { 
-    -1              , tCEL          , tCEL_CEL      , tCEL_CEL_DIR  ,
-    -1              , tDIR          , tDIR_CEL      , tDIR          ,
-    tDIR_DIR        , -1            , tHUE          , -1            ,
-    tTWO            , tTWOCEL       , tTWOCEL_DIR   , tTWOCEL       ,
-};
 
 void insert(LambList* ll, ScoredLamb e)
 {
