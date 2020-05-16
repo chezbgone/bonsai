@@ -1,7 +1,7 @@
 /*  author: samtenka
- *  change: 2020-05-06
+ *  change: 2020-05-16
  *  create: 2020-05-06
- *  descrp: implement hash table storing (lambda:score) records
+ *  descrp: Implement hash tables storing (lambda:value) records.
  *  to use:  
  */
 
@@ -17,8 +17,7 @@
 */
 #define MOD(a, b) ( (((a)%(b))+(b)) % (b) ) 
 
-#define START_NB_BINS 256 
-
+#define START_NB_BINS 256
 
 /*===========================================================================*/
 /*====  0. DECLARE LIST METHODS (PRIVATE TO THIS FILE)  =====================*/
@@ -26,7 +25,7 @@
 
 void init_list(CList* cl);
 void wipe_list(CList* cl); /* shallow */
-CRecord* insert_into_list(CList* cl, LambExpr* bod);
+CRecord* insert_into_list(CList* cl, LambExpr* bod, CTableType tag);
 CRecord* find_in_list(CList* cl, LambExpr* bod);
 
 /*===========================================================================*/
@@ -38,11 +37,12 @@ void insert_into_table(CTable* ct, LambExpr* bod);
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  1.0. Constructor and Destructor  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-void init_table(CTable* ct)
+void init_table(CTable* ct, CTableType tag)
 {
     ct->nb_bins = START_NB_BINS;
     ct->nb_elts = 0;
     ct->arr = malloc(sizeof(CList) * ct->nb_bins);
+    ct->tag = tag; 
     for ( int i=0; i != ct->nb_bins; ++i ) { init_list(&(ct->arr[i])); }
 }
 
@@ -54,39 +54,31 @@ void wipe_table(CTable* ct)
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/*~~~~~~~~~~  1.1. Extract  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~  1.1. Query  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+/*----------------  1.1.0. extract program with highest count  --------------*/
 
 LambExpr* best_concept(CTable* ct)
 {
-    CRecord best = {.bod=NULL, .score=-1};
+    CRecord best = {.bod=NULL, .data={.count=-1}};
     for ( int i=0; i != ct->nb_bins; ++i ) {
         CList cl = ct->arr[i];
         for ( int j=0; j != cl.len; ++j ) {
             CRecord* cr = &(cl.arr[j]);
-            if ( cr->score <= best.score ) { continue; }
+            if ( cr->COUNT <= best.COUNT ) { continue; }
             best = *cr;
         }
     }
     return best.bod;
 }
 
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/*~~~~~~~~~~  1.2. Display  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-void print_table(CTable const* ct, char leaf_names[][16])
+CTableValue const* search_table(CTable* ct, LambExpr* bod)
 {
-    for ( int i=0; i != ct->nb_bins; ++i ) {
-        CList cl = ct->arr[i];
-        for ( int j=0; j != cl.len; ++j ) {
-            CRecord* cr = &(cl.arr[j]);
-            if ( 0 < cr->score ) { lava(); } 
-            printf("%+3d", cr->score);
-            defc();
-            printf(" : ");
-            print_expr(cr->bod, leaf_names);
-            printf("\n");
-        }
-    }
+    CList* cl = &(ct->arr[ MOD(bod->hash, ct->nb_bins) ]);
+    CRecord* cr = find_in_list(cl, bod); 
+    if ( cr == NULL ) { return NULL; }
+
+    return &(cr->data);
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -96,22 +88,22 @@ void expand_table(CTable* ct);
 
 /*----------------  1.2.0. update  ------------------------------------------*/
 
-void update_table(CTable* ct, LambExpr* bod, int d_score)
+void update_table(CTable* ct, LambExpr* bod, CTableValue diff)
 {
     expand_table(ct);
 
     CList* cl = &(ct->arr[ MOD(bod->hash, ct->nb_bins) ]);
-    //printf("    looking for ");  print_expr(bod, NULL); printf("; ");
+
     CRecord* cr = find_in_list(cl, bod); 
-    if ( cr == NULL ) {
-        //printf("not found; ");
-        cr = insert_into_list(cl, bod);
+    if ( cr == NULL ) { /* not found */
+        cr = insert_into_list(cl, bod, ct->tag);
         ct->nb_elts += 1;
-        //printf("inserted!\n");
-    } else {
-        //printf("found!\n");
     }
-    cr->score += d_score;
+
+    switch ( ct->tag ) {
+        case COUNT_VALUED:  cr->COUNT += diff.count;    break;
+        case CARGO_VALUED:  cr->CARGO = diff.cargo;     break;
+    }
 }
 
 /*----------------  1.2.0. private insertion helper  ------------------------*/
@@ -137,14 +129,33 @@ void expand_table(CTable* ct)
         for ( int j=0; j != cl->len; ++j ) {
             CRecord* cr = &(cl->arr[j]); 
             CList* new_cl = &(new_arr[ MOD(cr->bod->hash, new_nb_bins) ]);
-            CRecord* new_cr = insert_into_list(new_cl, cr->bod);
-            new_cr->score = cr->score;
+            CRecord* new_cr = insert_into_list(new_cl, cr->bod, ct->tag);
+            new_cr->COUNT = cr->COUNT;
         }
         wipe_list(cl);
     }
     free(ct->arr);
     ct->arr = new_arr;
     ct->nb_bins = new_nb_bins;
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~  1.3. Display  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+void print_table(CTable const* ct, char leaf_names[][16])
+{
+    for ( int i=0; i != ct->nb_bins; ++i ) {
+        CList cl = ct->arr[i];
+        for ( int j=0; j != cl.len; ++j ) {
+            CRecord* cr = &(cl.arr[j]);
+            if ( 0 < cr->COUNT ) { lava(); } 
+            printf("%+3d", cr->COUNT);
+            defc();
+            printf(" : ");
+            print_expr(cr->bod, leaf_names);
+            printf("\n");
+        }
+    }
 }
 
 /*===========================================================================*/
@@ -170,7 +181,7 @@ void init_list(CList* cl)
     *cl = (CList){.arr=NULL, .cap=0, .len=0};
 }
 
-CRecord* insert_into_list(CList* cl, LambExpr* bod)
+CRecord* insert_into_list(CList* cl, LambExpr* bod, CTableType tag)
 {
     while ( ! ( cl->len < cl->cap ) ) {
         int new_cap = (3*cl->cap)/2 + 1;
@@ -179,7 +190,11 @@ CRecord* insert_into_list(CList* cl, LambExpr* bod)
         free(cl->arr); cl->arr = new_arr; 
         cl->cap = new_cap;
     } 
-    cl->arr[cl->len] = (CRecord){.bod = bod, .score = -(1 + bod->weight)};
+    cl->arr[cl->len].bod = bod;
+    switch ( tag ) {
+        case CARGO_VALUED:   cl->arr[cl->len].CARGO = NULL;             break;
+        case COUNT_VALUED:   cl->arr[cl->len].COUNT = -(1+bod->weight); break;
+    } 
     cl->len += 1; 
     return &(cl->arr[cl->len-1]); 
 }

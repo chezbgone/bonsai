@@ -110,12 +110,12 @@ void test_eval()
 
     CTable ct;
 
-    printf("EXPR:\n");    print_expr(outer, NULL);  printf("\n");
-    printf("INIT:\n");    init_table(&ct);          printf("\n"); 
-    printf("EXTRACT:\n"); extract_to(outer, &ct);   printf("\n"); 
-    printf("PRINT:\n");   print_table(&ct, NULL);   printf("\n"); 
-    //print_expr(rewrite_given(outer, conc), NULL);   printf("\n");
-    printf("WIPE:\n");    wipe_table(&ct);          printf("\n");
+    printf("EXPR:\n");    print_expr(outer, NULL);          printf("\n");
+    printf("INIT:\n");    init_table(&ct, COUNT_VALUED);    printf("\n"); 
+    printf("EXTRACT:\n"); extract_to(outer, &ct);           printf("\n"); 
+    printf("PRINT:\n");   print_table(&ct, NULL);           printf("\n"); 
+    //print_expr(rewrite_given(outer, conc), NULL);           printf("\n");
+    printf("WIPE:\n");    wipe_table(&ct);                  printf("\n");
     printf("DONE!\n");
 }
 

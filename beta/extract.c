@@ -92,7 +92,7 @@ void extract_to(LambExpr* e, CTable* ct)
         Node val = sites.arr[i];
         LambExpr* bod = bod_from(e, 0, val); 
         d_score = e->weight - (val.val->weight + 2);
-        update_table(ct, bod, d_score);
+        update_table(ct, bod, (CTableValue)d_score);
     }
 
     switch ( e->tag ) {
