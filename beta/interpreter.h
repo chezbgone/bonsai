@@ -23,14 +23,14 @@ struct ValGrid {
     EType tag;
 };   
 
-typedef struct PossiblyEvaldExpr PossiblyEvaldExpr;
-struct PossiblyEvaldExpr {
-    ValGrid* grid; 
-    LambExpr* expr; 
-};
+//typedef struct PossiblyEvaldExpr PossiblyEvaldExpr;
+//struct PossiblyEvaldExpr {
+//    ValGrid* grid; 
+//    LambExpr* expr; 
+//};
 
-typedef ValGrid* (*Routine)(PossiblyEvaldExpr const*, CTable const*);
+typedef ValGrid const* (*Routine)(ValGrid const*, LambExpr* const*, CTable const*);
 
-ValGrid* evaluate(LambExpr* e, CTable* ct);
+ValGrid const* evaluate(LambExpr* e, CTable* ct, int const* nb_args);
 
 #endif//INTERPRETER_H

@@ -36,7 +36,8 @@ LambsByEType* init_lbt(Grammar const* G)
     for ( int l = 0; l != G->nb_leaves; ++l ) {
         ScoredLamb sp = {
             .score = G->leaf_scores[l],
-            .e = (l == 0) ? vrbl_expr(0) /*BASE*/ : leaf_expr(l),
+            //.e = (l == 0) ? vrbl_expr(0) /*BASE*/ : leaf_expr(l),
+            .e = leaf_expr(l),
             .is_const = G->is_const[l],
             .needs_nonconst = G->needs_nonconst[l] 
         };  

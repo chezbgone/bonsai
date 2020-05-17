@@ -20,6 +20,7 @@
 typedef struct Grammar Grammar;
 struct Grammar {
     int nb_leaves;
+    int const* nb_args;
     float const* leaf_scores; 
     EType const* leaf_types; 
     float const* eval_score;

@@ -11,7 +11,9 @@
 #include <signal.h>
 
 #include "colors.h"
+#include "concept_table.h"
 #include "enumerator.h"
+#include "interpreter.h"
 #include "lambda.h"
 
 const float exp_thouth = 1.001000500;
@@ -36,6 +38,7 @@ float plog(float p)
 typedef struct Primitive Primitive;
 struct Primitive {
     char name[16];
+    int nb_args;
     EType type;
     float weight;
     bool is_const;
@@ -49,38 +52,39 @@ const float ABST_PROB = 0.0;
 
 #define NB_PRIMITIVES 23
 Primitive my_prims[] = {                        /*const  nnonc  comm   uneq   absbs*/
-    {"here"     , tCEL                ,      64 , false, 1    , 0    , 0    , 0    }, 
-    {"offset"   , tCEL_CEL_DIR        ,   16    , 1    , 1    , 0    , 0    , true }, 
-                  
-    {"east"     , tDIR                ,      64 , 1    , 1    , 0    , 0    , 0    },
-    {"north"    , tDIR                ,      64 , 1    , 1    , 0    , 0    , 0    },
-    {"south"    , tDIR                ,      64 , 1    , 1    , 0    , 0    , 0    },
-    {"west"     , tDIR                ,      64 , 1    , 1    , 0    , 0    , 0    },
-    {"plus"     , tDIR_DIR_DIR        ,      64 , 1    , false, true , 0    , 0    },
-    {"diff"     , tDIR_CEL_CEL        , 4       , 1    , 1    , 0    , true , 0    },
-    {"negate"   , tDIR_DIR            , 4       , 1    , 1    , 0    , 0    , 0/**/},
-                  
-    {"black"    , tHUE                ,      64 , 1    , 1    , 0    , 0    , 0    },
-    {"outside"  , tHUE                ,      64 , 1    , 1    , 0    , 0    , 0    },
-    {"view"     , tHUE_CEL            ,      64 , 1    , 1    , 0    , 0    , 0    },
-    {"blue"     , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"brown"    , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"gray"     , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"green"    , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"orange"   , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"purple"   , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"red"      , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"teal"     , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"yellow"   , tHUE                ,   16    , 1    , 1    , 0    , 0    , 0    }, 
-                  
-    {"has_hue"  , tTWOCEL_HUE         ,      64 , 1    , 1    , 0    , 0    , 0    }, 
-    {"sees"     , tTWOCEL_DIR_TWOCEL  , 4       , 1    , 1    , 0    , 0    , 0    }, 
+    {"here"    , 0, tCEL               ,      64 , false, 1    , 0    , 0    , 0    }, 
+    {"offset"  , 2, tCEL_CEL_DIR       ,   16    , 1    , 1    , 0    , 0    , true }, 
+                    
+    {"east"    , 0, tDIR               ,      64 , 1    , 1    , 0    , 0    , 0    },
+    {"north"   , 0, tDIR               ,      64 , 1    , 1    , 0    , 0    , 0    },
+    {"south"   , 0, tDIR               ,      64 , 1    , 1    , 0    , 0    , 0    },
+    {"west"    , 0, tDIR               ,      64 , 1    , 1    , 0    , 0    , 0    },
+    {"plus"    , 2, tDIR_DIR_DIR       ,      64 , 1    , false, true , 0    , 0    },
+    {"diff"    , 2, tDIR_CEL_CEL       , 4       , 1    , 1    , 0    , true , 0    },
+    {"negate"  , 1, tDIR_DIR           , 4       , 1    , 1    , 0    , 0    , 0/**/},
+                    
+    {"black"   , 0, tHUE               ,      64 , 1    , 1    , 0    , 0    , 0    },
+    {"view"    , 1, tHUE_CEL           ,      64 , 1    , 1    , 0    , 0    , 0    }, 
+    {"cobalt"  , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"crimson" , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"forest"  , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"gold"    , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"lead"    , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"magenta" , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"salmon"  , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"sky"     , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"tan"     , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
+    {"abyss"   , 0, tHUE               , 4       , 1    , 1    , 0    , 0    , 0    },
+                    
+    {"has_hue" , 2, tTWOCEL_HUE        ,      64 , 1    , 1    , 0    , 0    , 0    }, 
+    {"sees"    , 3, tTWOCEL_DIR_TWOCEL , 4       , 1    , 1    , 0    , 0    , 0    }, 
 };
 float eval_scores[NB_TYPES];
 float leaf_scores[NB_PRIMITIVES];
 EType leaf_types[NB_PRIMITIVES];
 
 char leaf_names[NB_PRIMITIVES][16];
+int  nb_args[NB_PRIMITIVES];
 bool is_const[NB_PRIMITIVES];
 bool needs_nonconst[NB_PRIMITIVES];
 bool commutes[NB_PRIMITIVES];
@@ -112,6 +116,7 @@ void initialize_primitive_scores()
         leaf_scores[l] = plog( p->weight / weight_to[t] );
 
         strcpy(leaf_names[l], p->name); 
+        nb_args[l] = p->nb_args;
         is_const[l] = p->is_const;
         needs_nonconst[l] = p->needs_nonconst;
         commutes[l] = p->commutes;
@@ -145,31 +150,38 @@ void main()
     signal(SIGINT, handle_interrupt);
     {
         Grammar G = {
-            .nb_leaves   = NB_PRIMITIVES,
-            .leaf_scores = leaf_scores,
-            .leaf_types  = leaf_types,
-            .eval_score = eval_scores,
-            .is_const    = is_const,
-            .needs_nonconst = needs_nonconst,
-            .commutes    = commutes,
-            .needs_unequal = needs_unequal,
-            .absorbs_self = absorbs_self,
-            .abst_score = plog(ABST_PROB),
+            .nb_leaves      = NB_PRIMITIVES   ,
+            .nb_args        = nb_args         ,
+            .leaf_scores    = leaf_scores     ,
+            .leaf_types     = leaf_types      ,
+            .eval_score     = eval_scores     ,
+            .is_const       = is_const        ,
+            .needs_nonconst = needs_nonconst  ,
+            .commutes       = commutes        ,
+            .needs_unequal  = needs_unequal   ,
+            .absorbs_self   = absorbs_self    ,
+            .abst_score     = plog(ABST_PROB) ,
         };
    
-        LambList ll = enumerate(&G, -12, tTWO); 
+        LambList ll = enumerate(&G, - 2, tTWO); 
         printf("%d elts\n", ll.len);
+
+        CTable ct;
+        init_table(&ct, CARGO_VALUED);
         for ( int pi = 0; pi != ll.len; ++pi ) {
             printf("%4d : ", pi);
             lava();
             printf("%8.4f ", ll.arr[pi].score);
             print_expr(ll.arr[pi].e, leaf_names);
             printf("\n");
+            evaluate(ll.arr[pi].e, &ct, nb_args);
     
             if ( (pi+1) % 50 ) { continue; }
             char c; scanf("%c", &c);
         }
+        wipe_table(&ct);
         free(ll.arr);
+
     }
     handle_interrupt(0);
 }
