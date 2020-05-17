@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-05-16
+ *  change: 2020-05-17
  *  create: 2020-05-06
  *  descrp: Implement hash tables storing (lambda:value) records.
  *  to use:  

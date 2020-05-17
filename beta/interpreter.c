@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-05-14
+ *  change: 2020-05-17
  *  create: 2020-05-14
  *  descrp: interface for interpretation of abstract syntax trees
  *  to use: 

@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-05-16
+ *  change: 2020-05-17
  *  create: 2020-05-05
  *  descrp: Interface for hash tables storing (lambda:value) records.  Here, 
  *          the values are either integer counts or pointers to `cargo'.  For
