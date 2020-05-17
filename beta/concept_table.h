@@ -30,7 +30,7 @@ enum CTableType {
 typedef union CTableValue CTableValue;
 union CTableValue { 
     int count; 
-    void* cargo; 
+    void const* cargo; 
 };
 
 typedef struct CRecord CRecord;

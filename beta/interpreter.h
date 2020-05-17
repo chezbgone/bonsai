@@ -23,11 +23,7 @@ struct ValGrid {
     EType tag;
 };   
 
-//typedef struct PossiblyEvaldExpr PossiblyEvaldExpr;
-//struct PossiblyEvaldExpr {
-//    ValGrid* grid; 
-//    LambExpr* expr; 
-//};
+void print_grid(ValGrid const* vg); 
 
 typedef ValGrid const* (*Routine)(ValGrid const*, LambExpr* const*, CTable const*);
 

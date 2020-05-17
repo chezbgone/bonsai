@@ -171,7 +171,7 @@ void main()
         ValGrid* input = make_grid(H, W, tHUE);
         for ( int r = 0; r != H; ++r ) { 
             for ( int c = 0; c != W; ++c ) { 
-                input->grid  [r*W + c] = 0;
+                input->grid  [r*W + c] = (r+c)%3;
             }
         }
 
@@ -183,9 +183,11 @@ void main()
             printf("%8.4f ", ll.arr[pi].score);
             print_expr(ll.arr[pi].e, leaf_names);
             printf("\n");
-            evaluate(input, ll.arr[pi].e, &ct, nb_args);
+            ValGrid const* hi = evaluate(input, ll.arr[pi].e, &ct, nb_args);
+            //print_grid(hi);
+            //printf("\n");
     
-            if ( (pi+1) % 50 ) { continue; }
+            if ( (pi+1) % 1  ) { continue; }
             char c; scanf("%c", &c);
         }
         wipe_table(&ct);
