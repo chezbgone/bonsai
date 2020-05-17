@@ -250,10 +250,10 @@ ValGrid const* impl_view   (ValGrid const* input, LambExpr* const* args, CTable 
         for ( int c = 0; c != W; ++c ) { 
             int rr = cel->grid  [r*W + c]; 
             int cc = cel->grid_b[r*W + c]; 
-            out->grid  [r*W + c] = (
-                IN_BOUNDS(rr,cc,H,W) ? input->grid[rr*W + cc] : -1 /*OUTSIDE*/
-            );
-
+            out->grid  [r*W + c] = 0;
+            //    (
+            //    IN_BOUNDS(rr,cc,H,W) ? input->grid[rr*W + cc] : -1 /*OUTSIDE*/
+            //);
         }
     }
     return out;

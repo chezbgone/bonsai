@@ -130,7 +130,7 @@ void expand_table(CTable* ct)
             CRecord* cr = &(cl->arr[j]); 
             CList* new_cl = &(new_arr[ MOD(cr->bod->hash, new_nb_bins) ]);
             CRecord* new_cr = insert_into_list(new_cl, cr->bod, ct->tag);
-            new_cr->COUNT = cr->COUNT;
+            new_cr->data = cr->data;
         }
         wipe_list(cl);
     }

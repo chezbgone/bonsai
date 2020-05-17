@@ -163,7 +163,7 @@ void main()
             .abst_score     = plog(ABST_PROB) ,
         };
    
-        LambList ll = enumerate(&G, - 2, tTWO); 
+        LambList ll = enumerate(&G, - 7, tTWO); 
         printf("%d elts\n", ll.len);
 
         int H = 5;
