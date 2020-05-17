@@ -9,12 +9,12 @@
 #define INTERPRETER_H 
 
 #include <stdbool.h>
+
+#include "concept_table.h"
 #include "lambda.h" 
 #include "type.h" 
 
 typedef struct ValGrid ValGrid;
-typedef ValGrid* (*Routine)(ValGrid const*, ValGrid const*);
-
 struct ValGrid {
     char* grid;
     char* grid_b;
@@ -23,6 +23,14 @@ struct ValGrid {
     EType tag;
 };   
 
-ValGrid* evaluate(LambExpr* e);
+typedef struct PossiblyEvaldExpr PossiblyEvaldExpr;
+struct PossiblyEvaldExpr {
+    ValGrid* grid; 
+    LambExpr* expr; 
+};
+
+typedef ValGrid* (*Routine)(PossiblyEvaldExpr const*, CTable const*);
+
+ValGrid* evaluate(LambExpr* e, CTable* ct);
 
 #endif//INTERPRETER_H

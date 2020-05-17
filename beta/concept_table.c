@@ -25,8 +25,8 @@
 
 void init_list(CList* cl);
 void wipe_list(CList* cl); /* shallow */
-CRecord* insert_into_list(CList* cl, LambExpr* bod, CTableType tag);
-CRecord* find_in_list(CList* cl, LambExpr* bod);
+CRecord* insert_into_list(CList* cl, LambExpr const* bod, CTableType tag);
+CRecord* find_in_list(CList const* cl, LambExpr const* bod);
 
 /*===========================================================================*/
 /*====  1. TABLE METHODS  ===================================================*/
@@ -58,7 +58,7 @@ void wipe_table(CTable* ct)
 
 /*----------------  1.1.0. extract program with highest count  --------------*/
 
-LambExpr* best_concept(CTable* ct)
+LambExpr const* best_concept(CTable const* ct)
 {
     CRecord best = {.bod=NULL, .data={.count=-1}};
     for ( int i=0; i != ct->nb_bins; ++i ) {
@@ -72,7 +72,7 @@ LambExpr* best_concept(CTable* ct)
     return best.bod;
 }
 
-CTableValue const* search_table(CTable* ct, LambExpr* bod)
+CTableValue const* search_table(CTable const* ct, LambExpr const* bod)
 {
     CList* cl = &(ct->arr[ MOD(bod->hash, ct->nb_bins) ]);
     CRecord* cr = find_in_list(cl, bod); 
@@ -88,7 +88,7 @@ void expand_table(CTable* ct);
 
 /*----------------  1.2.0. update  ------------------------------------------*/
 
-void update_table(CTable* ct, LambExpr* bod, CTableValue diff)
+void update_table(CTable* ct, LambExpr const* bod, CTableValue diff)
 {
     expand_table(ct);
 
@@ -165,7 +165,7 @@ void print_table(CTable const* ct, char leaf_names[][16])
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~  2.0. Search  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-CRecord* find_in_list(CList* cl, LambExpr* bod)
+CRecord* find_in_list(CList const* cl, LambExpr const* bod)
 {
     for ( int i=0; i != cl->len; ++i ) {
         if ( same_expr(bod, cl->arr[i].bod) ) { return &(cl->arr[i]); }
@@ -181,7 +181,7 @@ void init_list(CList* cl)
     *cl = (CList){.arr=NULL, .cap=0, .len=0};
 }
 
-CRecord* insert_into_list(CList* cl, LambExpr* bod, CTableType tag)
+CRecord* insert_into_list(CList* cl, LambExpr const* bod, CTableType tag)
 {
     while ( ! ( cl->len < cl->cap ) ) {
         int new_cap = (3*cl->cap)/2 + 1;

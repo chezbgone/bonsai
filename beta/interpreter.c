@@ -6,160 +6,283 @@
  */
 
 #include <stdbool.h>
-#include "lambda.h" 
-#include "interpreter.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "concept_table.h"
 #include "enumerator.h"
+#include "interpreter.h"
+#include "lambda.h" 
 
 /* assume for now that there are no abstractions */
 
-ValGrid* impl_here   (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_offset (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_east   (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_north  (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_south  (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_west   (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_plus   (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_diff   (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_negate (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_black  (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_outside(ValGrid const* input, ValGrid const* args);
-ValGrid* impl_view   (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_blue   (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_brown  (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_gray   (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_green  (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_orange (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_purple (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_red    (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_teal   (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_yellow (ValGrid const* input, ValGrid const* args);
-ValGrid* impl_has_hue(ValGrid const* input, ValGrid const* args);
-ValGrid* impl_sees   (ValGrid const* input, ValGrid const* args);
+ValGrid* impl_here   (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_offset (PossiblyEvaldExpr const* args, CTable const* ct);
+
+ValGrid* impl_east   (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_north  (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_south  (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_west   (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_plus   (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_diff   (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_negate (PossiblyEvaldExpr const* args, CTable const* ct);
+
+ValGrid* impl_abyss  (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_black  (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_cobalt (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_crimson(PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_forest (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_gold   (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_lead   (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_magenta(PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_salmon (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_sky    (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_tan    (PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_view   (PossiblyEvaldExpr const* args, CTable const* ct);
+
+ValGrid* impl_has_hue(PossiblyEvaldExpr const* args, CTable const* ct);
+ValGrid* impl_sees   (PossiblyEvaldExpr const* args, CTable const* ct);
 
 #define IN_BOUNDS(r,c,H,W) ( 0 <= (r) && (r) < (H) && 0 <= (c) && (c) < (W) ) 
 
 Routine implementations[] = {
     &impl_here   ,   &impl_offset ,   &impl_east   ,   &impl_north  ,  
     &impl_south  ,   &impl_west   ,   &impl_plus   ,   &impl_diff   ,  
-    &impl_negate ,   &impl_black  ,   &impl_outside,   &impl_view   ,  
-    &impl_blue   ,   &impl_brown  ,   &impl_gray   ,   &impl_green  ,  
-    &impl_orange ,   &impl_purple ,   &impl_red    ,   &impl_teal   ,  
-    &impl_yellow ,   &impl_has_hue,   &impl_sees   ,  
+    &impl_negate ,   &impl_abyss  ,   &impl_black  ,   &impl_cobalt ,  
+    &impl_crimson,   &impl_forest ,   &impl_gold   ,   &impl_lead   ,  
+    &impl_magenta,   &impl_salmon ,   &impl_sky    ,   &impl_tan    ,  
+    &impl_view   ,   &impl_has_hue,   &impl_sees   ,  
 }; 
 
-ValGrid* evaluate(LambExpr* e)
+#define MAX_NB_ARGS 4
+ValGrid* evaluate(LambExpr* e, CTable* ct)
 {
-    ScoredLamb* args[MAX_NB_ARGS];
+    PossiblyEvaldExpr args[MAX_NB_ARGS];
     int nb_args_seen;
-    LambExpr* f; 
+    LambExpr* f = e; 
     while ( f->tag == EVAL ) {
-        args[nb_args_seen] = f->arg;
+        args[nb_args_seen].expr = f->ARG;
         nb_args_seen += 1;
+        f = f->FUN;
+        /* TODO: address fact that arguments are backward!*/
     }
     if ( f->tag != LEAF ) { fprintf(stderr, "UH OH!\n"); return NULL; }
-    if ( nb_args_seen != nb_args[f->LID] ) { return NULL; }
+    //if ( nb_args_seen != nb_args[f->LID] ) { return NULL; }
 
-    return implementations[f->LID](args); 
+    return implementations[f->LID](args, ct); 
 }
 
-ValGrid* impl_sees(ValGrid const* input, ScoredLamb const* args) {
-    ValGrid* pred  = args[0].val_grid; 
-    ValGrid* dir   = args[1].val_grid; 
-    ValGrid* start = args[2].val_grid; 
+ValGrid* make_grid(int H, int W, EType tag)
+{
+    ValGrid* new = malloc(sizeof(ValGrid)); 
+    switch ( tag ) {
+        case tCEL: new->grid = malloc(H*W); new->grid_b = malloc(H*W); break;
+        case tDIR: new->grid = malloc(H*W); new->grid_b = malloc(H*W); break;
+        case tHUE: new->grid = malloc(H*W);                            break;
+        case tTWO: new->grid = malloc(H*W);                            break;
+    } 
+    return new;
+}
 
-    int H = start->height; int W = start->width;
+ValGrid* impl_here   (PossiblyEvaldExpr const* args, CTable const* ct)
+{
+    ValGrid* input = args[0].grid;  
+    int H = input->height; int W = input->width;
+
+    ValGrid* out = make_grid(H, W, tCEL);
+    for ( int r = 0; r != H; ++r ) { 
+        for ( int c = 0; c != W; ++c ) { 
+            out->grid  [r*W + c] = r;
+            out->grid_b[r*W + c] = c;
+        }
+    }
+    return out;
+}
+
+ValGrid* impl_offset (PossiblyEvaldExpr const* args, CTable const* ct)
+{
+    ValGrid* input = args[0].grid;  
+    ValGrid* dir   = args[1].grid;  
+    ValGrid* cel   = args[2].grid; 
+    int H = input->height; int W = input->width;
+
+    ValGrid* out = make_grid(H, W, tCEL);
+    for ( int r = 0; r != H; ++r ) { 
+        for ( int c = 0; c != W; ++c ) { 
+            out->grid  [r*W + c] = cel->grid  [r*W + c] + dir->grid  [r*W + c];
+            out->grid_b[r*W + c] = cel->grid_b[r*W + c] + dir->grid_b[r*W + c];
+        }
+    }
+    return out;
+}
+
+ValGrid* impl_plus   (PossiblyEvaldExpr const* args, CTable const* ct)
+{
+    ValGrid* input = args[0].grid;  
+    ValGrid* da    = args[1].grid;  
+    ValGrid* db    = args[2].grid; 
+    int H = input->height; int W = input->width;
+
+    ValGrid* out = make_grid(H, W, tDIR);
+    for ( int r = 0; r != H; ++r ) { 
+        for ( int c = 0; c != W; ++c ) { 
+            out->grid  [r*W + c] = da->grid  [r*W + c] + db->grid  [r*W + c];
+            out->grid_b[r*W + c] = da->grid_b[r*W + c] + db->grid_b[r*W + c];
+        }
+    }
+    return out;
+}
+
+ValGrid* impl_diff   (PossiblyEvaldExpr const* args, CTable const* ct)
+{
+    ValGrid* input = args[0].grid;  
+    ValGrid* ca    = args[1].grid;  
+    ValGrid* cb    = args[2].grid; 
+    int H = input->height; int W = input->width;
+
+    ValGrid* out = make_grid(H, W, tDIR);
+    for ( int r = 0; r != H; ++r ) { 
+        for ( int c = 0; c != W; ++c ) { 
+            out->grid  [r*W + c] = ca->grid  [r*W + c] - cb->grid  [r*W + c];
+            out->grid_b[r*W + c] = ca->grid_b[r*W + c] - cb->grid_b[r*W + c];
+        }
+    }
+    return out;
+}
+
+ValGrid* impl_negate (PossiblyEvaldExpr const* args, CTable const* ct)
+{
+    ValGrid* input = args[0].grid; 
+    ValGrid* dir   = args[1].grid; 
+    int H = input->height; int W = input->width;
+
+    ValGrid* out = make_grid(H, W, tDIR);
+    for ( int r = 0; r != H; ++r ) { 
+        for ( int c = 0; c != W; ++c ) { 
+            out->grid  [r*W + c] = - dir->grid  [r*W + c];
+            out->grid_b[r*W + c] = - dir->grid_b[r*W + c];
+        }
+    }
+    return out;
+}
+
+ValGrid* impl_view   (PossiblyEvaldExpr const* args, CTable const* ct) {
+    ValGrid* input = args[0].grid; 
+    ValGrid* cel   = args[1].grid; 
+    int H = input->height; int W = input->width;
+
+    ValGrid* out = make_grid(H, W, tCEL);
+    for ( int r = 0; r != H; ++r ) { 
+        for ( int c = 0; c != W; ++c ) { 
+            int rr = cel->grid  [r*W + c]; 
+            int cc = cel->grid_b[r*W + c]; 
+            out->grid  [r*W + c] = (
+                IN_BOUNDS(rr,cc,W,H) ? input->grid[rr*W + cc] : -1 /*OUTSIDE*/
+            );
+
+        }
+    }
+    return out;
+}
+
+ValGrid* impl_has_hue(PossiblyEvaldExpr const* args, CTable const* ct) {
+    ValGrid* input = args[0].grid; 
+    ValGrid* col   = args[1].grid; 
+    ValGrid* cel   = args[2].grid; 
+    int H = input->height; int W = input->width;
 
     ValGrid* out = make_grid(H, W, tTWO);
     for ( int r = 0; r != H; ++r ) { 
         for ( int c = 0; c != W; ++c ) { 
-            int dr = dir->grid  [r * W + c];
-            int dc = dir->grid_b[r * W + c];
-            int rr = start->grid  [r * W + c];
-            int cc = start->grid_b[r * W + c];
-            while ( IN_BOUNDS(rr,cc,W,H) && ! pred[rr * W + cc ] && (dr||dc) ) {
-                rr += dr;
-                cc += dc;
-            }
-            A->grid  [r * W + c] = rr;
-            A->grid_b[r * W + c] = cc;
+            int rr = cel->grid  [r*W + c]; 
+            int cc = cel->grid_b[r*W + c]; 
+            out->grid  [r*W + c] = (
+                IN_BOUNDS(rr,cc,W,H) ? input->grid[rr*W + cc] : -1 /*OUTSIDE*/
+            ) == col->grid[r*W + c];
+
         }
     }
-    return A;
+    return out;
 }
 
-//ValGrid* impl_negate(ValGrid const* input, ValGrid const* args) {
-//    ValGrid* Z = &(args[0]); 
-//    int H = Z->height; int W = Z->width;
-//
-//    ValGrid* A = make_grid(H, W, TDRCT);
-//    for ( int r = 0; r != H; ++r ) { 
-//        for ( int c = 0; c != W; ++c ) { 
-//            A->grid  [r * W + c] = - Z->grid  [r * W + c];
-//            A->grid_b[r * W + c] = - Z->grid_b[r * W + c];
-//        }
-//    }
-//    return A;
-//}
-//
-//ValGrid* impl_diff(ValGrid const* input, ValGrid const* args) {
-//    ValGrid* Y = &(args[0]);  
-//    ValGrid* Z = &(args[1]); 
-//    int H = Z->height; int W = Z->width;
-//
-//    ValGrid* A = make_grid(H, W, TDRCT);
-//    for ( int r = 0; r != H; ++r ) { 
-//        for ( int c = 0; c != W; ++c ) { 
-//            A->grid  [r * W + c] = Y->grid  [r * W + c] - Z->grid  [r * W + c];
-//            A->grid_b[r * W + c] = Y->grid_b[r * W + c] - Z->grid_b[r * W + c];
-//        }
-//    }
-//    return A;
-//}
-//
-//ValGrid* impl_view(ValGrid const* input, ValGrid const* args) {
-//    ValGrid* Z = &(args[0]); 
-//    int H = Z->height; int W = Z->width;
-//
-//    ValGrid* A = make_grid(H, W, TCOLOR);
-//    for ( int r = 0; r != H; ++r ) { 
-//        for ( int c = 0; c != W; ++c ) { 
-//            int rr = Z->grid  [r * W + c]; 
-//            int cc = Z->grid_b[r * W + c]; 
-//            A->grid  [r * W + c] = (
-//                IN_BOUNDS(rr,cc,W,H) ? input[rr * W + cc] : OUTSIDE
-//            );
-//        }
-//    }
-//    return A;
-//}
-//
-//ValGrid* impl_plus(ValGrid const* input, ValGrid const* args) {
-//    ValGrid* Y = &(args[0]);  
-//    ValGrid* Z = &(args[1]); 
-//    int H = Z->height; int W = Z->width;
-//
-//    ValGrid* A = make_grid(H, W, TDRCT);
-//    for ( int r = 0; r != H; ++r ) { 
-//        for ( int c = 0; c != W; ++c ) { 
-//            A->grid  [r * W + c] = Y->grid  [r * W + c] + Z->grid  [r * W + c];
-//            A->grid_b[r * W + c] = Y->grid_b[r * W + c] + Z->grid_b[r * W + c];
-//        }
-//    }
-//    return A;
-//}
-//
-//ValGrid* impl_offset(ValGrid const* input, ValGrid const* args) {
-//    ValGrid* D = &(args[0]);  
-//    ValGrid* C = &(args[1]); 
-//    int H = C->height; int W = C->width;
-//
-//    ValGrid* A = make_grid(H, W, TCELL);
-//    for ( int r = 0; r != H; ++r ) { 
-//        for ( int c = 0; c != W; ++c ) { 
-//            A->grid  [r * W + c] = C->grid  [r * W + c] + D->grid  [r * W + c];
-//            A->grid_b[r * W + c] = C->grid_b[r * W + c] + D->grid_b[r * W + c];
-//        }
-//    }
-//    return A;
-//}
-//
+ValGrid* impl_sees(PossiblyEvaldExpr const* args, CTable const* ct) {
+    LambExpr* here = leaf_expr(0);
+
+    ValGrid* input = args[0].grid; 
+    ValGrid* pred  = search_table(ct, eval_expr(args[1].expr, here))->cargo;
+    ValGrid* dir   = args[2].grid; 
+    ValGrid* start = args[3].grid; 
+
+    int H = input->height; int W = input->width;
+
+    ValGrid* out = make_grid(H, W, tTWO);
+    for ( int r = 0; r != H; ++r ) { 
+        for ( int c = 0; c != W; ++c ) { 
+            int dr = dir->grid  [r*W + c];
+            int dc = dir->grid_b[r*W + c];
+            int rr = start->grid  [r*W + c];
+            int cc = start->grid_b[r*W + c];
+            do {
+                rr += dr;
+                cc += dc;
+            } while ( IN_BOUNDS(rr,cc,W,H) && ! pred->grid[rr*W + cc] && (dr||dc) );
+            out->grid[r*W + c] = IN_BOUNDS(rr,cc,W,H) && pred->grid[rr*W + cc];
+        }
+    }
+    return out;
+}
+
+
+
+
+
+// constants
+
+typedef PossiblyEvaldExpr const* ARG_A; 
+typedef CTable const* ARG_B; 
+
+ValGrid* const_dir(PossiblyEvaldExpr const* args, int dr, int dc)
+{
+    ValGrid* input = args[0].grid;  
+    int H = input->height; int W = input->width;
+
+    ValGrid* out = make_grid(H, W, tDIR);
+    for ( int r = 0; r != H; ++r ) { 
+        for ( int c = 0; c != W; ++c ) { 
+            out->grid  [r*W + c] = dr;
+            out->grid_b[r*W + c] = dc;
+        }
+    }
+    return out;
+}
+
+ValGrid* impl_east   (ARG_A args, ARG_B ct) { return const_dir(args,  0, +1); } 
+ValGrid* impl_north  (ARG_A args, ARG_B ct) { return const_dir(args, -1,  0); }
+ValGrid* impl_south  (ARG_A args, ARG_B ct) { return const_dir(args, +1,  0); }
+ValGrid* impl_west   (ARG_A args, ARG_B ct) { return const_dir(args,  0, -1); }
+
+ValGrid* const_col(PossiblyEvaldExpr const* args, int col)
+{
+    ValGrid* input = args[0].grid;  
+    int H = input->height; int W = input->width;
+
+    ValGrid* out = make_grid(H, W, tHUE);
+    for ( int r = 0; r != H; ++r ) { 
+        for ( int c = 0; c != W; ++c ) { 
+            out->grid  [r*W + c] = col;
+        }
+    }
+    return out;
+}
+
+ValGrid* impl_abyss  (ARG_A args, ARG_B ct) { return const_col(args, -1); }
+ValGrid* impl_black  (ARG_A args, ARG_B ct) { return const_col(args,  0); } 
+ValGrid* impl_cobalt (ARG_A args, ARG_B ct) { return const_col(args,  1); }
+ValGrid* impl_crimson(ARG_A args, ARG_B ct) { return const_col(args,  2); }
+ValGrid* impl_forest (ARG_A args, ARG_B ct) { return const_col(args,  3); }
+ValGrid* impl_gold   (ARG_A args, ARG_B ct) { return const_col(args,  4); }
+ValGrid* impl_lead   (ARG_A args, ARG_B ct) { return const_col(args,  5); }
+ValGrid* impl_magenta(ARG_A args, ARG_B ct) { return const_col(args,  6); }
+ValGrid* impl_salmon (ARG_A args, ARG_B ct) { return const_col(args,  7); }
+ValGrid* impl_sky    (ARG_A args, ARG_B ct) { return const_col(args,  8); }
+ValGrid* impl_tan    (ARG_A args, ARG_B ct) { return const_col(args,  9); }

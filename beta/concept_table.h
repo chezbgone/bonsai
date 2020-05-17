@@ -35,7 +35,7 @@ union CTableValue {
 
 typedef struct CRecord CRecord;
 struct CRecord {
-    LambExpr* bod;
+    LambExpr const* bod;
     CTableValue data;
 };
 
@@ -60,9 +60,9 @@ struct CTable {
 
 void init_table(CTable* ct, CTableType tag);
 void wipe_table(CTable* ct); /* shallow destroy; doesn't free keys or values */
-void update_table(CTable* ct, LambExpr* bod, CTableValue diff);
-CTableValue const* search_table(CTable* ct, LambExpr* bod);
-LambExpr* best_concept(CTable* ct);
+void update_table(CTable* ct, LambExpr const* bod, CTableValue diff);
+CTableValue const* search_table(CTable const* ct, LambExpr const* bod);
+LambExpr const* best_concept(CTable const* ct);
 
 void print_table(CTable const* ct, char leaf_names[][16]);
 

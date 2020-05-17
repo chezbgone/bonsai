@@ -9,9 +9,9 @@
 #define ENUMERATOR_H 
 
 #include <stdbool.h>
+
 #include "lambda.h" 
 #include "type.h" 
-//#include "interpreter.h" 
 
 /*===========================================================================*/
 /*====  0. GRAMMAR and PROGRAM LIST  ========================================*/
@@ -40,9 +40,6 @@ struct ScoredLamb {
     // the following are useful during interpretation:
     bool is_const;
     bool needs_nonconst;
-    ScoredLamb* fst_kid; 
-    ScoredLamb* snd_kid; 
-    //ValGrid* val_grid; 
 }; 
 
 typedef struct LambList LambList; 

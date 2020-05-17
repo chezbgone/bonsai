@@ -7,10 +7,11 @@
 
 #include <stdlib.h> 
 #include <stdio.h> 
+
 #include "colors.h" 
+#include "enumerator.h" 
 #include "lambda.h" 
 #include "type.h" 
-#include "enumerator.h" 
 
 void insert(LambList* ll, ScoredLamb e)
 {
