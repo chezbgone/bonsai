@@ -31,6 +31,7 @@ struct ValGrid {
 
 typedef ValGrid const* (*Routine)(ValGrid const*, LambExpr* const*, CTable const*);
 
-ValGrid const* evaluate(LambExpr* e, CTable* ct, int const* nb_args);
+ValGrid const* evaluate(ValGrid const* input, LambExpr* e, CTable* ct, int const* nb_args);
+ValGrid* make_grid(int H, int W, EType tag);
 
 #endif//INTERPRETER_H

@@ -56,24 +56,27 @@ Routine implementations[] = {
 }; 
 
 #define MAX_NB_ARGS 4
-ValGrid const* evaluate(LambExpr* e, CTable* ct, int const* nb_args)
+ValGrid const* evaluate(ValGrid const* input, LambExpr* e, CTable* ct, int const* nb_args)
 {
-    lime();
-    printf("evaluating: ");
-    print_expr(e, NULL);
-    printf("\n");
-
     /* is memoized */
     CTableValue const* val = search_table(ct, e);
-    if ( val != NULL ) { return val->cargo; }
+    if ( val != NULL ) {
+        lime();
+        printf("found: ");
+        print_expr(e, NULL);
+        printf("\n");
+
+        return val->cargo;
+    } else {
+    }
 
     /* evaluate children */
     switch ( e-> tag ) {
         case LEAF: break; 
         case VRBL: break; 
-        case ABST: evaluate(e->BOD, ct, nb_args); break; 
-        case EVAL: evaluate(e->FUN, ct, nb_args);
-                   evaluate(e->ARG, ct, nb_args); break; 
+        case ABST: evaluate(input, e->BOD, ct, nb_args); break; 
+        case EVAL: evaluate(input, e->FUN, ct, nb_args);
+                   evaluate(input, e->ARG, ct, nb_args); break; 
     }
 
     LambExpr* args[MAX_NB_ARGS];
@@ -98,7 +101,16 @@ ValGrid const* evaluate(LambExpr* e, CTable* ct, int const* nb_args)
         args[nb_args_seen-1-a] = temp; 
     }
 
-    //return implementations[f->LID](args, ct); 
+    lime();
+    printf("evaluating: ");
+    print_expr(e, NULL);
+    printf("\n");
+    printf("##\n");
+    ValGrid const* out = implementations[f->LID](input, args, ct);
+    printf("####\n");
+    update_table(ct, e, (CTableValue){.cargo=out});
+    printf("######\n");
+    return out; 
 }
 
 ValGrid* make_grid(int H, int W, EType tag)
@@ -129,8 +141,8 @@ ValGrid const* impl_here   (ValGrid const* input, LambExpr* const* args, CTable 
 
 ValGrid const* impl_offset (ValGrid const* input, LambExpr* const* args, CTable const* ct)
 {
-    ValGrid* dir   = search_table(ct, args[1])->cargo;  
-    ValGrid* cel   = search_table(ct, args[2])->cargo; 
+    ValGrid* dir   = search_table(ct, args[0])->cargo;  
+    ValGrid* cel   = search_table(ct, args[1])->cargo; 
     int H = input->height; int W = input->width;
 
     ValGrid* out = make_grid(H, W, tCEL);
@@ -145,8 +157,8 @@ ValGrid const* impl_offset (ValGrid const* input, LambExpr* const* args, CTable 
 
 ValGrid const* impl_plus   (ValGrid const* input, LambExpr* const* args, CTable const* ct)
 {
-    ValGrid* da    = search_table(ct, args[1])->cargo;  
-    ValGrid* db    = search_table(ct, args[2])->cargo; 
+    ValGrid* da    = search_table(ct, args[0])->cargo;  
+    ValGrid* db    = search_table(ct, args[1])->cargo; 
     int H = input->height; int W = input->width;
 
     ValGrid* out = make_grid(H, W, tDIR);
@@ -161,8 +173,8 @@ ValGrid const* impl_plus   (ValGrid const* input, LambExpr* const* args, CTable 
 
 ValGrid const* impl_diff   (ValGrid const* input, LambExpr* const* args, CTable const* ct)
 {
-    ValGrid* ca    = search_table(ct, args[1])->cargo;  
-    ValGrid* cb    = search_table(ct, args[2])->cargo; 
+    ValGrid* ca    = search_table(ct, args[0])->cargo;  
+    ValGrid* cb    = search_table(ct, args[1])->cargo; 
     int H = input->height; int W = input->width;
 
     ValGrid* out = make_grid(H, W, tDIR);
@@ -177,7 +189,7 @@ ValGrid const* impl_diff   (ValGrid const* input, LambExpr* const* args, CTable 
 
 ValGrid const* impl_negate (ValGrid const* input, LambExpr* const* args, CTable const* ct)
 {
-    ValGrid* dir   = search_table(ct, args[1])->cargo; 
+    ValGrid* dir   = search_table(ct, args[0])->cargo; 
     int H = input->height; int W = input->width;
 
     ValGrid* out = make_grid(H, W, tDIR);
@@ -191,7 +203,7 @@ ValGrid const* impl_negate (ValGrid const* input, LambExpr* const* args, CTable 
 }
 
 ValGrid const* impl_view   (ValGrid const* input, LambExpr* const* args, CTable const* ct) {
-    ValGrid* cel   = search_table(ct, args[1])->cargo; 
+    ValGrid* cel   = search_table(ct, args[0])->cargo; 
     int H = input->height; int W = input->width;
 
     ValGrid* out = make_grid(H, W, tCEL);
@@ -209,8 +221,8 @@ ValGrid const* impl_view   (ValGrid const* input, LambExpr* const* args, CTable 
 }
 
 ValGrid const* impl_has_hue(ValGrid const* input, LambExpr* const* args, CTable const* ct) {
-    ValGrid* col   = search_table(ct, args[1])->cargo; 
-    ValGrid* cel   = search_table(ct, args[2])->cargo; 
+    ValGrid* col   = search_table(ct, args[0])->cargo; 
+    ValGrid* cel   = search_table(ct, args[1])->cargo; 
     int H = input->height; int W = input->width;
 
     ValGrid* out = make_grid(H, W, tTWO);
@@ -230,9 +242,9 @@ ValGrid const* impl_has_hue(ValGrid const* input, LambExpr* const* args, CTable 
 ValGrid const* impl_sees(ValGrid const* input, LambExpr* const* args, CTable const* ct) {
     LambExpr* here = leaf_expr(0);
 
-    ValGrid* pred  = search_table(ct, eval_expr(args[1], here))->cargo;
-    ValGrid* dir   = search_table(ct, args[2])->cargo; 
-    ValGrid* start = search_table(ct, args[3])->cargo; 
+    ValGrid* pred  = search_table(ct, eval_expr(args[0], here))->cargo;
+    ValGrid* dir   = search_table(ct, args[1])->cargo; 
+    ValGrid* start = search_table(ct, args[2])->cargo; 
 
     int H = input->height; int W = input->width;
 

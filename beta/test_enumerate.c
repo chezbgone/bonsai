@@ -166,6 +166,15 @@ void main()
         LambList ll = enumerate(&G, - 2, tTWO); 
         printf("%d elts\n", ll.len);
 
+        int H = 5;
+        int W = 5;
+        ValGrid* input = make_grid(H, W, tHUE);
+        for ( int r = 0; r != H; ++r ) { 
+            for ( int c = 0; c != W; ++c ) { 
+                input->grid  [r*W + c] = 0;
+            }
+        }
+
         CTable ct;
         init_table(&ct, CARGO_VALUED);
         for ( int pi = 0; pi != ll.len; ++pi ) {
@@ -174,7 +183,7 @@ void main()
             printf("%8.4f ", ll.arr[pi].score);
             print_expr(ll.arr[pi].e, leaf_names);
             printf("\n");
-            evaluate(ll.arr[pi].e, &ct, nb_args);
+            evaluate(input, ll.arr[pi].e, &ct, nb_args);
     
             if ( (pi+1) % 50 ) { continue; }
             char c; scanf("%c", &c);
