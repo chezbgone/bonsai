@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <time.h>
 
 #include "colors.h"
 #include "concept_table.h"
@@ -163,11 +164,11 @@ void main()
             .abst_score     = plog(ABST_PROB) ,
         };
    
-        LambList ll = enumerate(&G, - 7, tTWO); 
+        LambList ll = enumerate(&G, -18, tTWO); 
         printf("%d elts\n", ll.len);
 
-        int H = 5;
-        int W = 5;
+        int H = 16;
+        int W = 16;
         ValGrid* input = make_grid(H, W, tHUE);
         for ( int r = 0; r != H; ++r ) { 
             for ( int c = 0; c != W; ++c ) { 
@@ -175,21 +176,31 @@ void main()
             }
         }
 
+        {
+            char c; scanf("%c", &c);
+        }
+
         CTable ct;
         init_table(&ct, CARGO_VALUED);
+
+        clock_t start = clock();
         for ( int pi = 0; pi != ll.len; ++pi ) {
-            printf("%4d : ", pi);
-            lava();
-            printf("%8.4f ", ll.arr[pi].score);
-            print_expr(ll.arr[pi].e, leaf_names);
-            printf("\n");
+            //printf("%4d : ", pi);
+            //lava();
+            //printf("%8.4f ", ll.arr[pi].score);
+            //print_expr(ll.arr[pi].e, leaf_names);
+            //printf("\n");
             ValGrid const* hi = evaluate(input, ll.arr[pi].e, &ct, nb_args);
             //print_grid(hi);
             //printf("\n");
     
-            if ( (pi+1) % 1  ) { continue; }
-            char c; scanf("%c", &c);
+            //if ( (pi+1) % 1000 ) { continue; }
+            //char c; scanf("%c", &c);
         }
+        clock_t end = clock();
+        float diff = ((float)(end-start))/CLOCKS_PER_SEC;
+        printf("took %.3f secs, or %.3f milli-secs per prog \n", diff, 1000*diff/(ll.len));
+
         wipe_table(&ct);
         free(ll.arr);
 

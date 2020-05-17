@@ -96,11 +96,10 @@ ValGrid const* evaluate(ValGrid const* input, LambExpr* e, CTable* ct, int const
     /* is memoized */
     CTableValue const* val = search_table(ct, e);
     if ( val != NULL ) {
-        lime();
-        printf("found: ");
-        print_expr(e, NULL);
-        printf("\n");
-
+        //lime();
+        //printf("found: ");
+        //print_expr(e, NULL);
+        //printf("\n");
         return val->cargo;
     } else {
     }
@@ -136,15 +135,15 @@ ValGrid const* evaluate(ValGrid const* input, LambExpr* e, CTable* ct, int const
         args[nb_args_seen-1-a] = temp; 
     }
 
-    lime();
-    printf("evaluating: ");
-    print_expr(e, NULL);
-    printf("\n");
+    //lime();
+    //printf("evaluating: ");
+    //print_expr(e, NULL);
+    //printf("\n");
 
     ValGrid const* out = implementations[f->LID](input, args, ct);
     update_table(ct, e, (CTableValue){.cargo=out});
 
-    print_grid(out);
+    //print_grid(out);
 
     return out; 
 }
@@ -250,10 +249,9 @@ ValGrid const* impl_view   (ValGrid const* input, LambExpr* const* args, CTable 
         for ( int c = 0; c != W; ++c ) { 
             int rr = cel->grid  [r*W + c]; 
             int cc = cel->grid_b[r*W + c]; 
-            out->grid  [r*W + c] = 0;
-            //    (
-            //    IN_BOUNDS(rr,cc,H,W) ? input->grid[rr*W + cc] : -1 /*OUTSIDE*/
-            //);
+            out->grid  [r*W + c] = (
+                IN_BOUNDS(rr,cc,H,W) ? input->grid[rr*W + cc] : -1 /*OUTSIDE*/
+            );
         }
     }
     return out;
