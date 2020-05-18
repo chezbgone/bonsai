@@ -80,6 +80,8 @@ long* moo_alloc(PoolHeader* p, int nb_words)
     /*~~~~~~~~  1.0. Search for a Sufficiently Large Free Block  ~~~~~~~~~~~~*/
     {
         bool found = false; 
+        //while ( p->next_pool != NULL && p->is_free ) { p = p->next_pool; }
+
         prv = p->active;
 
         while ( prv == NULL || available_words(prv) < requested_words ) {
@@ -152,6 +154,7 @@ long* moo_alloc(PoolHeader* p, int nb_words)
 
 void moo_free(long* allocation)
 {
+    /* TODO: is this wrong? how do we update everyone's next_avails? */
     BlockHeader* cur = (BlockHeader*) ( allocation - WORDS_PER_BLOCK_HEADER );
     BlockHeader* prv = cur->prev_block;
     BlockHeader* nxt = cur->next_block;

@@ -1,6 +1,6 @@
 /*  author: samtenka
  *  change: 2020-05-17
- *  create: 2020-05-02
+ *  create: 2020-05-17
  *  descrp: 
  *  to use: 
  */
@@ -16,6 +16,7 @@
 #include "enumerator.h"
 #include "interpreter.h"
 #include "lambda.h"
+#include "toy_data.h"
 
 const float exp_thouth = 1.001000500;
 const float exp_hundth = 1.010050167;
@@ -51,7 +52,7 @@ struct Primitive {
 
 const float ABST_PROB = 0.0;
 
-#define NB_PRIMITIVES 23
+#define NB_PRIMITIVES 23//24
 Primitive my_prims[] = {                        /*const  nnonc  comm   uneq   absbs*/
     {"here"    , 0, tCEL               ,      64 , false, 1    , 0    , 0    , 0    }, 
     {"offset"  , 2, tCEL_CEL_DIR       ,   16    , 1    , 1    , 0    , 0    , true }, 
@@ -64,6 +65,7 @@ Primitive my_prims[] = {                        /*const  nnonc  comm   uneq   ab
     {"diff"    , 2, tDIR_CEL_CEL       , 4       , 1    , 1    , 0    , true , 0    },
     {"negate"  , 1, tDIR_DIR           , 4       , 1    , 1    , 0    , 0    , 0/**/},
                     
+    //{"query"   , 0, tHUE               ,      64 , false, 1    , 0    , 0    , 0    },
     {"black"   , 0, tHUE               ,      64 , 1    , 1    , 0    , 0    , 0    },
     {"view"    , 1, tHUE_CEL           ,      64 , 1    , 1    , 0    , 0    , 0    }, 
     {"cobalt"  , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
@@ -183,15 +185,7 @@ void main()
         lava(); printf("%.3f ", 1000*diff/(ll.len)); defc();
         printf("ms per program \n");
 
-
-        int H = 16;
-        int W = 16;
-        ValGrid* input = make_grid(H, W, tHUE);
-        for ( int r = 0; r != H; ++r ) { 
-            for ( int c = 0; c != W; ++c ) { 
-                input->grid  [r*W + c] = (r+c)%3;
-            }
-        }
+        ValGrid const* input = a_pairs[0].x;
 
         start = clock();
         {

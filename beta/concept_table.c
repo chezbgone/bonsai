@@ -114,10 +114,11 @@ void expand_table(CTable* ct)
 
     int new_nb_bins = 3*ct->nb_bins + 1;
 
-    lava(); printf("expand: "); defc();
-    lime(); printf("%3d ", ct->nb_bins); defc();
+    lime(); printf("expanding "); defc();
+    printf("hash table: ");
+    lava(); printf("%3d ", ct->nb_bins); defc();
     printf("bins -> ");
-    lime(); printf("%3d ", new_nb_bins); defc();
+    lava(); printf("%3d ", new_nb_bins); defc();
     printf("bins...\n");
 
     CList* new_arr = malloc(sizeof(CList) * new_nb_bins);

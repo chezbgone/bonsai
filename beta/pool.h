@@ -34,7 +34,7 @@
 
 #include <stdbool.h>
 
-#define WORDS_PER_POOL 4096 
+#define WORDS_PER_POOL (4096)
 
 #define LSIZE(t) ((sizeof(t) + sizeof(long)-1) / sizeof(long)) 
 #define MOO_ALLOC(pool, t, nb) ((void*)moo_alloc(pool, LSIZE(t) * nb))
@@ -43,11 +43,12 @@
 typedef struct PoolHeader PoolHeader;
 typedef struct BlockHeader BlockHeader;
 
-#define WORDS_PER_POOL_HEADER 3
+#define WORDS_PER_POOL_HEADER 4
 struct PoolHeader {
     PoolHeader* next_pool;  
     PoolHeader* prev_pool;  
     BlockHeader* active;
+    bool is_full;
 };
 
 #define WORDS_PER_BLOCK_HEADER 7
