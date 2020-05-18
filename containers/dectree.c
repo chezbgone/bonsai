@@ -5,6 +5,7 @@
  *  to use: 
  */
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -257,22 +258,28 @@ void train_subtree(DecTree* dtp, TaskView const* tvp, int depth)
     /* mask.len bounds info from above  */
 
     float best_info = info_of(tvp);
-
-    // TODO: parameterize this depth limiting!
-    if ( depth >= 5 || best_info == 0.0 ) {
+    if ( best_info <= 0.0) {
         dtp->annotation.value = 
             tvp->negpoints.len < tvp->pospoints.len ? +1 : -1;
         return;
     }
 
-    int best_didx = rand() % tvp->pt_dim; // = depth % tvp->pt_dim; 
+    //int best_didx = rand() % tvp->pt_dim; // = depth % tvp->pt_dim; 
+    int best_didx = 0; //rand() % tvp->pt_dim; // = depth % tvp->pt_dim; 
 
+    bool found = false;
     for ( int didx = 0; didx != tvp->pt_dim; ++didx ) {
         float info = info_of_split(tvp, didx);
         if ( !(info < best_info) ) { continue; }
         if ( info == best_info && (rand()%2) ) { continue; }
+        found = true;
         best_info = info;
         best_didx = didx;
+    }
+    if ( ! found ) {
+        dtp->annotation.value = 
+            tvp->negpoints.len < tvp->pospoints.len ? +1 : -1;
+        return;
     }
 
     for ( int j = 0; j != depth; ++j ) {
@@ -329,7 +336,8 @@ NewDim best_new_dim(Tasks const* tasks, Trees const* trees, int max_len, int pt_
 
         NewDim nd = {didx_a, didx_b, -1};
 
-        for ( char op=0; op != 4; ++op ) {
+        //for ( char op=0; op != 4; ++op ) {
+        for ( char op=0; op != 1; ++op ) {
             nd.op = op;
 
             float total_gain = 0.0;
