@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-05-09
+ *  change: 2020-05-17
  *  create: 2020-03-04
  *  descrp: 
  *  to use: 
@@ -55,13 +55,13 @@ int depth(DecTree const* dtp)
 void print_tree(DecTree const* dtp)
 {
     int j;
-    for ( j = 0; j != nb_nodes(dtp); ++j ) { printf("-"); }
+    for ( j = 0; j != 2*nb_nodes(dtp); ++j ) { printf("-"); }
     printf("\n");
     for ( int r = 0; r != depth(dtp)+1; ++r ) {
         print_tree_row(dtp, r);
         printf("\n");
     }
-    for ( j = 0; j != nb_nodes(dtp); ++j ) { printf("-"); }
+    for ( j = 0; j != 2*nb_nodes(dtp); ++j ) { printf("-"); }
     printf("\n");
 }
 
@@ -70,11 +70,11 @@ void print_tree_row(DecTree const* dtp, int row)
     if ( row ) {
         switch ( dtp->node_type ) {
             case NT_LEAF:
-                printf(" ");
+                printf("  ");
                 return;
             case NT_PRED:
                 print_tree_row(dtp->left, row-1);
-                printf("\033[30m|\033[36m");
+                printf("\033[30m| \033[36m");
                 print_tree_row(dtp->rght, row-1);
                 return;
         }
@@ -82,19 +82,20 @@ void print_tree_row(DecTree const* dtp, int row)
         int j;
         switch ( dtp->node_type ) {
             case NT_LEAF:
-                printf("%s",
+                printf("\033[40;1m%s\033[0m ",
                     dtp->annotation.value==+1 ?
-                    "\033[32m+\033[36m" :
-                    "\033[31m-\033[36m"
+                    "\033[32;7m+\033[0;36m" :
+                    "\033[31;7m-\033[0;36m"
                 );
                 return;
             case NT_PRED:
-                for ( j = 0; j != nb_nodes(dtp->left)-1; ++j ) { printf(" "); }
+                for ( j = 0; j != nb_nodes(dtp->left)-1; ++j ) { printf("  "); }
                 int didx = dtp->annotation.didx;
-                if      ( didx <  10 ) { printf(" %d ", didx); }
-                else if ( didx < 100 ) { printf("%d ",  didx); }
-                else                   { printf("%d",   didx); }
-                for ( j = 0; j != nb_nodes(dtp->rght)-1; ++j ) { printf(" "); }
+                if      ( didx <   10 ) { printf("  %d   ", didx); }
+                else if ( didx <  100 ) { printf(" %d   ",  didx); }
+                else if ( didx < 1000 ) { printf(" %d  ",   didx); }
+                else                    { printf(" %d ",   didx); }
+                for ( j = 0; j != nb_nodes(dtp->rght)-1; ++j ) { printf("  "); }
                 return;
         }
     }
@@ -256,8 +257,11 @@ void train_subtree(DecTree* dtp, TaskView const* tvp, int depth)
     /* mask.len bounds info from above  */
 
     float best_info = info_of(tvp);
-    if ( best_info == 0.0 ) {
-        dtp->annotation.value = tvp->pospoints.len ? +1 : -1;
+
+    // TODO: parameterize this depth limiting!
+    if ( depth >= 5 || best_info == 0.0 ) {
+        dtp->annotation.value = 
+            tvp->negpoints.len < tvp->pospoints.len ? +1 : -1;
         return;
     }
 

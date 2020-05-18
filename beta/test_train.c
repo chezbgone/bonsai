@@ -221,26 +221,70 @@ void main()
     signal(SIGINT, handle_interrupt);
     {
         Grammar G;              init_grammar(&G);
-        LambList ll;            init_lamb_list(&G, &ll, 17.0);
-        ValGrid const* input;   input = a_pairs[0].x;
-        CTable ct;              init_table(&ct, CARGO_VALUED);
+        LambList ll;            init_lamb_list(&G, &ll, 6.0);
+        Tasks tasks;            init_tasks(&tasks, A_NB_PAIRS);
 
-        init_valuations(&ct, input, &ll);
+        /* populate task with valuations */
+        int const nb_dims = ll.len; 
+        int const nb_colors = 10;
 
-        Tasks tasks;            init_tasks(&tasks, 1);
-        Task t = {make_charss(5), make_charss(5), 100};
+        Task t = {make_charss(0), make_charss(0), nb_dims};
         push_tasks(&tasks, t);
-        for ( int si = 0; si != 10; ++si ) {
-            char label = /* output @ sample*/ si%2;
-            charss* points = label ? &(tasks.data[0].pospoints) :
-                                     &(tasks.data[0].negpoints)  ; 
-            push_charss(points, make_chars(100));
-            for ( int di = 0; di != 100; ++ di ) {
-                push_chars(&points->data[points->len-1], /* dim @ sample*/ si & (1<<di)); 
+
+        for ( int s = 0; s != A_NB_PAIRS; ++s ) {
+            CTable ct;
+            init_table(&ct, CARGO_VALUED);
+            ValGrid const* input = a_pairs[s].x;
+            init_valuations(&ct, input, &ll);
+
+            for ( int pi = 0; pi != ll.len; ++pi ) {
+                printf("%4d : ", pi);
+                lava(); printf("%8.4f ", ll.arr[pi].score); defc();
+                print_expr(ll.arr[pi].e, leaf_names);
+                printf("\n");
+                ValGrid const* v = evaluate(input, ll.arr[pi].e, &ct, nb_args);
+
+                //print_grid(v);
+                //printf("\n");
+    
+                //if ( (pi+1) %  1 ) { continue; }
+                //char c; scanf("%c", &c);
             }
+
+            int H = input->height;
+            int W = input->width;
+
+            for ( int r = 0; r != H; ++r ) {
+                for ( int c = 0; c != W; ++c ) {
+                    //int actual_hue = a_pairs[s].y->grid[r*W + c];
+                    int actual_out = a_pairs[s].y->grid[r*W + c];
+
+                    for ( int di = 0; di != nb_dims; ++ di ) {
+                        /* dim @ sample*/
+                        ValGrid const* features = search_table(&ct, ll.arr[di].e)->cargo;
+                        char f = features->grid[r*W + c]; 
+
+                        //for ( int hue = 0; hue != nb_colors; ++hue ) {
+                            /* output @ sample*/
+                            //char label = (hue == actual_hue); 
+                            char label = actual_out;
+
+                            charss* points = label ? &(tasks.data[0].pospoints) :
+                                                     &(tasks.data[0].negpoints)  ; 
+                            if ( di == 0 ) {
+                                push_charss(points, make_chars(nb_dims));
+                            }
+                            push_chars(&points->data[points->len-1], f);
+                        //}
+                    }
+
+                }
+            }
+
+            wipe_table(&ct);
         }
 
-        TaskView tv;            rand_taskview(&tv, &(tasks.data[0]));
+        TaskView tv;            cons_taskview(&tv, &(tasks.data[0]));
 
         Trees trees;            init_trees(&trees, 1);
         DecTree dt;
@@ -249,9 +293,14 @@ void main()
         print_tree(&dt);
         push_trees(&trees, dt);
         free_trees(&trees);
-        
 
-        wipe_table(&ct);
+        printf("%3d",  0); print_expr(ll.arr[ 0].e, leaf_names); printf("\n");
+        printf("%3d", 11); print_expr(ll.arr[11].e, leaf_names); printf("\n");
+        printf("%3d", 12); print_expr(ll.arr[12].e, leaf_names); printf("\n");
+        printf("%3d", 13); print_expr(ll.arr[13].e, leaf_names); printf("\n");
+        printf("%3d", 14); print_expr(ll.arr[14].e, leaf_names); printf("\n");
+        printf("%3d", 17); print_expr(ll.arr[17].e, leaf_names); printf("\n");
+
         free(ll.arr);
     }
     handle_interrupt(0);
