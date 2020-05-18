@@ -18,6 +18,11 @@
 #include "lambda.h"
 #include "toy_data.h"
 
+#include "../verbose.h"
+#include "../containers/fixpoint.h" 
+#include "../containers/mapping.h" 
+#include "../containers/count_heap.h" 
+
 const float exp_thouth = 1.001000500;
 const float exp_hundth = 1.010050167;
 const float exp_tenth  = 1.105170918;
@@ -143,6 +148,69 @@ void handle_interrupt(int sig)
     exit(0);
 }
 
+void init_grammar(Grammar* G)
+{
+    *G = (Grammar){
+        .nb_leaves      = NB_PRIMITIVES   ,
+        .nb_args        = nb_args         ,
+        .leaf_scores    = leaf_scores     ,
+        .leaf_types     = leaf_types      ,
+        .eval_score     = eval_scores     ,
+        .is_const       = is_const        ,
+        .needs_nonconst = needs_nonconst  ,
+        .commutes       = commutes        ,
+        .needs_unequal  = needs_unequal   ,
+        .absorbs_self   = absorbs_self    ,
+        .abst_score     = plog(ABST_PROB) ,
+    };
+}
+
+void init_lamb_list(Grammar const* G, LambList* ll, float nats)
+{
+    clock_t start, end;
+    float diff;
+
+    start = clock();
+    {
+        *ll = enumerate(G, -nats, tTWO); 
+    }
+    end = clock();
+    diff = ((float)(end-start))/CLOCKS_PER_SEC;
+
+    lime(); printf("enumerated "); defc();
+    lava(); printf("%d ", ll->len); defc();
+    printf("programs in ");
+    lava(); printf("%.3f ", 1000*diff); defc();
+    printf("ms, or ");
+    lava(); printf("%.3f ", 1000*diff/(ll->len)); defc();
+    printf("ms per program \n");
+}
+
+void init_valuations(CTable* ct, ValGrid const* input, LambList* ll)
+{
+    clock_t start, end;
+    float diff;
+
+    start = clock();
+    {
+        init_table(ct, CARGO_VALUED);
+        for ( int pi = 0; pi != ll->len; ++pi ) {
+            ValGrid const* v = evaluate(input, ll->arr[pi].e, ct, nb_args);
+        }
+    }
+    end = clock();
+    diff = ((float)(end-start))/CLOCKS_PER_SEC;
+
+    lime(); printf("evaluated "); defc();
+    lava(); printf("%d ", ll->len); defc();
+    printf("programs in ");
+    lava(); printf("%.3f ", 1000*diff); defc();
+    printf("ms, or ");
+    lava(); printf("%.3f ", 1000*diff/(ll->len)); defc();
+    printf("ms per program \n");
+}
+
+
 void main()
 {
     initialize_primitive_scores();
@@ -152,71 +220,39 @@ void main()
     init_lamb_expr_pool();
     signal(SIGINT, handle_interrupt);
     {
-        clock_t start, end;
-        float diff;
+        Grammar G;              init_grammar(&G);
+        LambList ll;            init_lamb_list(&G, &ll, 17.0);
+        ValGrid const* input;   input = a_pairs[0].x;
+        CTable ct;              init_table(&ct, CARGO_VALUED);
 
-        Grammar G = {
-            .nb_leaves      = NB_PRIMITIVES   ,
-            .nb_args        = nb_args         ,
-            .leaf_scores    = leaf_scores     ,
-            .leaf_types     = leaf_types      ,
-            .eval_score     = eval_scores     ,
-            .is_const       = is_const        ,
-            .needs_nonconst = needs_nonconst  ,
-            .commutes       = commutes        ,
-            .needs_unequal  = needs_unequal   ,
-            .absorbs_self   = absorbs_self    ,
-            .abst_score     = plog(ABST_PROB) ,
-        };
-   
-        LambList ll;
+        init_valuations(&ct, input, &ll);
 
-        start = clock();
-        {
-            ll = enumerate(&G, -17, tTWO); 
-        }
-        end = clock();
-        diff = ((float)(end-start))/CLOCKS_PER_SEC;
-        lime(); printf("enumerated "); defc();
-        lava(); printf("%d ", ll.len); defc();
-        printf("programs in ");
-        lava(); printf("%.3f ", 1000*diff); defc();
-        printf("ms, or ");
-        lava(); printf("%.3f ", 1000*diff/(ll.len)); defc();
-        printf("ms per program \n");
-
-        ValGrid const* input = a_pairs[0].x;
-
-        start = clock();
-        {
-            CTable ct;
-            init_table(&ct, CARGO_VALUED);
-            for ( int pi = 0; pi != ll.len; ++pi ) {
-                //printf("%4d : ", pi);
-                //lava();
-                //printf("%8.4f ", ll.arr[pi].score);
-                //print_expr(ll.arr[pi].e, leaf_names);
-                //printf("\n");
-                ValGrid const* hi = evaluate(input, ll.arr[pi].e, &ct, nb_args);
-                //print_grid(hi);
-                //printf("\n");
-    
-                //if ( (pi+1) % 10 ) { continue; }
-                //char c; scanf("%c", &c);
+        Tasks tasks;            init_tasks(&tasks, 1);
+        Task t = {make_charss(5), make_charss(5), 100};
+        push_tasks(&tasks, t);
+        for ( int si = 0; si != 10; ++si ) {
+            char label = /* output @ sample*/ si%2;
+            charss* points = label ? &(tasks.data[0].pospoints) :
+                                     &(tasks.data[0].negpoints)  ; 
+            push_charss(points, make_chars(100));
+            for ( int di = 0; di != 100; ++ di ) {
+                push_chars(&points->data[points->len-1], /* dim @ sample*/ si & (1<<di)); 
             }
-            wipe_table(&ct);
-            free(ll.arr);
         }
-        end = clock();
-        diff = ((float)(end-start))/CLOCKS_PER_SEC;
 
-        lime(); printf("evaluated "); defc();
-        lava(); printf("%d ", ll.len); defc();
-        printf("programs in ");
-        lava(); printf("%.3f ", 1000*diff); defc();
-        printf("ms, or ");
-        lava(); printf("%.3f ", 1000*diff/(ll.len)); defc();
-        printf("ms per program \n");
+        TaskView tv;            rand_taskview(&tv, &(tasks.data[0]));
+
+        Trees trees;            init_trees(&trees, 1);
+        DecTree dt;
+        init_tree(&dt);
+        train_tree(&tv, &dt);
+        print_tree(&dt);
+        push_trees(&trees, dt);
+        free_trees(&trees);
+        
+
+        wipe_table(&ct);
+        free(ll.arr);
     }
     handle_interrupt(0);
 }

@@ -198,17 +198,17 @@ void main()
             CTable ct;
             init_table(&ct, CARGO_VALUED);
             for ( int pi = 0; pi != ll.len; ++pi ) {
-                //printf("%4d : ", pi);
-                //lava();
-                //printf("%8.4f ", ll.arr[pi].score);
-                //print_expr(ll.arr[pi].e, leaf_names);
-                //printf("\n");
-                ValGrid const* hi = evaluate(input, ll.arr[pi].e, &ct, nb_args);
-                //print_grid(hi);
+                printf("%4d : ", pi);
+                lava(); printf("%8.4f ", ll.arr[pi].score); defc();
+                print_expr(ll.arr[pi].e, leaf_names);
+                printf("\n");
+                ValGrid const* v = evaluate(input, ll.arr[pi].e, &ct, nb_args);
+
+                //print_grid(v);
                 //printf("\n");
     
-                //if ( (pi+1) % 10 ) { continue; }
-                //char c; scanf("%c", &c);
+                if ( (pi+1) % 50 ) { continue; }
+                char c; scanf("%c", &c);
             }
             wipe_table(&ct);
             free(ll.arr);

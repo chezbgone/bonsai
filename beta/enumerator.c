@@ -165,7 +165,7 @@ LambList enumerate(Grammar const* G, float min_score, EType target)
         for ( int t = 0; t != NB_TYPES; ++t ) {
             lime(); printf("%02d" , t); defc();
             printf(":");
-            lava(); printf("%5d", lbt->arr[t].len); defc();
+            lava(); printf("%4d", lbt->arr[t].len); defc();
             printf(",   ");
         }
         printf("\n");
