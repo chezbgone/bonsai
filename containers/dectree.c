@@ -258,27 +258,30 @@ void train_subtree(DecTree* dtp, TaskView const* tvp, int depth)
     /* mask.len bounds info from above  */
 
     float best_info = info_of(tvp);
-    if ( best_info <= 0.0) {
+    if ( best_info <= 0.0 ) {
+        //printf("[%.3f %d %d]", best_info, tvp->negpoints.len, tvp->pospoints.len);
         dtp->annotation.value = 
             tvp->negpoints.len < tvp->pospoints.len ? +1 : -1;
         return;
     }
 
-    //int best_didx = rand() % tvp->pt_dim; // = depth % tvp->pt_dim; 
-    int best_didx = 0; //rand() % tvp->pt_dim; // = depth % tvp->pt_dim; 
+    int best_didx = rand() % tvp->pt_dim; // = depth % tvp->pt_dim; 
 
     bool found = false;
     for ( int didx = 0; didx != tvp->pt_dim; ++didx ) {
         float info = info_of_split(tvp, didx);
         if ( !(info < best_info) ) { continue; }
-        if ( info == best_info && (rand()%2) ) { continue; }
+        if ( info == best_info && (rand()%2==0) ) { continue; }
         found = true;
         best_info = info;
         best_didx = didx;
     }
     if ( ! found ) {
+        //printf("[%.3f %d %d]", best_info, tvp->negpoints.len, tvp->pospoints.len);
         dtp->annotation.value = 
-            tvp->negpoints.len < tvp->pospoints.len ? +1 : -1;
+            tvp->negpoints.len <= rand() % (tvp->pospoints.len + tvp->negpoints.len)
+                    ? +1 : -1;
+            //tvp->negpoints.len < tvp->pospoints.len ? +1 : -1;
         return;
     }
 
@@ -286,7 +289,10 @@ void train_subtree(DecTree* dtp, TaskView const* tvp, int depth)
         BARK(VERBOSE_DECTREE_TRAIN, "| ");
     }
     BARK(VERBOSE_DECTREE_TRAIN,
-        "split at dim %d to reduce info to %.1f\n", best_didx, best_info
+        "split (%d/%d) at dim %d to reduce info to %.1f\n",
+        tvp->negpoints.len,
+        tvp->pospoints.len,
+        best_didx, best_info
     );
 
     TaskView left;

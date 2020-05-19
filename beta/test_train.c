@@ -82,7 +82,7 @@ Primitive my_prims[] = {                        /*const  nnonc  comm   uneq   ab
     {"salmon"  , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
     {"sky"     , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
     {"tan"     , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"abyss"   , 0, tHUE               , 4       , 1    , 1    , 0    , 0    , 0    },
+    {"abyss"   , 0, tHUE               ,      64 , 1    , 1    , 0    , 0    , 0    },
                     
     {"has_hue" , 2, tTWOCEL_HUE        ,      64 , 1    , 1    , 0    , 0    , 0    }, 
     {"sees"    , 3, tTWOCEL_DIR_TWOCEL , 4       , 1    , 1    , 0    , 0    , 0    }, 
@@ -224,7 +224,13 @@ void main()
         LambList ll;            init_lamb_list(&G, &ll, 6.0);
         Tasks tasks;            init_tasks(&tasks, A_NB_PAIRS);
 
-        /* populate task with valuations */
+        for ( int pi = 0; pi != ll.len; ++pi ) {
+            printf("%4d : ", pi);
+            lava(); printf("%8.4f ", ll.arr[pi].score); defc();
+            print_expr(ll.arr[pi].e, leaf_names);
+            printf("\n");
+        }
+
         int const nb_dims = ll.len; 
         int const nb_colors = 10;
 
@@ -237,19 +243,6 @@ void main()
             ValGrid const* input = a_pairs[s].x;
             init_valuations(&ct, input, &ll);
 
-            for ( int pi = 0; pi != ll.len; ++pi ) {
-                printf("%4d : ", pi);
-                lava(); printf("%8.4f ", ll.arr[pi].score); defc();
-                print_expr(ll.arr[pi].e, leaf_names);
-                printf("\n");
-                ValGrid const* v = evaluate(input, ll.arr[pi].e, &ct, nb_args);
-
-                //print_grid(v);
-                //printf("\n");
-    
-                //if ( (pi+1) %  1 ) { continue; }
-                //char c; scanf("%c", &c);
-            }
 
             int H = input->height;
             int W = input->width;
@@ -262,6 +255,11 @@ void main()
                     for ( int di = 0; di != nb_dims; ++ di ) {
                         /* dim @ sample*/
                         ValGrid const* features = search_table(&ct, ll.arr[di].e)->cargo;
+                        //if ( s == 0 && r == 0 && c == 0 ) {
+                        //    print_expr(ll.arr[di].e, leaf_names);
+                        //    printf("\n");
+                        //    print_grid(features);
+                        //}
                         char f = features->grid[r*W + c]; 
 
                         //for ( int hue = 0; hue != nb_colors; ++hue ) {
@@ -284,22 +282,34 @@ void main()
             wipe_table(&ct);
         }
 
-        TaskView tv;            cons_taskview(&tv, &(tasks.data[0]));
+        for ( int T = 0; T != 8; ++T ) {
+            Trees trees;            init_trees(&trees, 1);
+            TaskView tv;            cons_taskview(&tv, &(tasks.data[0]));
 
-        Trees trees;            init_trees(&trees, 1);
-        DecTree dt;
-        init_tree(&dt);
-        train_tree(&tv, &dt);
-        print_tree(&dt);
-        push_trees(&trees, dt);
-        free_trees(&trees);
+            DecTree dt;             init_tree(&dt);
 
-        printf("%3d",  0); print_expr(ll.arr[ 0].e, leaf_names); printf("\n");
-        printf("%3d", 11); print_expr(ll.arr[11].e, leaf_names); printf("\n");
-        printf("%3d", 12); print_expr(ll.arr[12].e, leaf_names); printf("\n");
-        printf("%3d", 13); print_expr(ll.arr[13].e, leaf_names); printf("\n");
-        printf("%3d", 14); print_expr(ll.arr[14].e, leaf_names); printf("\n");
-        printf("%3d", 17); print_expr(ll.arr[17].e, leaf_names); printf("\n");
+            {
+                train_tree(&tv, &dt);
+                push_trees(&trees, dt);
+                print_tree(&dt);
+
+                float score;
+                NewDim nd = best_new_dim(&tasks, &trees, 10, nb_dims, &score); 
+                printf("%3d: \033[32m%3d %3s %3d : %6.1f\033[36m\n",
+                    nb_dims+T, nd.didx_a, (
+                        nd.op==OP_AND    ? "and" :
+                        nd.op==OP_OR     ? "or" :
+                        nd.op==OP_XOR    ? "xor" :
+                                           "implies"
+                    ), nd.didx_b, score
+                );
+                add_new_dim(&tasks, &nd);
+            }
+
+            free_trees(&trees);
+        }
+
+        //printf("%3d",  0); print_expr(ll.arr[ 0].e, leaf_names); printf("\n");
 
         free(ll.arr);
     }
