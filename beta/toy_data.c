@@ -8,6 +8,13 @@
  *            (d) picks magenta cells that neighbor gold cells 
  *            (e) picks non-black cells' neighbors not neighboring green cells
  *            (f) picks non-black cells that neighbor cells of the same color
+ *
+ *            (g) picks neighbors of neighbors of non-black cells            
+ *            (h) picks neighbors of {non-black cells right below black cells}
+ *            (i) picks  
+ *            (j) picks 
+ *            (k) picks 
+ *            (l) picks 
  *  to use: 
  */
 
@@ -113,10 +120,10 @@ char b1yg[SIDE*SIDE] = {_,_,1,1,1,1,_,_,_,_,
                         _,_,1,1,1,1,_,_,_,_,  
                         _,_,1,1,1,1,_,_,_,_,}; 
 
-ValGrid b0x = {.grid=b0xg, .height=SIDE, .width=SIDE, .tbg=tHUE};
-ValGrid b0y = {.grid=b0yg, .height=SIDE, .width=SIDE, .tbg=tTWO};
-ValGrid b1x = {.grid=b1xg, .height=SIDE, .width=SIDE, .tbg=tHUE};
-ValGrid b1y = {.grid=b1yg, .height=SIDE, .width=SIDE, .tbg=tTWO};  
+ValGrid b0x = {.grid=b0xg, .height=SIDE, .width=SIDE, .tag=tHUE};
+ValGrid b0y = {.grid=b0yg, .height=SIDE, .width=SIDE, .tag=tTWO};
+ValGrid b1x = {.grid=b1xg, .height=SIDE, .width=SIDE, .tag=tHUE};
+ValGrid b1y = {.grid=b1yg, .height=SIDE, .width=SIDE, .tag=tTWO};  
 
 char c0xg[SIDE*SIDE] = {_,_,_,_,_,_,_,_,_,_, 
                         _,_,_,6,6,6,_,_,_,_, 
@@ -162,10 +169,10 @@ char c1yg[SIDE*SIDE] = {_,_,_,_,_,_,_,_,_,_,
                         _,_,_,1,1,_,1,_,_,_,  
                         _,_,_,_,_,_,_,_,_,_,}; 
 
-ValGrid c0x = {.grid=c0xg, .height=SIDE, .width=SIDE, .tbg=tHUE};
-ValGrid c0y = {.grid=c0yg, .height=SIDE, .width=SIDE, .tbg=tTWO};
-ValGrid c1x = {.grid=c1xg, .height=SIDE, .width=SIDE, .tbg=tHUE};
-ValGrid c1y = {.grid=c1yg, .height=SIDE, .width=SIDE, .tbg=tTWO};  
+ValGrid c0x = {.grid=c0xg, .height=SIDE, .width=SIDE, .tag=tHUE};
+ValGrid c0y = {.grid=c0yg, .height=SIDE, .width=SIDE, .tag=tTWO};
+ValGrid c1x = {.grid=c1xg, .height=SIDE, .width=SIDE, .tag=tHUE};
+ValGrid c1y = {.grid=c1yg, .height=SIDE, .width=SIDE, .tag=tTWO};  
 
 char d0xg[SIDE*SIDE] = {_,_,_,2,_,_,_,_,_,_, 
                         _,_,_,_,_,_,6,4,6,6, 
@@ -211,17 +218,17 @@ char d1yg[SIDE*SIDE] = {_,_,_,_,_,_,_,_,_,_,
                         _,_,_,_,_,_,_,_,_,_,  
                         _,_,_,_,_,_,_,_,1,_,}; 
 
-ValGrid d0x = {.grid=d0xg, .height=SIDE, .width=SIDE, .tbg=tHUE};
-ValGrid d0y = {.grid=d0yg, .height=SIDE, .width=SIDE, .tbg=tTWO};
-ValGrid d1x = {.grid=d1xg, .height=SIDE, .width=SIDE, .tbg=tHUE};
-ValGrid d1y = {.grid=d1yg, .height=SIDE, .width=SIDE, .tbg=tTWO};  
+ValGrid d0x = {.grid=d0xg, .height=SIDE, .width=SIDE, .tag=tHUE};
+ValGrid d0y = {.grid=d0yg, .height=SIDE, .width=SIDE, .tag=tTWO};
+ValGrid d1x = {.grid=d1xg, .height=SIDE, .width=SIDE, .tag=tHUE};
+ValGrid d1y = {.grid=d1yg, .height=SIDE, .width=SIDE, .tag=tTWO};  
 
 char e0xg[SIDE*SIDE] = {_,_,_,_,_,_,_,_,_,_, 
                         _,_,_,6,_,_,_,_,_,_, 
                         _,7,_,_,_,5,_,_,_,_, 
                         _,_,9,8,_,_,4,_,_,_, 
                         _,_,_,1,7,6,_,9,4,_, 
-                        _,8,_,_,_, ,3,_,_,_, 
+                        _,8,_,_,_,_,3,_,_,_, 
                         _,_,_,_,2,5,_,5,_,3, 
                         _,1,_,_,_,4,_,_,_,8, 
                         _,_,_,9,3,_,1,_,7,_, 
@@ -232,7 +239,7 @@ char e0yg[SIDE*SIDE] = {_,_,_,_,_,_,_,_,_,_,
                         _,_,_,_,_,_,_,_,_,_,  
                         _,_,1,1,_,_,_,_,_,_,  
                         _,_,_,1,1,1,_,1,1,_,  
-                        _,_,_,_,_, ,_,_,_,_,  
+                        _,_,_,_,_,_,_,_,_,_,  
                         _,_,_,_,1,1,_,_,_,1,  
                         _,_,_,_,_,1,_,_,_,_,  
                         _,_,_,_,1,_,1,_,1,_,  
@@ -260,17 +267,17 @@ char e1yg[SIDE*SIDE] = {_,_,_,_,_,_,_,_,_,_,
                         _,_,_,6,6,5,5,5,_,_,  
                         _,_,_,_,_,_,_,_,_,_,}; 
 
-ValGrid e0x = {.grid=e0xg, .height=SIDE, .width=SIDE, .tbg=tHUE};
-ValGrid e0y = {.grid=e0yg, .height=SIDE, .width=SIDE, .tbg=tTWO};
-ValGrid e1x = {.grid=e1xg, .height=SIDE, .width=SIDE, .tbg=tHUE};
-ValGrid e1y = {.grid=e1yg, .height=SIDE, .width=SIDE, .tbg=tTWO};  
+ValGrid e0x = {.grid=e0xg, .height=SIDE, .width=SIDE, .tag=tHUE};
+ValGrid e0y = {.grid=e0yg, .height=SIDE, .width=SIDE, .tag=tTWO};
+ValGrid e1x = {.grid=e1xg, .height=SIDE, .width=SIDE, .tag=tHUE};
+ValGrid e1y = {.grid=e1yg, .height=SIDE, .width=SIDE, .tag=tTWO};  
 
 char f0xg[SIDE*SIDE] = {_,_,_,_,_,_,_,_,_,_, 
                         _,_,_,_,4,_,_,_,_,_, 
                         _,4,_,4,6,4,_,_,_,_, 
                         _,_,6,6,6,_,_,_,_,_, 
                         _,1,_,4,_,4,_,_,_,_, 
-                        1,_,1,_,_, ,3,_,_,_, 
+                        1,_,1,_,_,_,3,_,_,_, 
                         _,1,_,_,_,3,6,3,_,_, 
                         _,_,_,_,4,4,3,3,_,_, 
                         _,_,_,4,3,4,_,_,_,_, 
@@ -281,7 +288,7 @@ char f0yg[SIDE*SIDE] = {_,_,_,_,_,_,_,_,_,_,
                         _,_,_,_,1,_,_,_,_,_,  
                         _,_,1,1,1,_,_,_,_,_,  
                         _,_,_,_,_,_,_,_,_,_,  
-                        _,_,_,_,_, ,_,_,_,_,  
+                        _,_,_,_,_,_,_,_,_,_,  
                         _,_,_,_,_,_,_,1,_,_,  
                         _,_,_,_,1,1,1,1,_,_,  
                         _,_,_,_,_,1,_,_,_,_,  
@@ -309,10 +316,10 @@ char f1yg[SIDE*SIDE] = {_,_,_,_,_,_,_,_,_,_,
                         _,_,_,1,1,1,1,_,_,_,  
                         _,_,_,_,_,_,_,_,_,_,}; 
 
-ValGrid f0x = {.grid=f0xg, .height=SIDE, .width=SIDE, .tbg=tHUE};
-ValGrid f0y = {.grid=f0yg, .height=SIDE, .width=SIDE, .tbg=tTWO};
-ValGrid f1x = {.grid=f1xg, .height=SIDE, .width=SIDE, .tbg=tHUE};
-ValGrid f1y = {.grid=f1yg, .height=SIDE, .width=SIDE, .tbg=tTWO};  
+ValGrid f0x = {.grid=f0xg, .height=SIDE, .width=SIDE, .tag=tHUE};
+ValGrid f0y = {.grid=f0yg, .height=SIDE, .width=SIDE, .tag=tTWO};
+ValGrid f1x = {.grid=f1xg, .height=SIDE, .width=SIDE, .tag=tHUE};
+ValGrid f1y = {.grid=f1yg, .height=SIDE, .width=SIDE, .tag=tTWO};  
 
 ArcPair a_pairs[A_NB_PAIRS] = {{.x=&a0x, .y=&a0y}, {.x=&a1x, .y=&a1y}};
 ArcPair b_pairs[B_NB_PAIRS] = {{.x=&b0x, .y=&b0y}, {.x=&b1x, .y=&b1y}};

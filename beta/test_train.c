@@ -71,18 +71,18 @@ Primitive my_prims[] = {                        /*const  nnonc  comm   uneq   ab
     {"negate"  , 1, tDIR_DIR           , 4       , 1    , 1    , 0    , 0    , 0/**/},
                     
     //{"query"   , 0, tHUE               ,      64 , false, 1    , 0    , 0    , 0    },
-    {"black"   , 0, tHUE               ,      64 , 1    , 1    , 0    , 0    , 0    },
     {"view"    , 1, tHUE_CEL           ,      64 , 1    , 1    , 0    , 0    , 0    }, 
-    {"cobalt"  , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"crimson" , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"forest"  , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"gold"    , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"lead"    , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"magenta" , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"salmon"  , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"sky"     , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
-    {"tan"     , 0, tHUE               ,   16    , 1    , 1    , 0    , 0    , 0    },
     {"abyss"   , 0, tHUE               ,      64 , 1    , 1    , 0    , 0    , 0    },
+    {"black"   , 0, tHUE               ,      64 , 1    , 1    , 0    , 0    , 0    },
+    {"cobalt"  , 0, tHUE               , 4       , 1    , 1    , 0    , 0    , 0    },
+    {"crimson" , 0, tHUE               , 4       , 1    , 1    , 0    , 0    , 0    },
+    {"forest"  , 0, tHUE               , 4       , 1    , 1    , 0    , 0    , 0    },
+    {"gold"    , 0, tHUE               , 4       , 1    , 1    , 0    , 0    , 0    },
+    {"lead"    , 0, tHUE               , 4       , 1    , 1    , 0    , 0    , 0    },
+    {"magenta" , 0, tHUE               , 4       , 1    , 1    , 0    , 0    , 0    },
+    {"salmon"  , 0, tHUE               , 4       , 1    , 1    , 0    , 0    , 0    },
+    {"sky"     , 0, tHUE               , 4       , 1    , 1    , 0    , 0    , 0    },
+    {"tan"     , 0, tHUE               , 4       , 1    , 1    , 0    , 0    , 0    },
                     
     {"has_hue" , 2, tTWOCEL_HUE        ,      64 , 1    , 1    , 0    , 0    , 0    }, 
     {"sees"    , 3, tTWOCEL_DIR_TWOCEL , 4       , 1    , 1    , 0    , 0    , 0    }, 
@@ -243,7 +243,6 @@ void main()
             ValGrid const* input = a_pairs[s].x;
             init_valuations(&ct, input, &ll);
 
-
             int H = input->height;
             int W = input->width;
 
@@ -282,7 +281,7 @@ void main()
             wipe_table(&ct);
         }
 
-        for ( int T = 0; T != 8; ++T ) {
+        for ( int T = 0; T != 3; ++T ) {
             Trees trees;            init_trees(&trees, 1);
             TaskView tv;            cons_taskview(&tv, &(tasks.data[0]));
 

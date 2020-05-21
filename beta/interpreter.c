@@ -63,8 +63,9 @@ ValGrid const* impl_plus   (ValGrid const* input, LambExpr* const* args, CTable 
 ValGrid const* impl_diff   (ValGrid const* input, LambExpr* const* args, CTable const* ct);
 ValGrid const* impl_negate (ValGrid const* input, LambExpr* const* args, CTable const* ct);
 
-ValGrid const* impl_black  (ValGrid const* input, LambExpr* const* args, CTable const* ct);
 ValGrid const* impl_view   (ValGrid const* input, LambExpr* const* args, CTable const* ct);
+ValGrid const* impl_abyss  (ValGrid const* input, LambExpr* const* args, CTable const* ct);
+ValGrid const* impl_black  (ValGrid const* input, LambExpr* const* args, CTable const* ct);
 ValGrid const* impl_cobalt (ValGrid const* input, LambExpr* const* args, CTable const* ct);
 ValGrid const* impl_crimson(ValGrid const* input, LambExpr* const* args, CTable const* ct);
 ValGrid const* impl_forest (ValGrid const* input, LambExpr* const* args, CTable const* ct);
@@ -74,7 +75,6 @@ ValGrid const* impl_magenta(ValGrid const* input, LambExpr* const* args, CTable 
 ValGrid const* impl_salmon (ValGrid const* input, LambExpr* const* args, CTable const* ct);
 ValGrid const* impl_sky    (ValGrid const* input, LambExpr* const* args, CTable const* ct);
 ValGrid const* impl_tan    (ValGrid const* input, LambExpr* const* args, CTable const* ct);
-ValGrid const* impl_abyss  (ValGrid const* input, LambExpr* const* args, CTable const* ct);
 
 ValGrid const* impl_has_hue(ValGrid const* input, LambExpr* const* args, CTable const* ct);
 ValGrid const* impl_sees   (ValGrid const* input, LambExpr* const* args, CTable const* ct);
@@ -84,10 +84,10 @@ ValGrid const* impl_sees   (ValGrid const* input, LambExpr* const* args, CTable 
 Routine implementations[] = {
     &impl_here   ,   &impl_offset ,   &impl_east   ,   &impl_north  ,  
     &impl_south  ,   &impl_west   ,   &impl_plus   ,   &impl_diff   ,  
-    &impl_negate ,   &impl_black  ,   &impl_view   ,   &impl_cobalt ,  
-    &impl_crimson,   &impl_forest ,   &impl_gold   ,   &impl_lead   ,  
-    &impl_magenta,   &impl_salmon ,   &impl_sky    ,   &impl_tan    ,  
-    &impl_abyss  ,   &impl_has_hue,   &impl_sees   ,  
+    &impl_negate ,   &impl_view   ,   &impl_abyss  ,   &impl_black  ,
+    &impl_cobalt ,   &impl_crimson,   &impl_forest ,   &impl_gold   ,   
+    &impl_lead   ,   &impl_magenta,   &impl_salmon ,   &impl_sky    , 
+    &impl_tan    ,   &impl_has_hue,   &impl_sees   ,  
 }; 
 
 #define MAX_NB_ARGS 4
@@ -101,7 +101,6 @@ ValGrid const* evaluate(ValGrid const* input, LambExpr* e, CTable* ct, int const
         //print_expr(e, NULL);
         //printf("\n");
         return val->cargo;
-    } else {
     }
 
     /* evaluate children */

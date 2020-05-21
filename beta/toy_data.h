@@ -19,10 +19,17 @@ struct ArcPair {
 }; 
 
 #define A_NB_PAIRS 2 
-//#define B_NB_PAIRS 2 
-//#define C_NB_PAIRS 2 
+#define B_NB_PAIRS 2 
+#define C_NB_PAIRS 2 
+#define D_NB_PAIRS 2 
+#define E_NB_PAIRS 2 
+#define F_NB_PAIRS 2 
+
 extern ArcPair a_pairs[A_NB_PAIRS];
-//extern ArcPair b_pairs[B_NB_PAIRS];
-//extern ArcPair c_pairs[C_NB_PAIRS];
+extern ArcPair b_pairs[B_NB_PAIRS];
+extern ArcPair c_pairs[C_NB_PAIRS];
+extern ArcPair d_pairs[D_NB_PAIRS];
+extern ArcPair e_pairs[E_NB_PAIRS];
+extern ArcPair f_pairs[F_NB_PAIRS];
 
 #endif//TOY_DATA_H
