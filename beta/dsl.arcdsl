@@ -5,7 +5,6 @@
 // to use: Read as a plain text file, preferably with the .arcdsl syntax
 //         highlighter for Vim. 
 
-
 // REGULARIZED LOOP -----------------------------------------------------------
 // note: We perform at most max(height, width) many steps, in case the dir     
 //       is zero.  We also stop upon encountering an out_of_bounds cell.  The
@@ -15,6 +14,9 @@
 //       The reason we choose (B) is that (A) doesn't uniformly treat the edge
 //       case in which the initial cell satisfies the predicate.  
 scan    : cell <- cell <- (bool <- cell) <- dir
+
+// induction base:
+base    : cell
 
 // READING THE GRID
 // note: This is the only primitive that connects the geometric world of
