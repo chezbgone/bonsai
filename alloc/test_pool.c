@@ -1,15 +1,32 @@
 #include <stdio.h>
-#include "pool.h"
+#include "../alloc/pool.h"
 
-void basic_test();
+void basic_test(PoolHeader* p);
+void big_test(PoolHeader* p);
 
 void main() 
 {
     printf("hi!\n\n");
+
     PoolHeader* p = make_pool(NULL); 
+    PoolHeader* q = make_pool(NULL); 
+
     basic_test(p);
+    big_test(q);
+
+    free_pool(q); 
     free_pool(p); 
+
     printf("bye!\n");
+}
+
+void big_test(PoolHeader* p)
+{
+    printf("allocating many many blocks...\n");
+    for ( int i = 0; i != 10000; ++ i) {
+        moo_alloc(p, i%100);
+    }
+    printf("done!\n");
 }
 
 void basic_test(PoolHeader* p)
@@ -21,6 +38,14 @@ void basic_test(PoolHeader* p)
     print_pool(p);
 
     printf("freeing a middle block, creating a gap...\n");
+    moo_free(b);
+    print_pool(p);
+
+    printf("add middle block again...\n");
+    b = moo_alloc(p, 100); 
+    print_pool(p);
+
+    printf("free middle block again...\n");
     moo_free(b);
     print_pool(p);
 

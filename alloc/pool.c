@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  create: 2020-04-28
+ *  create: 2020-05-10
  *  change: 2020-04-28
  *  descrp: Custom allocator to improve cache efficiency.
  *
@@ -16,7 +16,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "pool.h"
+
+#include "../utils/colors.h"
+#include "../alloc/pool.h"
 
 long available_words(BlockHeader* b);
 BlockHeader* fst_block_of(PoolHeader* p);
@@ -40,13 +42,14 @@ PoolHeader* make_pool(PoolHeader* prv)
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
     /*~~~~~~~~  0.1. Initialize the First Block in that Pool  ~~~~~~~~~~~~~~~*/
     {
-        BlockHeader* fst = fst_block_of(p); 
-        fst->size = WORDS_PER_BLOCK_HEADER;
-        fst->capacity = WORDS_PER_POOL - WORDS_PER_POOL_HEADER;
-        fst->prev_block = NULL; 
-        fst->next_block = NULL;
-        fst->prev_avail = NULL;
-        fst->next_avail = NULL;
+        p->active = fst_block_of(p); 
+        p->active->size = WORDS_PER_BLOCK_HEADER;
+        p->active->capacity = WORDS_PER_POOL - WORDS_PER_POOL_HEADER;
+        p->active->owner = p; 
+        p->active->prev_block = NULL; 
+        p->active->next_block = NULL;
+        p->active->prev_avail = NULL;
+        p->active->next_avail = NULL;
     }
 
     return p;
@@ -76,15 +79,24 @@ long* moo_alloc(PoolHeader* p, int nb_words)
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
     /*~~~~~~~~  1.0. Search for a Sufficiently Large Free Block  ~~~~~~~~~~~~*/
     {
-        prv = fst_block_of(p);
+        bool found = false; 
+        //while ( p->next_pool != NULL && p->is_free ) { p = p->next_pool; }
 
-        while ( prv==NULL || available_words(prv) < requested_words ) {
+        prv = p->active;
+
+        while ( prv == NULL || available_words(prv) < requested_words ) {
             if ( prv == NULL ) { 
                 /*----  1.0.0. go to next pool, creating it if necessary  ---*/
                 if ( p->next_pool == NULL ) { p->next_pool = make_pool(p); }
                 p = p->next_pool;
-                prv = fst_block_of(p);
+                found = false; 
+                prv = p->active;
             } else {
+                if ( !found && available_words(prv) ) {
+                    found = true;
+                    p->active = prv;
+                }
+
                 /*----  1.0.1. go to next block in pool  --------------------*/
                 prv = prv->next_avail;  
             }
@@ -99,9 +111,11 @@ long* moo_alloc(PoolHeader* p, int nb_words)
     {
         cur->size = requested_words; 
         cur->capacity = available_words(prv);
+        cur->owner = p;  
+
         prv->capacity = prv->size; 
     }
-
+    
     /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
     /*~~~~~~~~  1.2. Insert /cur/ into the Sparse Chain of Free Blocks  ~~~~~*/
     {
@@ -111,6 +125,7 @@ long* moo_alloc(PoolHeader* p, int nb_words)
         } else {
             /*--------  1.2.1. /cur/ isn't full, so update /prv/'s forward  -*/
             prv->next_avail = cur; 
+            cur->prev_avail = prv->prev_avail; 
         }
     }
 
@@ -123,7 +138,12 @@ long* moo_alloc(PoolHeader* p, int nb_words)
 
         /*------------  1.3.0. link /nxt/ with /cur/  -----------------------*/
         cur->next_block = nxt;
-        if ( nxt!=NULL ) { nxt->prev_block = cur; }
+        if ( nxt == NULL ) {
+            cur->next_avail = NULL;
+        } else {
+            nxt->prev_block = cur;
+            cur->next_avail = nxt; 
+        }
     }
 
     return ((long*)cur) + WORDS_PER_BLOCK_HEADER;
@@ -132,11 +152,16 @@ long* moo_alloc(PoolHeader* p, int nb_words)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~~~  1.4. Free a Block  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-long moo_free(long* allocation)
+void moo_free(long* allocation)
 {
+    /* TODO: is this wrong? how do we update everyone's next_avails? */
     BlockHeader* cur = (BlockHeader*) ( allocation - WORDS_PER_BLOCK_HEADER );
     BlockHeader* prv = cur->prev_block;
     BlockHeader* nxt = cur->next_block;
+
+    if ( allocation < (long*)(cur->owner->active) ) {
+        cur->owner->active = prv;
+    }
 
     if (prv != NULL) {
         /*------------  1.4.0. make /prv/ point forward to /nxt/  -----------*/
@@ -204,13 +229,14 @@ void print_pool(PoolHeader* p)
         cur = fst_block_of(p);
         while ( cur != NULL ) {
 
+            if ( cur == p->active ) { lava(); printf("*"); }
             /*--------  2.1.0. print block, colored by whether it is full  --*/
-            printf( cur->size==cur->capacity ? "\033[32m" : "\033[33m");
+            if ( cur->size == cur->capacity )  { lime(); } else { gold(); }
             printf("[%d/%d]", (int) cur->size, (int) cur->capacity);
-            printf("\033[36m");
             cur = cur->next_block;
 
         } 
+        defc();
         printf("\n");
         p = p->next_pool; 
     }

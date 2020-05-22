@@ -7,7 +7,7 @@
 
 #include <stdlib.h> 
 #include <stdio.h>  
-#include "../verbose.h"
+#include "../utils/verbose.h"
 
 #ifdef EltType 
 #ifdef free_elt

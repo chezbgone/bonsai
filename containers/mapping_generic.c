@@ -6,7 +6,7 @@
  */
 
 #include <stdlib.h>
-#include "../verbose.h"
+#include "../utils/verbose.h"
 
 #ifdef ValType 
 #ifdef KeyType 

@@ -1,6 +1,6 @@
 # bonsai
 #### compression for decision trees
-#### Samuel Tenka, 2020-04-25
+#### Samuel Tenka, 2020-05-20
 
 ## Motivation
 

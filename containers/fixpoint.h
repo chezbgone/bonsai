@@ -18,8 +18,10 @@
  *          end of this file:
  *
  *              #include "vector.h" 
- *              #include "dataset.h" 
- *              #include "dectree.h" 
+ *              #include "mapping.h" 
+ *              #include "count_heap.h" 
+ *              #include "../dectree/dataset.h" 
+ *              #include "../dectree/dectree.h" 
  */
 
 #include "pair.h"
@@ -27,29 +29,29 @@
 #include "vector.h" 
 #include "mapping.h" 
 #include "count_heap.h" 
-#include "dataset.h" 
-#include "dectree.h" 
+#include "../dectree/dataset.h" 
+#include "../dectree/dectree.h" 
 
 #include "vector.h" 
 #include "mapping.h" 
 #include "count_heap.h" 
-#include "dataset.h" 
-#include "dectree.h" 
+#include "../dectree/dataset.h" 
+#include "../dectree/dectree.h" 
 
 #include "vector.h" 
 #include "mapping.h" 
 #include "count_heap.h" 
-#include "dataset.h" 
-#include "dectree.h" 
+#include "../dectree/dataset.h" 
+#include "../dectree/dectree.h" 
 
 #include "vector.h" 
 #include "mapping.h" 
 #include "count_heap.h" 
-#include "dataset.h" 
-#include "dectree.h" 
+#include "../dectree/dataset.h" 
+#include "../dectree/dectree.h" 
 
 #include "vector.h" 
 #include "mapping.h" 
 #include "count_heap.h" 
-#include "dataset.h" 
-#include "dectree.h" 
+#include "../dectree/dataset.h" 
+#include "../dectree/dectree.h" 

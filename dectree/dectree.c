@@ -9,9 +9,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../verbose.h" 
-#include "count_heap.h" 
-#include "fixpoint.h"
+#include "../utils/verbose.h" 
+#include "../containers/count_heap.h" 
+#include "../containers/fixpoint.h"
 
 DecTree* malloc_tree();
 void grow_tree(DecTree* dtp);

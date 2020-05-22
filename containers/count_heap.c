@@ -6,7 +6,7 @@
  */
 
 #include <stdlib.h>
-#include "../verbose.h"
+#include "../utils/verbose.h"
 #include "fixpoint.h"
 #include "count_heap.h"
 
