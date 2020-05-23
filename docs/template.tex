@@ -8,12 +8,15 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{lmodern}
+\usepackage{amsmath,amssymb,tikz-cd}
+\usepackage{pdflscape}
 
 \definecolor{mylime} {rgb}{0.3, 0.7, 0.1}
 \definecolor{mycrim} {rgb}{0.9, 0.2, 0.3}
 \definecolor{myteal} {rgb}{0.1, 0.6, 0.8}
 \definecolor{mygold} {rgb}{0.9, 0.7, 0.1}
 \definecolor{mypurp} {rgb}{0.7, 0.2, 0.8}
+\definecolor{mygray} {rgb}{0.8, 0.8, 0.8}
 
 \newcommand{\moosupersection}[1]{
     \newpage
@@ -66,5 +69,18 @@
         automatically generated on \today
     \end{center}
 
+    \begin{landscape}
+        \footnotesize
+        \begin{figure}
+            $$
+                \begin{tikzcd}
+                    DEP_TABLE
+                \end{tikzcd}
+            $$
+            \caption{Each node points to its dependencies.}
+        \end{figure}
+    \end{landscape}
+
     CODE
+
 \end{document}
