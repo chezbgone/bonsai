@@ -24,6 +24,8 @@ struct ArcPair {
 #define D_NB_PAIRS 2 
 #define E_NB_PAIRS 2 
 #define F_NB_PAIRS 2 
+#define G_NB_PAIRS 2 
+#define H_NB_PAIRS 2 
 
 extern ArcPair a_pairs[A_NB_PAIRS];
 extern ArcPair b_pairs[B_NB_PAIRS];
@@ -32,7 +34,7 @@ extern ArcPair d_pairs[D_NB_PAIRS];
 extern ArcPair e_pairs[E_NB_PAIRS];
 extern ArcPair f_pairs[F_NB_PAIRS];
 
-#define NB_TASKS 6 
+#define NB_TASKS 8 
 
 typedef struct TaskData TaskData;
 struct TaskData {

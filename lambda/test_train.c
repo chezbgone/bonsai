@@ -220,7 +220,7 @@ void main()
     signal(SIGINT, handle_interrupt);
     {
         Grammar G;              init_grammar(&G);
-        LambList ll;            init_lamb_list(&G, &ll, 6.0);
+        LambList ll;            init_lamb_list(&G, &ll, 8.0);
         Tasks tasks;            init_tasks(&tasks, NB_TASKS);
 
         for ( int pi = 0; pi != ll.len; ++pi ) {
@@ -277,7 +277,7 @@ void main()
         }
 
 
-        for ( int it = 0; it != 10; ++it ) {
+        for ( int it = 0; it != 16; ++it ) {
             Trees trees;            init_trees(&trees, 1);
 
             for ( int tidx = 0; tidx != NB_TASKS; ++tidx ) {
@@ -285,7 +285,7 @@ void main()
                 TaskView tv;            cons_taskview(&tv, &(tasks.data[tidx]));
                 train_tree(&tv, &dt);
                 push_trees(&trees, dt);
-                if ( tidx <= 1 )  { print_tree(&dt); }
+                if ( tidx == 7 )  { print_tree(&dt); }
             }
 
             float score;
