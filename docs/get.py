@@ -1,5 +1,5 @@
 ''' author: samtenka
-    change: 2020-05-23
+    change: 2020-05-26
     create: 2020-05-22
     descrp: 
     to use: 
@@ -7,6 +7,10 @@
 
 import glob
 import numpy as np
+
+#=============================================================================#
+#=====  0. REPLACE SECTION COMMENTS by LATEX COMMANDS  =======================#
+#=============================================================================#
 
 def parse(file_nm): 
     with open(file_nm) as f:
@@ -25,7 +29,7 @@ def parse(file_nm):
 
         if lines[l].strip().startswith('/*='): 
             title = ' '.join(lines[l+1].strip().split(' ')[2:-1])
-            indent = 0 #len(lines[l+1])-len(lines[l+1].lstrip()) 
+            indent = len(lines[l+1])-len(lines[l+1].lstrip()) 
             parsed.append(['section', title, indent])
             l += 3; continue
         elif lines[l].strip().startswith('/*~'): 
@@ -48,11 +52,9 @@ def parse(file_nm):
 def texify(tag, data, indent):
     if tag == 'body':
         return (
-            #'{\\footnotesize\\begin{lstlisting}\n'
             '\n\n\\footnotesize\\begin{minted}{C}\n'
             + data +  
             '\n\\end{minted}\n\n'
-            #'\\end{lstlisting}}\n'
         )
     else:
         return {
@@ -66,7 +68,11 @@ def normalize_name(file_nm):
     kk = file_nm.split('.')[0]
     return kk.split('_')[0] if not kk.startswith('test') else kk
 
-def make_dep_table(dep_dict):
+#=============================================================================#
+#=====  1. EMBED DEPENDENCY GRAPH IN SPACE  ==================================#
+#=============================================================================#
+
+def make_dep_table(dep_dict, H=15, W=8):
     new_dep_dict = {}
     for k in dep_dict:
         kk = normalize_name(k)
@@ -82,25 +88,22 @@ def make_dep_table(dep_dict):
             for j in range(len(ll))
         ]
         for i in range(len(ll))
-    ]) + 10.0 * np.eye(len(ll))
-    mm3 = np.matmul(mm, np.matmul(mm, mm))
-    w, v = np.linalg.eig(mm)
-    ii = max((w[i], i) for i in range(len(w)))[1]
-    v = [vv[ii] for vv in v]
+    ])
+    vals, vecs = np.linalg.eig(mm + 10.0 * np.eye(len(ll)))
+    (_,ii), (_,jj)  = sorted((v,i) for i, v in enumerate(vals))[:2]
+    vy = np.argsort(vecs[:,ii])
+    vx = np.argsort(vecs[:,jj])
 
-    H, W = 14, 9
     fnm_by_pos = {} 
     pos_by_fnm = {} 
 
-    min_r = min(np.sum(mm3[:,i]) for i in range(len(ll)))
-    max_r = max(np.sum(mm3[:,i]) for i in range(len(ll)))
     for nm in dep_dict: 
         i = ll.index(nm)
-        r = np.random.binomial(H-1, p = max(0.1, min(0.9, (np.sum(mm3[:,i])-min_r)/(max_r-min_r))) ) 
-        c = np.random.binomial(W-1, p = max(0.1, min(0.9, (v[i]-min(v))/(max(v)-min(v)))) ) 
+        r = np.random.binomial(H-1, p = max(0.1, min(0.9, (vy[i]-min(vy))/(max(vy)-min(vy)) ))) 
+        c = np.random.binomial(W-1, p = max(0.1, min(0.9, (vx[i]-min(vx))/(max(vx)-min(vx)) )))
         while (r, c) in fnm_by_pos: 
-            r = np.random.binomial(H-1, p = max(0.1, min(0.9, (np.sum(mm3[:,i])-min_r)/(max_r-min_r))) ) 
-            c = np.random.binomial(W-1, p = max(0.1, min(0.9, (v[i]-min(v))/(max(v)-min(v)))) ) 
+            r = np.random.binomial(H-1, p = max(0.1, min(0.9, (vy[i]-min(vy))/(max(vy)-min(vy)) )))
+            c = np.random.binomial(W-1, p = max(0.1, min(0.9, (vx[i]-min(vx))/(max(vx)-min(vx)) )))
         fnm_by_pos[(r,c)] = nm
         pos_by_fnm[nm] = (r,c)
 
@@ -126,6 +129,10 @@ def make_dep_table(dep_dict):
             if c+1 != W: body += ' & '
         if r+1 != H: body += ' \\\\ \n'
     return body
+
+#=============================================================================#
+#=====  2. MAIN LOOP  ========================================================#
+#=============================================================================#
 
 def do_all():
     DEPS = {}
