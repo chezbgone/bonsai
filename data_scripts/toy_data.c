@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-05-18
+ *  change: 2020-05-26
  *  create: 2020-05-17
  *  descrp: Toy ARC-style dataset capturing the notion of ``neighbor'':
  *            (a) picks black cells that neighbor non-black cells 
@@ -38,16 +38,16 @@ char a0xg[SIDE*SIDE] = {_,_,_,_,_,_,_,_,_,_,
                         _,_,_,_,_,_,_,_,_,_, 
                         _,_,_,_,_,_,_,_,_,_,}; 
 
-char a0yg[SIDE*SIDE] = {_,_,_,_,_,_,_,_,_,_, 
-                        _,_,_,_,_,_,_,1,_,_, 
-                        _,1,_,_,_,_,1,_,1,_, 
-                        1,_,1,_,_,_,_,1,_,_, 
-                        _,1,_,1,_,_,_,_,_,_, 
-                        _,_,1,_,1,_,_,_,_,_, 
-                        _,_,_,1,_,_,_,_,_,_, 
-                        _,_,_,_,_,_,_,_,_,_, 
-                        _,_,_,_,_,_,_,_,_,_, 
-                        _,_,_,_,_,_,_,_,_,_,}; 
+char a0yg[SIDE*SIDE] = {1,1,1,1,1,1,1,1,1,1, 
+                        1,_,_,_,_,_,_,1,_,1, 
+                        1,1,_,_,_,_,1,_,1,1, 
+                        1,_,1,_,_,_,_,1,_,1, 
+                        1,1,_,1,_,_,_,_,_,1, 
+                        1,_,1,_,1,_,_,_,_,1, 
+                        1,_,_,1,_,_,_,_,_,1, 
+                        1,_,_,_,_,_,_,_,_,1, 
+                        1,_,_,_,_,_,_,_,_,1, 
+                        1,1,1,1,1,1,1,1,1,1,}; 
 
 char a1xg[SIDE*SIDE] = {_,_,_,_,_,_,_,_,_,_, 
                         _,_,_,_,_,_,_,_,_,_, 
@@ -60,16 +60,16 @@ char a1xg[SIDE*SIDE] = {_,_,_,_,_,_,_,_,_,_,
                         _,_,_,_,_,_,_,_,_,_, 
                         _,_,_,_,_,_,_,_,_,_,}; 
 
-char a1yg[SIDE*SIDE] = {_,_,_,_,_,_,_,_,_,_, 
-                        _,_,1,_,_,_,_,_,_,_, 
-                        _,1,_,1,_,_,_,_,_,_, 
+char a1yg[SIDE*SIDE] = {1,1,1,1,1,1,1,1,1,1, 
+                        1,_,1,_,_,_,_,_,_,1, 
+                        1,1,_,1,_,_,_,_,_,1, 
                         1,1,1,_,_,_,_,_,1,1, 
                         _,_,_,1,1,1,1,1,_,_, 
                         1,1,1,1,_,_,_,1,1,1, 
-                        _,_,_,1,_,_,_,_,1,_, 
-                        _,_,_,1,_,_,1,1,_,_, 
-                        _,_,_,_,1,1,_,_,_,_, 
-                        _,_,_,_,_,_,_,_,_,_,}; 
+                        1,_,_,1,_,_,_,_,1,1, 
+                        1,_,_,1,_,_,1,1,_,1, 
+                        1,_,_,_,1,1,_,_,_,1, 
+                        1,1,1,1,1,1,1,1,1,1,}; 
 
 ValGrid a0x = {.grid=a0xg, .height=SIDE, .width=SIDE, .tag=tHUE};
 ValGrid a0y = {.grid=a0yg, .height=SIDE, .width=SIDE, .tag=tTWO};
@@ -325,5 +325,14 @@ ArcPair a_pairs[A_NB_PAIRS] = {{.x=&a0x, .y=&a0y}, {.x=&a1x, .y=&a1y}};
 ArcPair b_pairs[B_NB_PAIRS] = {{.x=&b0x, .y=&b0y}, {.x=&b1x, .y=&b1y}};
 ArcPair c_pairs[C_NB_PAIRS] = {{.x=&c0x, .y=&c0y}, {.x=&c1x, .y=&c1y}};
 ArcPair d_pairs[D_NB_PAIRS] = {{.x=&d0x, .y=&d0y}, {.x=&d1x, .y=&d1y}};
-ArcPair e_pairs[D_NB_PAIRS] = {{.x=&e0x, .y=&e0y}, {.x=&e1x, .y=&e1y}};
-ArcPair f_pairs[D_NB_PAIRS] = {{.x=&f0x, .y=&f0y}, {.x=&f1x, .y=&f1y}};
+ArcPair e_pairs[E_NB_PAIRS] = {{.x=&e0x, .y=&e0y}, {.x=&e1x, .y=&e1y}};
+ArcPair f_pairs[F_NB_PAIRS] = {{.x=&f0x, .y=&f0y}, {.x=&f1x, .y=&f1y}};
+
+TaskData all_pairs[NB_TASKS] = {
+    {.pairs = a_pairs, .nb_pairs = A_NB_PAIRS},
+    {.pairs = b_pairs, .nb_pairs = B_NB_PAIRS},
+    {.pairs = c_pairs, .nb_pairs = C_NB_PAIRS},
+    {.pairs = d_pairs, .nb_pairs = D_NB_PAIRS},
+    {.pairs = e_pairs, .nb_pairs = E_NB_PAIRS},
+    {.pairs = f_pairs, .nb_pairs = F_NB_PAIRS},
+}; 

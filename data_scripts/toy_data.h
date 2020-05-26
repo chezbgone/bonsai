@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-05-17
+ *  change: 2020-05-26
  *  create: 2020-05-17
  *  descrp: toy ARC-style dataset capturing the notion of ``neighbor''
  *  to use: 
@@ -31,5 +31,15 @@ extern ArcPair c_pairs[C_NB_PAIRS];
 extern ArcPair d_pairs[D_NB_PAIRS];
 extern ArcPair e_pairs[E_NB_PAIRS];
 extern ArcPair f_pairs[F_NB_PAIRS];
+
+#define NB_TASKS 6 
+
+typedef struct TaskData TaskData;
+struct TaskData {
+    ArcPair const* pairs; 
+    int nb_pairs; 
+}; 
+
+extern TaskData all_pairs[NB_TASKS]; 
 
 #endif//TOY_DATA_H
