@@ -1,3 +1,10 @@
+''' author: samtenka
+    change: 2020-05-23
+    create: 2020-05-22
+    descrp: 
+    to use: 
+'''
+
 import glob
 import numpy as np
 
@@ -7,58 +14,65 @@ def parse(file_nm):
     
     types = [] 
     includes = []
-    parsed = [['supersection', file_nm.replace('_', '\\_')]]
+    parsed = [['supersection', file_nm.replace('_', '\\_'), 0]]
     
     l = 0 
     while l != len(lines):  
         if lines[l].strip().startswith('typedef'): 
             types.append(lines[l].split(';')[0].strip().split()[-1]) 
-
         if lines[l].startswith('#include "'): 
-            #includes.append(lines[l].split()[1].replace('"', ''))
             includes.append(lines[l].split()[1].split('/')[-1].replace('"', ''))
 
         if lines[l].strip().startswith('/*='): 
             title = ' '.join(lines[l+1].strip().split(' ')[2:-1])
-            parsed.append(['section', title])
+            indent = 0 #len(lines[l+1])-len(lines[l+1].lstrip()) 
+            parsed.append(['section', title, indent])
             l += 3; continue
         elif lines[l].strip().startswith('/*~'): 
             title = ' '.join(lines[l+1].strip().split(' ')[2:-1])
-            parsed.append(['subsection', title])
+            indent = len(lines[l+1])-len(lines[l+1].lstrip()) 
+            parsed.append(['subsection', title, indent])
             l += 2; continue
         elif lines[l].strip().startswith('/*-'): 
             title = ' '.join(lines[l+0].strip().split(' ')[2:-1])
-            parsed.append(['subsection', title])
+            indent = len(lines[l+0])-len(lines[l+0].lstrip()) 
+            parsed.append(['subsubsection', title, indent])
         elif lines[l].strip():
             if not parsed or parsed[-1][0] != 'body': 
-                parsed.append(['body', ''])
+                parsed.append(['body', '', None])
             parsed[-1][1] += lines[l]+'\n'
         l += 1
             
     return types, includes, parsed
 
-def texify(tag, data):
+def texify(tag, data, indent):
     if tag == 'body':
         return (
-            '{\\footnotesize\\begin{lstlisting}[language=C]\n'
+            #'{\\footnotesize\\begin{lstlisting}\n'
+            '\n\n\\footnotesize\\begin{minted}{C}\n'
             + data +  
-            '\\end{lstlisting}}\n'
+            '\n\\end{minted}\n\n'
+            #'\\end{lstlisting}}\n'
         )
     else:
         return {
-            'supersection': '\\moosupersection{{ {} }}',
-            'section': '\\moosection{{ {} }}',
-            'subsection': '\\moosubsection{{ {} }}',
-            'subsubsection': '\\moosubsubsection{{ {} }}',
-        }[tag].format(data)
+            'supersection': '\\moosupersection{{{}}}{{{}}}',
+            'section': '\\moosection{{{}}}{{{}}}',
+            'subsection': '\\moosubsection{{{}}}{{{}}}',
+            'subsubsection': '\\moosubsubsection{{{}}}{{{}}}',
+        }[tag].format('m'*indent, data)
+
+def normalize_name(file_nm):
+    kk = file_nm.split('.')[0]
+    return kk.split('_')[0] if not kk.startswith('test') else kk
 
 def make_dep_table(dep_dict):
     new_dep_dict = {}
     for k in dep_dict:
-        kk = k.split('.')[0]
+        kk = normalize_name(k)
         if kk not in new_dep_dict:
             new_dep_dict[kk] = set()
-        new_dep_dict[kk].update( {v.split('.')[0] for v in dep_dict[k]} )
+        new_dep_dict[kk].update( map(normalize_name, dep_dict[k]) )
     dep_dict = new_dep_dict
 
     ll = list(dep_dict.keys())
@@ -74,7 +88,7 @@ def make_dep_table(dep_dict):
     ii = max((w[i], i) for i in range(len(w)))[1]
     v = [vv[ii] for vv in v]
 
-    H, W = 14, 7
+    H, W = 14, 9
     fnm_by_pos = {} 
     pos_by_fnm = {} 
 
@@ -120,7 +134,7 @@ def do_all():
     for file_nm in sorted(glob.glob('../[!v]*/*.[c|h]')):
         types, includes, parsed = parse(file_nm) 
         DEPS[file_nm.split('/')[-1]] = set(includes)
-        CODE += '\n\n'.join(texify(tag, data) for tag, data in parsed)
+        CODE += '\n\n'.join(texify(tag, data, indent) for tag, data, indent in parsed)
         print(file_nm, includes)
         TYPES += types
     print('FOUND TYPES:', ', '.join(TYPES))

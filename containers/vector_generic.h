@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-03-06
+ *  change: 2020-05-22
  *  create: 2020-03-04
  *  descrp: Declare vector interfaces to be specialized in "vector.h"
  *  to use: See "vector.h" for instructions and examples.
@@ -23,7 +23,8 @@
 ======  0. VECTOR DATA  =======================================================
 =============================================================================*/
 
-typedef struct {
+typedef struct VecType VecType;
+struct VecType {
     EltType* data;
     int cap;
     int len;

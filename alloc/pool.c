@@ -18,7 +18,7 @@
 #include <stdio.h>
 
 #include "../utils/colors.h"
-#include "../alloc/pool.h"
+#include "pool.h"
 
 long available_words(BlockHeader* b);
 BlockHeader* fst_block_of(PoolHeader* p);

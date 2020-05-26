@@ -5,11 +5,16 @@
     left   = 1.4in,
     right  = 1.4in,
 ]{geometry}
-\usepackage{listings}
+%\usepackage{listings}
+\usepackage[english]{babel}
+\usepackage{minted}
+\usemintedstyle{manni}
+
 \usepackage{xcolor}
-\usepackage{lmodern}
+%\usepackage{lmodern}
 \usepackage{amsmath,amssymb,tikz-cd}
 \usepackage{pdflscape}
+\usepackage{ifthen}
 
 \definecolor{mylime} {rgb}{0.3, 0.7, 0.1}
 \definecolor{mycrim} {rgb}{0.9, 0.2, 0.3}
@@ -18,46 +23,46 @@
 \definecolor{mypurp} {rgb}{0.7, 0.2, 0.8}
 \definecolor{mygray} {rgb}{0.8, 0.8, 0.8}
 
-\newcommand{\moosupersection}[1]{
+\newcommand{\moosupersection}[2]{
     \newpage
     \hrule \vspace{0.05cm}
     \hrule \vspace{0.10cm}
     \begin{center}
         \Large
         \vspace{0.5cm}
-        #1
+        \footnotesize{\hphantom{\texttt{#1}}}
+        #2
         \vspace{0.5cm}
     \end{center}
     \hrule \vspace{0.05cm}
     \hrule \vspace{0.10cm}
 }
 
-\newcommand{\moosection}[1]{
-    \hrule \vspace{0.00cm}
-    \large
-    \noindent \fbox{#1}
+\newcommand{\moosection}[2]{
+    \hrule
+    {\noindent\large\fbox{#2}}
+    %\vspace{0.05cm}
 }
 
-\newcommand{\moosubsection}[1]{
-    \normalsize
-    \noindent \fbox{#1}
+\newcommand{\moosubsection}[2]{
+    \noindent{\footnotesize{\hphantom{\texttt{#1}}}\fbox{\textsc{#2}}}
 }
 
-\newcommand{\moosubsubsection}[1]{
-    \footnotesize
-    \noindent \fbox{\textit{#1}}
+\newcommand{\moosubsubsection}[2]{
+    \noindent{\footnotesize{\hphantom{\texttt{#1}}}\color{mycrim}\textit{#2}}
 }
 
-\lstset{ %
-    language = C,
-    emph={int,char,double,float,unsigned,void,bool,TYPES},
-    commentstyle = \color{mycrim},  % comment style
-    emphstyle    = \color{mylime},  % i.e. for types
-    keywordstyle = \color{myteal},
-    stringstyle  = \color{mypurp},  % string literal style
-    basicstyle = \footnotesize\ttfamily, 
-    breaklines = true,              % line breaking only at whitespace
-}
+%\lstset{ %
+%    language = C,
+%    emph={int,char,double,float,unsigned,void,bool,TYPES},
+%    commentstyle = \color{mycrim},  % comment style
+%    emphstyle    = \color{mylime},  % i.e. for types
+%    keywordstyle = \color{myteal},
+%    stringstyle  = \color{mypurp},  % string literal style
+%    basicstyle = \footnotesize\ttfamily, 
+%    breaklines = true,              % line breaking only at whitespace
+%    columns    = fixed,
+%}
 
 \begin{document}
 
@@ -77,7 +82,7 @@
                     DEP_TABLE
                 \end{tikzcd}
             $$
-            \caption{Each node points to its dependencies.}
+            \caption{Each module points to its dependencies.}
         \end{figure}
     \end{landscape}
 

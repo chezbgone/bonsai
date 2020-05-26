@@ -32,6 +32,9 @@
  *          internal behavior.
  */
 
+#ifndef POOL_H
+#define POOL_H
+
 #include <stdbool.h>
 
 #define WORDS_PER_POOL (4096)
@@ -71,3 +74,5 @@ void free_pool(PoolHeader* p);
 
 void print_pool(PoolHeader* p); 
 bool check_pool(PoolHeader* p); 
+
+#endif//POOL_H
