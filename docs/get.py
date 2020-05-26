@@ -145,9 +145,9 @@ def do_all():
     
     with open('out.tex', 'w') as f:
         f.write(tex
-            .replace('CODE', CODE)
-            .replace('DEP_TABLE', make_dep_table(DEPS))
-            .replace('TYPES', ','.join(TYPES))
+            .replace('__CODE', CODE)
+            .replace('__DEP_TABLE', make_dep_table(DEPS))
+            .replace('__TYPES', ','.join(TYPES))
         )
 
 if __name__=='__main__':
