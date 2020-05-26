@@ -75,7 +75,7 @@
 
 #define EltType         int 
 #define free_elt(ep)    ;
-#define VecType         ints  
+#define VecType         ints 
 #define make_vec        make_ints
 #define init_vec        init_ints
 #define grow_vec        grow_ints
