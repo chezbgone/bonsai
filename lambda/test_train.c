@@ -200,13 +200,13 @@ void init_valuations(CTable* ct, ValGrid const* input, LambList* ll)
     end = clock();
     diff = ((float)(end-start))/CLOCKS_PER_SEC;
 
-    lime(); printf("evaluated "); defc();
-    lava(); printf("%d ", ll->len); defc();
-    printf("programs in ");
-    lava(); printf("%.3f ", 1000*diff); defc();
-    printf("ms, or ");
-    lava(); printf("%.3f ", 1000*diff/(ll->len)); defc();
-    printf("ms per program \n");
+    //lime(); printf("evaluated "); defc();
+    //lava(); printf("%d ", ll->len); defc();
+    //printf("programs in ");
+    //lava(); printf("%.3f ", 1000*diff); defc();
+    //printf("ms, or ");
+    //lava(); printf("%.3f ", 1000*diff/(ll->len)); defc();
+    //printf("ms per program \n");
 }
 
 
