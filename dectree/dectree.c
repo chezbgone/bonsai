@@ -342,8 +342,10 @@ NewDim best_new_dim(Tasks const* tasks, Trees const* trees, int max_len, int pt_
 
         NewDim nd = {didx_a, didx_b, -1};
 
-        //for ( char op=0; op != 4; ++op ) {
-        for ( char op=0; op != 1; ++op ) {
+        //for ( char op=0; op != 1; ++op ) {
+        for ( char op=0; op != 4; ++op ) {
+            if ( op == 2 ) { continue; }
+
             nd.op = op;
 
             float total_gain = 0.0;

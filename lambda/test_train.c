@@ -221,7 +221,7 @@ void main()
     {
         Grammar G;              init_grammar(&G);
         LambList ll;            init_lamb_list(&G, &ll, 6.0);
-        Tasks tasks;            init_tasks(&tasks, A_NB_PAIRS);
+        Tasks tasks;            init_tasks(&tasks, NB_TASKS);
 
         for ( int pi = 0; pi != ll.len; ++pi ) {
             printf("%4d : ", pi);
@@ -233,76 +233,76 @@ void main()
         int const nb_dims = ll.len; 
         int const nb_colors = 10;
 
-        Task t = {make_charss(0), make_charss(0), nb_dims};
-        push_tasks(&tasks, t);
+        for ( int tidx = 0; tidx != NB_TASKS; ++tidx ) {
+            Task t = {make_charss(0), make_charss(0), nb_dims};
+            push_tasks(&tasks, t);
 
-        for ( int s = 0; s != A_NB_PAIRS; ++s ) {
-            CTable ct;
-            init_table(&ct, CARGO_VALUED);
-            ValGrid const* input = a_pairs[s].x;
-            init_valuations(&ct, input, &ll);
+            for ( int s = 0; s != all_pairs[tidx].nb_pairs; ++s ) {
+                CTable ct;
+                init_table(&ct, CARGO_VALUED);
+                ValGrid const* input = all_pairs[tidx].pairs[s].x;
+                init_valuations(&ct, input, &ll);
 
-            int H = input->height;
-            int W = input->width;
+                int H = input->height;
+                int W = input->width;
 
-            for ( int r = 0; r != H; ++r ) {
-                for ( int c = 0; c != W; ++c ) {
-                    //int actual_hue = a_pairs[s].y->grid[r*W + c];
-                    int actual_out = a_pairs[s].y->grid[r*W + c];
+                for ( int r = 0; r != H; ++r ) {
+                    for ( int c = 0; c != W; ++c ) {
+                        //int actual_hue = a_pairs[s].y->grid[r*W + c];
+                        int actual_out = all_pairs[tidx].pairs[s].y->grid[r*W + c];
 
-                    for ( int di = 0; di != nb_dims; ++ di ) {
-                        /* dim @ sample*/
-                        ValGrid const* features = search_table(&ct, ll.arr[di].e)->cargo;
-                        //if ( s == 0 && r == 0 && c == 0 ) {
-                        //    print_expr(ll.arr[di].e, leaf_names);
-                        //    printf("\n");
-                        //    print_grid(features);
-                        //}
-                        char f = features->grid[r*W + c]; 
+                        for ( int di = 0; di != nb_dims; ++ di ) {
+                            /* dim @ sample*/
+                            ValGrid const* features = search_table(&ct, ll.arr[di].e)->cargo;
+                            char f = features->grid[r*W + c]; 
 
-                        //for ( int hue = 0; hue != nb_colors; ++hue ) {
-                            /* output @ sample*/
-                            //char label = (hue == actual_hue); 
-                            char label = actual_out;
+                            //for ( int hue = 0; hue != nb_colors; ++hue ) {
+                                /* output @ sample*/
+                                //char label = (hue == actual_hue); 
+                                char label = actual_out;
+                                charss* points = label ? &(tasks.data[tidx].pospoints) :
+                                                         &(tasks.data[tidx].negpoints)  ; 
+                                if ( di == 0 ) {
+                                    push_charss(points, make_chars(nb_dims));
+                                }
+                                push_chars(&points->data[points->len-1], f);
+                            //}
+                        }
 
-                            charss* points = label ? &(tasks.data[0].pospoints) :
-                                                     &(tasks.data[0].negpoints)  ; 
-                            if ( di == 0 ) {
-                                push_charss(points, make_chars(nb_dims));
-                            }
-                            push_chars(&points->data[points->len-1], f);
-                        //}
                     }
-
                 }
-            }
 
-            wipe_table(&ct);
+                wipe_table(&ct);
+            }
         }
 
-        for ( int T = 0; T != 3; ++T ) {
+
+        for ( int it = 0; it != 10; ++it ) {
             Trees trees;            init_trees(&trees, 1);
-            TaskView tv;            cons_taskview(&tv, &(tasks.data[0]));
 
-            DecTree dt;             init_tree(&dt);
-
-            {
+            for ( int tidx = 0; tidx != NB_TASKS; ++tidx ) {
+                DecTree dt;             init_tree(&dt);
+                TaskView tv;            cons_taskview(&tv, &(tasks.data[tidx]));
                 train_tree(&tv, &dt);
                 push_trees(&trees, dt);
-                print_tree(&dt);
+                if ( tidx <= 1 )  { print_tree(&dt); }
+            }
 
-                float score;
-                NewDim nd = best_new_dim(&tasks, &trees, 10, nb_dims, &score); 
-                printf("%3d: \033[32m%3d %3s %3d : %6.1f\033[36m\n",
-                    nb_dims+T, nd.didx_a, (
+            float score;
+            NewDim nd = best_new_dim(&tasks, &trees, 10, nb_dims+it, &score); 
+            lime(); printf("found new predicate ");
+            defc(); printf("(number %3d): ", nb_dims+it);
+            pink(); printf("%3d %3s %3d ", nd.didx_a, (
                         nd.op==OP_AND    ? "and" :
                         nd.op==OP_OR     ? "or" :
                         nd.op==OP_XOR    ? "xor" :
                                            "implies"
-                    ), nd.didx_b, score
-                );
-                add_new_dim(&tasks, &nd);
-            }
+                    ), nd.didx_b); 
+            defc(); printf("has score "); 
+            lava(); printf("%6.1f\n", score); 
+            defc();
+
+            add_new_dim(&tasks, &nd);
 
             free_trees(&trees);
         }
