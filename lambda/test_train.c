@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-05-17
+ *  change: 2020-05-27
  *  create: 2020-05-17
  *  descrp: 
  *  to use: 
@@ -209,6 +209,38 @@ void init_valuations(CTable* ct, ValGrid const* input, LambList* ll)
     //printf("ms per program \n");
 }
 
+NewDim nds[100];
+
+void print_nd(int i, LambList const* ll)
+{
+    if (i < ll->len) { print_expr(ll->arr[i].e, leaf_names); return; }
+    defc(); printf("(");
+    print_nd(nds[i].didx_a, ll);
+    printf(" ");
+    lime();
+    printf("%s", nds[i].op==OP_AND    ? "and" :
+                 nds[i].op==OP_OR     ? "or" :
+                 nds[i].op==OP_XOR    ? "xor" :
+                                        "implies");
+
+    defc();
+    printf(" ");
+    print_nd(nds[i].didx_b, ll);
+    printf(")");
+}
+
+void print_tree_legend(DecTree const* dt, LambList const* ll)
+{
+    switch ( dt->node_type ) {
+        case NT_LEAF: return;
+        case NT_PRED: printf("%d : ", dt->annotation.didx);
+                      print_nd(dt->annotation.didx, ll);
+                      printf("\n");
+                      print_tree_legend(dt->left, ll);
+                      print_tree_legend(dt->rght, ll);
+                      return;
+    }
+}
 
 void main()
 {
@@ -221,7 +253,7 @@ void main()
     {
         Grammar G;              init_grammar(&G);
         LambList ll;            init_lamb_list(&G, &ll, 8.0);
-        Tasks tasks;            init_tasks(&tasks, NB_TASKS);
+        Tasks tasks;            init_tasks(&tasks, NB_EASY_TASKS);
 
         for ( int pi = 0; pi != ll.len; ++pi ) {
             printf("%4d : ", pi);
@@ -233,14 +265,14 @@ void main()
         int const nb_dims = ll.len; 
         int const nb_colors = 10;
 
-        for ( int tidx = 0; tidx != NB_TASKS; ++tidx ) {
+        for ( int tidx = 0; tidx != NB_EASY_TASKS; ++tidx ) {
             Task t = {make_charss(0), make_charss(0), nb_dims};
             push_tasks(&tasks, t);
 
-            for ( int s = 0; s != all_pairs[tidx].nb_pairs; ++s ) {
+            for ( int s = 0; s != easy_pairs[tidx].nb_pairs; ++s ) {
                 CTable ct;
                 init_table(&ct, CARGO_VALUED);
-                ValGrid const* input = all_pairs[tidx].pairs[s].x;
+                ValGrid const* input = easy_pairs[tidx].pairs[s].x;
                 init_valuations(&ct, input, &ll);
 
                 int H = input->height;
@@ -249,7 +281,7 @@ void main()
                 for ( int r = 0; r != H; ++r ) {
                     for ( int c = 0; c != W; ++c ) {
                         //int actual_hue = a_pairs[s].y->grid[r*W + c];
-                        int actual_out = all_pairs[tidx].pairs[s].y->grid[r*W + c];
+                        int actual_out = easy_pairs[tidx].pairs[s].y->grid[r*W + c];
 
                         for ( int di = 0; di != nb_dims; ++ di ) {
                             /* dim @ sample*/
@@ -277,29 +309,37 @@ void main()
         }
 
 
-        for ( int it = 0; it != 16; ++it ) {
+        for ( int it = 0; it != 12; ++it ) {
+            printf("\n\n");
+            lava();
+            for ( int j = 0; j != 60; ++j ) { printf("=-"); }
+            defc();
+            printf("\n\n\n");
+
             Trees trees;            init_trees(&trees, 1);
 
-            for ( int tidx = 0; tidx != NB_TASKS; ++tidx ) {
+            for ( int tidx = 0; tidx != NB_EASY_TASKS; ++tidx ) {
                 DecTree dt;             init_tree(&dt);
                 TaskView tv;            cons_taskview(&tv, &(tasks.data[tidx]));
                 train_tree(&tv, &dt);
                 push_trees(&trees, dt);
-                if ( tidx == 7 )  { print_tree(&dt); }
+                // print:
+                lime(); printf("%s\n", easy_pair_descrps[tidx]);
+                defc();
+                print_tree(&dt);
+                print_tree_legend(&dt, &ll);
+                printf("\n");
             }
 
             float score;
             NewDim nd = best_new_dim(&tasks, &trees, 10, nb_dims+it, &score); 
+            nds[ll.len + it] = nd;
+            printf("\n");
             lime(); printf("found new predicate ");
-            defc(); printf("(number %3d): ", nb_dims+it);
-            pink(); printf("%3d %3s %3d ", nd.didx_a, (
-                        nd.op==OP_AND    ? "and" :
-                        nd.op==OP_OR     ? "or" :
-                        nd.op==OP_XOR    ? "xor" :
-                                           "implies"
-                    ), nd.didx_b); 
-            defc(); printf("has score "); 
-            lava(); printf("%6.1f\n", score); 
+            print_nd(ll.len + it, &ll);
+            printf("\n");
+            defc(); printf("this one, number %3d, has score ", nb_dims+it);
+            lava(); printf("%.1f\n", score); 
             defc();
 
             add_new_dim(&tasks, &nd);

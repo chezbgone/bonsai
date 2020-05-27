@@ -1,6 +1,6 @@
 # bonsai
 #### compression for decision trees
-#### Samuel Tenka, 2020-05-20
+#### Samuel Tenka, 2020-05-26
 
 ## Motivation
 
@@ -8,9 +8,11 @@
 
 ## Implementation 
 
-### Tree Compression
+### Compression 
 
-### Program Compression 
+#### Boole: Tree Compression
+
+#### Church: Lambda Compression 
 
 ### Code Structure  
 
@@ -18,11 +20,11 @@
                            _____/  \____                                        
                        ___/             \___                                    
                       /                     \                                   
-       mapping     dectree     dataset     lambda       table                    
+       mapping     dectree    *dataset*    lambda       table                    
           |        / |         _/  \          | \__       |                     
           |      _/  |        /     \         |    \      |                     
           |     /    |       /       \        |     \     |                     
-       counter /     |    __/   types \  interpreter \_   |                         
+       counter /     |    __/  *types*\ *interpreter*\_   |                         
           |  _/      |   /         \   \___   |        \  |                     
           | /        |  /           \____  \  |         \ |                     
           |/         | /                 \  \ |          \|                     
@@ -31,6 +33,8 @@
             \_________________ \     / _______________/     
                               \ \   / /                                            
                                BONSAI!                                            
+
+Above, the three modules wrapped in asterisks are domain-dependent. 
 
 ### Guide to Containers
 

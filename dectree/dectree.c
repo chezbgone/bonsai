@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "../utils/colors.h" 
 #include "../utils/verbose.h" 
 #include "../containers/count_heap.h" 
 #include "../containers/fixpoint.h"
@@ -55,14 +56,17 @@ int depth(DecTree const* dtp)
 
 void print_tree(DecTree const* dtp)
 {
-    int j;
-    for ( j = 0; j != 2*nb_nodes(dtp); ++j ) { printf("-"); }
+    /* top border */
+    for ( int j = 0; j != 2*nb_nodes(dtp); ++j ) { printf("-"); }
     printf("\n");
+
     for ( int r = 0; r != depth(dtp)+1; ++r ) {
         print_tree_row(dtp, r);
         printf("\n");
     }
-    for ( j = 0; j != 2*nb_nodes(dtp); ++j ) { printf("-"); }
+
+    /* bottom border */
+    for ( int j = 0; j != 2*nb_nodes(dtp); ++j ) { printf("-"); }
     printf("\n");
 }
 
@@ -79,25 +83,25 @@ void print_tree_row(DecTree const* dtp, int row)
                 print_tree_row(dtp->rght, row-1);
                 return;
         }
-    } else {
-        int j;
-        switch ( dtp->node_type ) {
-            case NT_LEAF:
-                printf("\033[40;1m%s\033[0m ",
-                    dtp->annotation.value==+1 ?
-                    "\033[32;7m+\033[0;36m" :
-                    "\033[31;7m-\033[0;36m"
-                );
-                return;
-            case NT_PRED:
-                for ( j = 0; j != nb_nodes(dtp->left)-1; ++j ) { printf("  "); }
-                int didx = dtp->annotation.didx;
-                if      ( didx <   10 ) { printf("  %d   ", didx); }
-                else if ( didx <  100 ) { printf(" %d   ",  didx); }
-                else if ( didx < 1000 ) { printf(" %d  ",   didx); }
-                else                    { printf(" %d ",   didx); }
-                for ( j = 0; j != nb_nodes(dtp->rght)-1; ++j ) { printf("  "); }
-                return;
+    }
+    switch ( dtp->node_type ) {
+        case NT_LEAF:
+            printf("\033[40;1m%s\033[0m ",
+                dtp->annotation.value==+1 ?
+                "\033[32;7m+\033[0;36m" :
+                "\033[31;7m-\033[0;36m"
+            );
+            return;
+        case NT_PRED: {
+            for ( int j = 0; j != nb_nodes(dtp->left)-1; ++j ) { printf("  "); }
+            int didx = dtp->annotation.didx;
+            defc();
+            if      ( didx <   10 ) { printf("  %d   ", didx); }
+            else if ( didx <  100 ) { printf(" %d   ",  didx); }
+            else if ( didx < 1000 ) { printf(" %d  ",   didx); }
+            else                    { printf(" %d ",   didx);  }
+            for ( int j = 0; j != nb_nodes(dtp->rght)-1; ++j ) { printf("  "); }
+            return;
         }
     }
 }

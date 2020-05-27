@@ -34,14 +34,17 @@ extern ArcPair d_pairs[D_NB_PAIRS];
 extern ArcPair e_pairs[E_NB_PAIRS];
 extern ArcPair f_pairs[F_NB_PAIRS];
 
-#define NB_TASKS 8 
-
 typedef struct TaskData TaskData;
 struct TaskData {
     ArcPair const* pairs; 
     int nb_pairs; 
 }; 
 
-extern TaskData all_pairs[NB_TASKS]; 
+#define NB_ALL_TASKS 8 
+extern TaskData all_pairs[NB_ALL_TASKS]; 
+
+#define NB_EASY_TASKS 4 
+extern TaskData easy_pairs[NB_EASY_TASKS]; 
+extern char easy_pair_descrps[NB_EASY_TASKS][64];
 
 #endif//TOY_DATA_H

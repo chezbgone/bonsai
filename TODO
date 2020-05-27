@@ -1,7 +1,28 @@
+TODO
 
+ -- correctness
+     >< adapt data structures to have only single-parent children
+         >< thus solve segfault (see test_crash)
+             () aha! we had a y combinator => unbounded number of allocs!
+     >< implement complete set of forward beta version-space construction rules
+     -- add inverse beta rule
+         -- correct use of contexts in inv_subs 
+         -- correct handling of unions in inv_subs 
+         -- test
 
+ -- legibility
+     -- document "unwrap" and "rewrite", clarifying mutations 
+     >< concisely parenthesize printed expressions 
 
-when train tree, pull loop over features *into* infogain function
+ -- speed
+     -- implement equality and hashs for /LambdaExpr/ and /VersionSpace/
+     -- allow multi-parent children by explicity avoiding double touches:
+         -- in /unwrap/
+         -- in /free_expr/
+         -- in /free_vs/
+     -- allow multi-parent nodes 
+     -- remove syntactic duplicates in /update_vs/ (see test_join)
+     -- memoize /rewrite/'s inputs to make top-down simulate bottom up 
 
-int pair as generic
-
+ -- usage
+     -- arc dsl 
