@@ -204,13 +204,13 @@ void init_valuations(CTable* ct, ValGrid const* input, LambList* ll)
     end = clock();
     diff = ((float)(end-start))/CLOCKS_PER_SEC;
 
-    //lime(); printf("evaluated "); defc();
-    //lava(); printf("%d ", ll->len); defc();
-    //printf("programs in ");
-    //lava(); printf("%.3f ", 1000*diff); defc();
-    //printf("ms, or ");
-    //lava(); printf("%.3f ", 1000*diff/(ll->len)); defc();
-    //printf("ms per program \n");
+    lime(); printf("evaluated "); defc();
+    lava(); printf("%d ", ll->len); defc();
+    printf("programs in ");
+    lava(); printf("%.3f ", 1000*diff); defc();
+    printf("ms, or ");
+    lava(); printf("%.3f ", 1000*diff/(ll->len)); defc();
+    printf("ms per program \n");
 }
 
 NewDim nds[100];
@@ -231,6 +231,22 @@ void print_nd(int i, LambList const* ll)
     printf(" ");
     print_nd(nds[i].didx_b, ll);
     printf(")");
+}
+
+LambExpr* expr_from_nd(int i, LambList const* ll) 
+{
+    if (i < ll->len) { return ll->arr[i].e; }
+
+    switch ( nds[i].op ) {
+        case OP_AND    : return eval_expr(eval_expr(leaf_expr(25),
+                                expr_from_nd(nds[i].didx_a, ll)),
+                                expr_from_nd(nds[i].didx_b, ll)); 
+        case OP_OR     : return eval_expr(eval_expr(leaf_expr(24),
+                                expr_from_nd(nds[i].didx_a, ll)),
+                                expr_from_nd(nds[i].didx_b, ll)); 
+        case OP_XOR    : return NULL; 
+        case OP_IMPLIES: return NULL;
+    }
 }
 
 void print_tree_legend(DecTree const* dt, LambList const* ll)
@@ -345,6 +361,8 @@ void main()
             defc(); printf("this one, number %3d, has score ", nb_dims+it);
             lava(); printf("%.1f\n", score); 
             defc();
+
+            //print_expr(expr_from_nd(ll.len+it, &ll), leaf_names);
 
             add_new_dim(&tasks, &nd);
 
