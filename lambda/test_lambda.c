@@ -51,7 +51,6 @@ void test_abst()
     //printf("PRINT:\n");   print_table(&ct, NULL);   printf("\n"); 
     //printf("WIPE:\n");    wipe_table(&ct);          printf("\n");
     //printf("DONE!\n");
-
 }
 
 //LambExpr* make_nested_abst()

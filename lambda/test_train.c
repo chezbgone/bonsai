@@ -262,6 +262,31 @@ void print_tree_legend(DecTree const* dt, LambList const* ll)
     }
 }
 
+void extract_concepts_from_tree(DecTree const* dt, CTable* ct, LambList const* ll)
+{
+    // TODO: weight by number of children
+    switch ( dt->node_type ) {
+        case NT_LEAF: return;
+        case NT_PRED: extract_to(ll->arr[dt->annotation.didx].e, ct);
+                      extract_concepts_from_tree(dt->left, ct, ll);
+                      extract_concepts_from_tree(dt->rght, ct, ll);
+                      return;
+    }
+}
+
+//LambExpr* extract_concepts_from_trees(Trees const* dts, LambList const* ll) 
+void extract_concepts_from_trees(Trees const* dts, LambList const* ll) 
+{
+    CTable ct;
+    init_table(&ct, COUNT_VALUED);
+    DecTree* dt;
+    for each(dt, *dts) {
+        extract_concepts_from_tree(dt, &ct, ll);
+    }
+    print_table(&ct);
+    wipe_table(&ct);
+}
+
 void main()
 {
     initialize_primitive_scores();
@@ -354,6 +379,8 @@ void main()
             float score;
             NewDim nd = best_new_dim(&tasks, &trees, 10, nb_dims+it, &score); 
             nds[ll.len + it] = nd;
+            add_new_dim(&tasks, &nd);
+
             printf("\n");
             lime(); printf("found new predicate ");
             print_nd(ll.len + it, &ll);
@@ -363,8 +390,7 @@ void main()
             defc();
 
             //print_expr(expr_from_nd(ll.len+it, &ll), leaf_names);
-
-            add_new_dim(&tasks, &nd);
+            extract_concepts_from_trees(&dts, &ll); 
 
             free_trees(&trees);
         }
