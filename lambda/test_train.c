@@ -56,7 +56,7 @@ struct Primitive {
 
 const float ABST_PROB = 0.0;
 
-#define NB_PRIMITIVES 23//24
+#define NB_PRIMITIVES 26//23//24
 Primitive my_prims[] = {                        /*const  nnonc  comm   uneq   absbs*/
     {"here"    , 0, tCEL               ,      64 , false, 1    , 0    , 0    , 0    }, 
     {"offset"  , 2, tCEL_CEL_DIR       ,   16    , 1    , 1    , 0    , 0    , true }, 
@@ -85,6 +85,10 @@ Primitive my_prims[] = {                        /*const  nnonc  comm   uneq   ab
                     
     {"has_hue" , 2, tTWOCEL_HUE        ,      64 , 1    , 1    , 0    , 0    , 0    }, 
     {"sees"    , 3, tTWOCEL_DIR_TWOCEL , 4       , 1    , 1    , 0    , 0    , 0    }, 
+
+    {"not"     , 1, tTWOTWO            ,       1 , 1    , 1    , 0    , 0    , 0    }, 
+    {"or"      , 2, tTWOTWO_TWO        ,       1 , 1    , 1    , 1    , 1    , 0    }, 
+    {"and"     , 2, tTWOTWO_TWO        ,       1 , 1    , 1    , 1    , 1    , 0    }, 
 };
 float eval_scores[NB_TYPES];
 float leaf_scores[NB_PRIMITIVES];

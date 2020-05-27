@@ -18,6 +18,7 @@ bool is_func[] = {
     false           , 1             , 1             , 1             ,
     1               , false         , 1             , false         ,
     1               , 1             , 1             , 1             ,
+    1               , 1             , 1             ,
 };
 
 EType arg_type[] = { 
@@ -25,6 +26,7 @@ EType arg_type[] = {
     -1              , tCEL          , tCEL          , tDIR          ,
     tDIR            , -1            , tCEL          , -1            ,
     tCEL            , tDIR          , tTWOCEL       , tHUE          ,
+    tTWO            , tTWO          , tTWO          ,
 };
 
 EType out_type[] = { 
@@ -32,6 +34,7 @@ EType out_type[] = {
     -1              , tDIR          , tDIR_CEL      , tDIR          ,
     tDIR_DIR        , -1            , tHUE          , -1            ,
     tTWO            , tTWOCEL       , tTWOCEL_DIR   , tTWOCEL       ,
+    tTWO            , tTWOTWO       , tTWOTWO       ,
 };
 
 //Type t_bool          = {.tag=BASE, .data={.base=BOOL                        }};

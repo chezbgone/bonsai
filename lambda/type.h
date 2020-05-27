@@ -10,7 +10,7 @@
 
 // TODO: replace by commented struct below
 //
-#define NB_TYPES 16
+#define NB_TYPES 18
 
 typedef enum EType EType;
 enum EType {
@@ -33,6 +33,9 @@ enum EType {
     tTWOCEL_DIR         = 13,
     tTWOCEL_DIR_TWOCEL  = 14,
     tTWOCEL_HUE         = 15,
+
+    tTWOTWO             = 16,
+    tTWOTWO_TWO         = 17,
 };                       
 
 extern bool is_func[];   

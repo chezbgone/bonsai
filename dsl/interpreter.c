@@ -78,6 +78,10 @@ ValGrid const* impl_tan    (ValGrid const* input, LambExpr* const* args, CTable 
 ValGrid const* impl_has_hue(ValGrid const* input, LambExpr* const* args, CTable const* ct);
 ValGrid const* impl_sees   (ValGrid const* input, LambExpr* const* args, CTable const* ct);
 
+ValGrid const* impl_not    (ValGrid const* input, LambExpr* const* args, CTable const* ct);
+ValGrid const* impl_or     (ValGrid const* input, LambExpr* const* args, CTable const* ct);
+ValGrid const* impl_and    (ValGrid const* input, LambExpr* const* args, CTable const* ct);
+
 #define IN_BOUNDS(r,c,H,W) ( 0<=(r) && (r)<(H) && 0<=(c) && (c)<(W) ) 
 
 Routine implementations[] = {
@@ -86,7 +90,8 @@ Routine implementations[] = {
     &impl_negate ,   &impl_view   ,   &impl_abyss  ,   &impl_black  ,
     &impl_cobalt ,   &impl_crimson,   &impl_forest ,   &impl_gold   ,   
     &impl_lead   ,   &impl_magenta,   &impl_salmon ,   &impl_sky    , 
-    &impl_tan    ,   &impl_has_hue,   &impl_sees   ,  
+    &impl_tan    ,   &impl_has_hue,   &impl_sees   ,   &impl_not    ,
+    &impl_or     ,   &impl_and    , 
 }; 
 
 #define MAX_NB_ARGS 4
@@ -238,7 +243,8 @@ ValGrid const* impl_negate (ValGrid const* input, LambExpr* const* args, CTable 
     return out;
 }
 
-ValGrid const* impl_view   (ValGrid const* input, LambExpr* const* args, CTable const* ct) {
+ValGrid const* impl_view   (ValGrid const* input, LambExpr* const* args, CTable const* ct)
+{
     ValGrid const* cel   = search_table(ct, args[0])->cargo; 
     int H = input->height; int W = input->width;
 
@@ -255,7 +261,8 @@ ValGrid const* impl_view   (ValGrid const* input, LambExpr* const* args, CTable 
     return out;
 }
 
-ValGrid const* impl_has_hue(ValGrid const* input, LambExpr* const* args, CTable const* ct) {
+ValGrid const* impl_has_hue(ValGrid const* input, LambExpr* const* args, CTable const* ct)
+{
     ValGrid const* col   = search_table(ct, args[0])->cargo; 
     ValGrid const* cel   = search_table(ct, args[1])->cargo; 
     int H = input->height; int W = input->width;
@@ -273,7 +280,8 @@ ValGrid const* impl_has_hue(ValGrid const* input, LambExpr* const* args, CTable 
     return out;
 }
 
-ValGrid const* impl_sees(ValGrid const* input, LambExpr* const* args, CTable const* ct) {
+ValGrid const* impl_sees   (ValGrid const* input, LambExpr* const* args, CTable const* ct)
+{
     LambExpr* here = leaf_expr(0);
 
     ValGrid const* pred  = search_table(ct, eval_expr(args[0], here))->cargo;
@@ -299,7 +307,54 @@ ValGrid const* impl_sees(ValGrid const* input, LambExpr* const* args, CTable con
     return out;
 }
 
+ValGrid const* impl_not    (ValGrid const* input, LambExpr* const* args, CTable const* ct)
+{
+    ValGrid const* arg = search_table(ct, args[0])->cargo; 
 
+    int H = input->height; int W = input->width;
+
+    ValGrid* out = make_grid(H, W, tTWO);
+    for ( int r = 0; r != H; ++r ) { 
+        for ( int c = 0; c != W; ++c ) { 
+            out->grid[r*W + c] = 0;//! arg->grid[r*W + c];
+        }
+    }
+    return out;
+}
+
+ValGrid const* impl_or     (ValGrid const* input, LambExpr* const* args, CTable const* ct)
+{
+    ValGrid const* arg_a = search_table(ct, args[0])->cargo; 
+    ValGrid const* arg_b = search_table(ct, args[1])->cargo; 
+
+    int H = input->height; int W = input->width;
+
+    ValGrid* out = make_grid(H, W, tTWO);
+    for ( int r = 0; r != H; ++r ) { 
+        for ( int c = 0; c != W; ++c ) { 
+            out->grid[r*W + c] = 0;//arg_a->grid[r*W + c] ||
+                                 //arg_b->grid[r*W + c];
+        }
+    }
+    return out;
+}
+
+ValGrid const* impl_and    (ValGrid const* input, LambExpr* const* args, CTable const* ct)
+{
+    ValGrid const* arg_a = search_table(ct, args[0])->cargo; 
+    ValGrid const* arg_b = search_table(ct, args[1])->cargo; 
+
+    int H = input->height; int W = input->width;
+
+    ValGrid* out = make_grid(H, W, tTWO);
+    for ( int r = 0; r != H; ++r ) { 
+        for ( int c = 0; c != W; ++c ) { 
+            out->grid[r*W + c] = 0;//arg_a->grid[r*W + c] &&
+                                 //arg_b->grid[r*W + c];
+        }
+    }
+    return out;
+}
 
 
 
