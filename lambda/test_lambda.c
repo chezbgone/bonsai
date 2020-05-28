@@ -1,6 +1,6 @@
 /*  author: samtenka
- *  change: 2020-03-08
- *  create: 2020-03-04
+ *  change: 2020-05-27
+ *  create: 2020-04-04
  *  descrp: 
  *  to use: 
  */
@@ -32,25 +32,29 @@ void main()
     init_lamb_expr_pool();
     test_abst();
     free_lamb_expr_pool();
+    printf("DONE!\n");
 }
 
 void test_abst()
 {
-    LambExpr* expr = make_nested_abst();
-    LambExpr* conc = make_abst_conc();
-    LambExpr* name = leaf_expr(4);
+    LambExpr* expr;
+    LambExpr* conc; 
+    LambExpr* rewr; 
 
-    printf("EXPR: ");    print_expr(expr, NULL);  printf("\n");
-    printf("CONC: ");    print_expr(conc, NULL);  printf("\n");
-    print_expr(rewrite_given(expr, conc, name), NULL);   printf("\n");
+    expr = make_nested_abst();
 
-    //CTable ct;
-    //printf("EXPR:\n");    print_expr(outer, NULL);  printf("\n");
-    //printf("INIT:\n");    init_table(&ct);          printf("\n"); 
-    //printf("EXTRACT:\n"); extract_to(outer, &ct);   printf("\n"); 
-    //printf("PRINT:\n");   print_table(&ct, NULL);   printf("\n"); 
-    //printf("WIPE:\n");    wipe_table(&ct);          printf("\n");
-    //printf("DONE!\n");
+    printf("EXPR: ");    print_expr(expr, NULL);            printf("\n");
+    {
+        CTable ct;
+        init_table(&ct, COUNT_VALUED);
+        extract_to(expr, &ct);
+        conc = best_concept(&ct); 
+        wipe_table(&ct);
+    }
+    printf("CONC: ");     print_expr(conc, NULL);           printf("\n");
+
+    rewr = rewrite_given(expr, conc, leaf_expr(4));
+    printf("REWR: ");     print_expr(rewr, NULL);           printf("\n");
 }
 
 //LambExpr* make_nested_abst()
