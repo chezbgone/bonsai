@@ -123,7 +123,9 @@ void free_expr(LambExpr* e)
 /*===========================================================================*/
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/*~~~~~~~~~~  1.0. Syntactic Equality  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~  1.0. Syntactic Comparison  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+/*----------------  1.0.0. equality  ----------------------------------------*/
 
 bool same_node_inner(LambExpr* lx, int ld, LambExpr* rx, int rd);
 
@@ -160,6 +162,28 @@ bool same_node_inner(LambExpr* lx, int ld, LambExpr* rx, int rd)
         case ABST: return same_node_inner(lx->BOD, ld+1, rx->BOD, rd+1);
         case EVAL: return same_node_inner(lx->FUN, ld  , rx->FUN, rd  ) &&
                           same_node_inner(lx->ARG, ld  , rx->ARG, rd  );
+    }
+}
+
+/*----------------  1.0.1. ordering  ----------------------------------------*/
+
+#define COMPARE(a, b) (((a) < (b)) ? LT : ((a) > (b)) ? GT : EQ)
+
+Comp comp_expr(LambExpr* lhs, LambExpr* rhs)
+{
+    // so LEAVES < VAR.S < ABSTRACTIONS < EVALUATIONS 
+    if ( lhs->tag != rhs->tag ) { return lhs->tag < rhs->tag; }
+
+    switch ( lhs->tag ) {
+        case LEAF: return COMPARE(lhs->LID, rhs->LID);
+        case VRBL: return COMPARE(lhs->VID, rhs->VID);
+        case ABST: return comp_expr(lhs->BOD, rhs->BOD);
+        case EVAL: {
+            Comp fun = comp_expr(lhs->FUN, rhs->FUN);
+            if ( fun != EQ) { return fun; }
+            Comp arg = comp_expr(lhs->ARG, rhs->ARG);
+            return arg;
+        }
     }
 }
 

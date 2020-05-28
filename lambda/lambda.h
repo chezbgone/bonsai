@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-04-26
+ *  change: 2020-05-26
  *  create: 2020-04-26
  *  descrp: interface for abstract syntax trees
  *  to use: 
@@ -21,6 +21,7 @@
 #define ARG data.eval.arg
 
 typedef struct LAMB_EXPR_MUT const LambExpr;
+typedef struct LAMB_EXPR_MUT       LambExprMut;
 struct LAMB_EXPR_MUT {
     union {
         struct { int idx;                      } leaf;
@@ -65,6 +66,10 @@ void free_expr(LambExpr* e);
 
 bool same_node(Node lhs, Node rhs);
 bool same_expr(LambExpr* lhs, LambExpr* rhs);
+
+typedef enum Comp Comp;
+enum Comp { LT, EQ, GT }; 
+Comp comp_expr(LambExpr* lhs, LambExpr* rhs);
 
 LambExpr* subs(LambExpr* exp, int vid, LambExpr* val, int depth);
 bool mentions_vrbl(LambExpr* e, int vid_lo, int vid_hi);
