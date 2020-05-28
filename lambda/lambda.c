@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-03-08
+ *  change: 2020-05-27
  *  create: 2020-03-04
  *  descrp: 
  *  to use: 
@@ -182,6 +182,13 @@ LambExpr* subs(LambExpr* exp, int vid, LambExpr* val, int depth)
 /*----------------  1.1.1. mutate dependencies  -----------------------------*/
 
 LambExpr* shift(LambExpr* e, int vid, int gap_size) 
+    /*  /shift/: Create an expression analogous to /e/ except that references
+        to outer variables (i.e. those /vid/ or more levels up) are displaced
+        by /gap_size/.  For /gap_size/ positive, this creates a gap so that the
+        resulting expression makes no reference to the variable /vid/ levels up
+        from /e/.  For /gap_size/ equal to -1, this removes a gap, e.g. the gap
+        created upon beta-elimination of an abstraction whose body is /e/.      
+    */
 {
     switch ( e->tag ) {
         case LEAF: return e;
