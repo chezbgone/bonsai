@@ -45,6 +45,7 @@ test_compress_lambda:
 		data_scripts/toy_data.c \
 		lambda/concept_table.c \
 		lambda/extract.c \
+		lambda/extract_logic.c \
 		lambda/lambda.c \
 		lambda/type.c \
 	 	utils/*.c \

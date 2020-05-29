@@ -8,15 +8,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "../utils/colors.h"
 #include "lambda.h"
 #include "extract.h"
 
 char my_leaf_names[][16] = {
-    "moop",
-    "chit",
-    "lump",
     "bopp",
+    "chit",
     "funk",
+    "lump",
+    "moop",
+    "soup",
+    "or",
 };
 
 LambExpr* make_nested_eval();
@@ -27,13 +30,61 @@ LambExpr* make_nested_abst();
 LambExpr* make_abst_conc();
 void test_abst();
 
+LambExpr* make_sortable();
+void test_sort();
+
 void main()
 {
     init_lamb_expr_pool();
-    test_abst();
+    test_sort();
+    //test_abst();
     free_lamb_expr_pool();
     printf("DONE!\n");
 }
+
+/*---------------------------------------------------------------------------*/
+
+void test_sort()
+{
+    LambExpr* sortable = make_sortable();
+    lime(); printf("EXPR: ");
+    print_expr(sortable, my_leaf_names);
+    printf("\n");
+
+    LambExpr* sorted = canonicalize_logic(sortable, 6); 
+    lime(); printf("SORTED: ");
+    print_expr(sorted, my_leaf_names);
+    printf("\n");
+}
+
+LambExpr* make_sortable()
+{
+    LambExpr* op = leaf_expr(6); 
+
+    LambExpr* e01 = eval_expr(leaf_expr(0), leaf_expr(1)); 
+    LambExpr* e12 = eval_expr(leaf_expr(1), leaf_expr(2)); 
+
+    LambExpr* e3_01 = eval_expr(leaf_expr(3), e01); 
+    LambExpr* e3_12 = eval_expr(leaf_expr(3), e12); 
+    LambExpr* e4_01 = eval_expr(leaf_expr(4), e01); 
+    LambExpr* e4_12 = eval_expr(leaf_expr(4), e12); 
+    LambExpr* e01_5 = eval_expr(e01, leaf_expr(5)); 
+    LambExpr* e12_5 = eval_expr(e12, leaf_expr(5)); 
+
+    LambExpr* join(LambExpr* a, LambExpr* b)
+    {
+        return eval_expr(eval_expr(op, a), b);
+    }
+
+    LambExpr* combined = join(
+        join(join(e01, e3_01), join(e4_01, e12)),
+        join(join(join(e3_12, e01_5), e12_5), e4_12)
+    );
+
+    return combined;
+}
+
+/*---------------------------------------------------------------------------*/
 
 void test_abst()
 {
@@ -57,19 +108,6 @@ void test_abst()
     printf("REWR: ");     print_expr(rewr, NULL);           printf("\n");
 }
 
-//LambExpr* make_nested_abst()
-//{
-//    LambExpr* v0 = vrbl_expr(0);      
-//    LambExpr* v1 = vrbl_expr(1);
-//
-//    LambExpr* l0 = leaf_expr(0);  
-//    LambExpr* l3 = leaf_expr(3);  
-//
-//    LambExpr* inner = abst_expr(eval_expr(v0, v1));  
-//    LambExpr* outer = abst_expr(eval_expr(v0, inner));
-//
-//    return outer;
-//}
 LambExpr* make_nested_abst()
 {
     LambExpr* v0 = vrbl_expr(0);

@@ -172,7 +172,8 @@ bool same_node_inner(LambExpr* lx, int ld, LambExpr* rx, int rd)
 Comp comp_expr(LambExpr* lhs, LambExpr* rhs)
 {
     // so LEAVES < VAR.S < ABSTRACTIONS < EVALUATIONS 
-    if ( lhs->tag != rhs->tag ) { return lhs->tag < rhs->tag; }
+    Comp tag = COMPARE(lhs->tag, rhs->tag); 
+    if ( tag != EQ ) { return tag; }
 
     switch ( lhs->tag ) {
         case LEAF: return COMPARE(lhs->LID, rhs->LID);
@@ -180,9 +181,8 @@ Comp comp_expr(LambExpr* lhs, LambExpr* rhs)
         case ABST: return comp_expr(lhs->BOD, rhs->BOD);
         case EVAL: {
             Comp fun = comp_expr(lhs->FUN, rhs->FUN);
-            if ( fun != EQ) { return fun; }
-            Comp arg = comp_expr(lhs->ARG, rhs->ARG);
-            return arg;
+            if ( fun != EQ ) { return fun; }
+            return comp_expr(lhs->ARG, rhs->ARG);
         }
     }
 }
