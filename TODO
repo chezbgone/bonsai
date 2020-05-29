@@ -1,5 +1,12 @@
 TODO
 
+ -- put lambda proposals back into the loop, demonstrating improvement in generalization  
+ -- weight extract-concepts-from-dectree by number of datapoints encountered 
+ -- set up armando disentangling experiments 
+ -- try also on Cathy regex dataset
+
+OLD TODO
+
  -- correctness
      >< adapt data structures to have only single-parent children
          >< thus solve segfault (see test_crash)
