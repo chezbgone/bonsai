@@ -44,11 +44,11 @@ LambExpr* combine(Lambs* ll, int logic_op)
     if ( ll->len == 0 ) { return NULL; /* UH OH!*/ }
     if ( ll->len == 1 ) { return ll->arr[0]; }
 
-    for ( int j = 0; j != ll->len; ++j ) {
-        printf(" [%d] ", j);
-        print_expr(ll->arr[j], NULL);
-        printf("\n");
-    }
+    //for ( int j = 0; j != ll->len; ++j ) {
+    //    printf(" [%d] ", j);
+    //    print_expr(ll->arr[j], NULL);
+    //    printf("\n");
+    //}
 
     LambExpr* operator = leaf_expr(logic_op);
     LambExpr* combined = eval_expr(eval_expr(operator, ll->arr[0]), ll->arr[1]);

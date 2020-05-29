@@ -216,24 +216,6 @@ void init_valuations(CTable* ct, ValGrid const* input, LambList* ll)
 
 NewDim nds[100];
 
-void print_nd(int i, LambList const* ll)
-{
-    if (i < ll->len) { print_expr(ll->arr[i].e, leaf_names); return; }
-    defc(); printf("(");
-    print_nd(nds[i].didx_a, ll);
-    printf(" ");
-    lime();
-    printf("%s", nds[i].op==OP_AND    ? "and" :
-                 nds[i].op==OP_OR     ? "or" :
-                 nds[i].op==OP_XOR    ? "xor" :
-                                        "implies");
-
-    defc();
-    printf(" ");
-    print_nd(nds[i].didx_b, ll);
-    printf(")");
-}
-
 LambExpr* expr_from_nd(int i, LambList const* ll) 
 {
     if ( i < ll->len ) { return ll->arr[i].e; }
@@ -249,6 +231,7 @@ LambExpr* expr_from_nd(int i, LambList const* ll)
         case OP_IMPLIES: return NULL;
     }
 }
+
 LambExpr* canonical_expr_from_nd(int i, LambList const* ll)
 { 
     LambExpr* sortable = expr_from_nd(i, ll);
@@ -265,7 +248,7 @@ void print_tree_legend(DecTree const* dt, LambList const* ll)
     switch ( dt->node_type ) {
         case NT_LEAF: return;
         case NT_PRED: printf("%d : ", dt->annotation.didx);
-                      print_nd(dt->annotation.didx, ll);
+                      print_expr(canonical_expr_from_nd(dt->annotation.didx, ll), leaf_names);
                       printf("\n");
                       print_tree_legend(dt->left, ll);
                       print_tree_legend(dt->rght, ll);
@@ -288,20 +271,14 @@ void extract_concepts_from_tree(DecTree const* dt, CTable* ct, LambList const* l
 LambExpr* extract_concepts_from_trees(Trees const* dts, LambList const* ll) 
 {
     CTable ct;
-    printf("A\n");
     init_table(&ct, COUNT_VALUED);
-    printf("B\n");
     DecTree* dt;
-    for each(dt, *dts) {
-        printf(" Ca\n");
+    for each (dt, *dts) {
         extract_concepts_from_tree(dt, &ct, ll);
-        printf(" Cb\n");
     }
     //print_table(&ct, NULL);
     LambExpr* best = best_concept(&ct);
-    printf("D\n");
     wipe_table(&ct);
-    printf("E\n");
     return best;
 }
 
@@ -343,7 +320,6 @@ void main()
 
                 for ( int r = 0; r != H; ++r ) {
                     for ( int c = 0; c != W; ++c ) {
-                        //int actual_hue = a_pairs[s].y->grid[r*W + c];
                         int actual_out = easy_pairs[tidx].pairs[s].y->grid[r*W + c];
 
                         for ( int di = 0; di != nb_dims; ++ di ) {
@@ -351,17 +327,13 @@ void main()
                             ValGrid const* features = search_table(&ct, ll.arr[di].e)->cargo;
                             char f = features->grid[r*W + c]; 
 
-                            //for ( int hue = 0; hue != nb_colors; ++hue ) {
-                                /* output @ sample*/
-                                //char label = (hue == actual_hue); 
-                                char label = actual_out;
-                                charss* points = label ? &(tasks.data[tidx].pospoints) :
-                                                         &(tasks.data[tidx].negpoints)  ; 
-                                if ( di == 0 ) {
-                                    push_charss(points, make_chars(nb_dims));
-                                }
-                                push_chars(&points->data[points->len-1], f);
-                            //}
+                            char label = actual_out;
+                            charss* points = label ? &(tasks.data[tidx].pospoints) :
+                                                     &(tasks.data[tidx].negpoints)  ; 
+                            if ( di == 0 ) {
+                                push_charss(points, make_chars(nb_dims));
+                            }
+                            push_chars(&points->data[points->len-1], f);
                         }
 
                     }
@@ -399,24 +371,21 @@ void main()
             nds[ll.len + it] = nd;
             add_new_dim(&tasks, &nd);
 
-            printf("\n");
-            lime(); printf("found new predicate ");
-            print_nd(ll.len + it, &ll);
-            printf("\n");
-            defc(); printf("this one, number %3d, has score ", nb_dims+it);
-            lava(); printf("%.1f\n", score); 
-            defc();
-            //print_expr(expr_from_nd(ll.len+it, &ll), leaf_names);
+            lime(); printf("Found predicate number ");
+            purp(); printf("%d ", nb_dims + it);
+            lime(); printf("(score ");
+            purp(); printf("%.1f", score);
+            lime(); printf("): \n    ");
+            print_expr(canonical_expr_from_nd(ll.len+it, &ll), leaf_names);
+            defc(); printf("\n");
             
             LambExpr* best = extract_concepts_from_trees(&trees, &ll); 
-            lime(); printf("extracted this concept: ");
+            lime(); printf("Extracted a concept: \n    ");
             print_expr(best, leaf_names);
             printf("\n");
 
             free_trees(&trees);
         }
-
-        //printf("%3d",  0); print_expr(ll.arr[ 0].e, leaf_names); printf("\n");
 
         free(ll.arr);
     }
