@@ -34,6 +34,7 @@ test_compress_logic:
 		dsl/interpreter.c \
 		lambda/concept_table.c \
 		lambda/extract.c \
+		lambda/extract_logic.c \
 		lambda/lambda.c \
 		lambda/type.c \
 	 	utils/*.c \

@@ -236,7 +236,7 @@ void print_nd(int i, LambList const* ll)
 
 LambExpr* expr_from_nd(int i, LambList const* ll) 
 {
-    if (i < ll->len) { return ll->arr[i].e; }
+    if ( i < ll->len ) { return ll->arr[i].e; }
 
     switch ( nds[i].op ) {
         case OP_AND    : return eval_expr(eval_expr(leaf_expr(25),
@@ -248,6 +248,16 @@ LambExpr* expr_from_nd(int i, LambList const* ll)
         case OP_XOR    : return NULL; 
         case OP_IMPLIES: return NULL;
     }
+}
+LambExpr* canonical_expr_from_nd(int i, LambList const* ll)
+{ 
+    LambExpr* sortable = expr_from_nd(i, ll);
+    if ( i < ll->len ) { return sortable; } 
+    return canonicalize_logic(
+        sortable,
+        nds[i].op == OP_AND ? 25 :
+        nds[i].op == OP_OR  ? 24 : -1
+    ); 
 }
 
 void print_tree_legend(DecTree const* dt, LambList const* ll)
@@ -268,7 +278,7 @@ void extract_concepts_from_tree(DecTree const* dt, CTable* ct, LambList const* l
     // TODO: weight by number of children
     switch ( dt->node_type ) {
         case NT_LEAF: return;
-        case NT_PRED: extract_to(expr_from_nd(dt->annotation.didx, ll), ct);
+        case NT_PRED: extract_to(canonical_expr_from_nd(dt->annotation.didx, ll), ct);
                       extract_concepts_from_tree(dt->left, ct, ll);
                       extract_concepts_from_tree(dt->rght, ct, ll);
                       return;
