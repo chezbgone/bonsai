@@ -1,6 +1,6 @@
 /*  author: samtenka
- *  change: 2020-05-27
- *  create: 2020-05-17
+ *  change: 2020-06-26
+ *  create: 2020-06-16
  *  descrp: 
  *  to use: 
  */
@@ -22,6 +22,25 @@
 #include "concept_table.h"
 #include "lambda.h"
 #include "extract.h"
+
+const float exp_thouth = 1.001000500;
+const float exp_hundth = 1.010050167;
+const float exp_tenth  = 1.105170918;
+const float exp_one    = 2.718281828;
+
+float plog(float p)
+{
+    if ( p == 0.0 ) { return -9999.0; }
+    float bulk = 0.0;
+    while ( p < 1.0 ) { p *= exp_one   ; bulk -= 1.   ; }
+    while ( 1.0 < p ) { p /= exp_tenth ; bulk +=  .1  ; }
+    while ( p < 1.0 ) { p *= exp_hundth; bulk -=  .01 ; } 
+    while ( 1.0 < p ) { p /= exp_thouth; bulk +=  .001; }
+
+    float d = 1.0-p; 
+    float remainder = d*(1/1.0 + d*(1/2.0 + d/3.0));
+    return bulk - remainder; 
+}
 
 typedef struct Primitive Primitive;
 struct Primitive {

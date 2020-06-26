@@ -174,6 +174,3 @@ LambList enumerate(Grammar const* G, float min_score, EType target)
     return free_all_but(lbt, target);
 } 
 
-
-
-

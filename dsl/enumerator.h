@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-05-10
+ *  change: 2020-06-26
  *  create: 2020-05-02
  *  descrp: interface for bottom-up program enumeration
  *  to use: 
@@ -17,9 +17,19 @@
 /*====  0. GRAMMAR and PROGRAM LIST  ========================================*/
 /*===========================================================================*/
 
+typedef struct Library Library;
+struct Library {
+    int len;
+    LambExpr* e;
+};
+
 typedef struct Grammar Grammar;
 struct Grammar {
-    int nb_leaves;
+    int len;
+    int nb_irreds;
+
+    Library lib;
+
     int const* nb_args;
     float const* leaf_scores; 
     EType const* leaf_types; 
