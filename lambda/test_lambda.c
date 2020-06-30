@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-05-27
+ *  change: 2020-06-29
  *  create: 2020-04-04
  *  descrp: 
  *  to use: 
@@ -33,13 +33,49 @@ void test_abst();
 LambExpr* make_sortable();
 void test_sort();
 
+LambExpr* make_normalizable();
+void test_normalize();
+
 void main()
 {
     init_lamb_expr_pool();
-    test_sort();
+    test_normalize();
+    //test_sort();
     //test_abst();
     free_lamb_expr_pool();
     printf("DONE!\n");
+}
+
+/*---------------------------------------------------------------------------*/
+
+void test_normalize()
+{
+    LambExpr* sortable = make_normalizable();
+    lime(); printf("EXPR: ");
+    print_expr(sortable, my_leaf_names);
+    printf("\n");
+
+    LambExpr* normed = normalize(sortable); 
+    lime(); printf("NORMED: ");
+    print_expr(normed, my_leaf_names);
+    printf("\n");
+}
+
+LambExpr* make_normalizable()
+{
+    LambExpr* a = abst_expr(abst_expr(eval_expr(
+        eval_expr(vrbl_expr(0), leaf_expr(0)),
+        eval_expr(vrbl_expr(1), leaf_expr(1))
+    ))); 
+    LambExpr* v = abst_expr(abst_expr(eval_expr(
+        leaf_expr(2),
+        eval_expr(vrbl_expr(1), vrbl_expr(0))
+    )));
+    LambExpr* w = abst_expr(abst_expr(eval_expr(
+        eval_expr(vrbl_expr(0), leaf_expr(3)), vrbl_expr(1)
+    )));
+
+    return eval_expr(eval_expr(a, v), w);
 }
 
 /*---------------------------------------------------------------------------*/

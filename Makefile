@@ -43,11 +43,11 @@ test_compress_logic:
 
 test_compress_lambda:
 	gcc alloc/pool.c \
-		data_scripts/toy_data.c \
 		lambda/concept_table.c \
 		lambda/extract.c \
 		lambda/extract_logic.c \
-		lambda/lambda.c \
+		lambda/lambda_basic.c \
+		lambda/lambda_beta.c \
 		lambda/type.c \
 	 	utils/*.c \
 		lambda/test_lambda.c \

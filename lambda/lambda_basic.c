@@ -188,56 +188,7 @@ Comp comp_expr(LambExpr* lhs, LambExpr* rhs)
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/*~~~~~~~~~~  1.1. Beta Substitution  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-/*----------------  1.1.0. main loop  ---------------------------------------*/
-
-LambExpr* subs(LambExpr* exp, int vid, LambExpr* val, int depth)
-{
-    switch ( exp->tag ) {
-        case LEAF: return exp;
-        case VRBL: return exp->VID == vid+depth ? shift(val, 0, depth) : exp; 
-        case ABST: return abst_expr(subs(exp->BOD, vid, val, depth+1));
-        case EVAL: return eval_expr(subs(exp->FUN, vid, val, depth  ),
-                                    subs(exp->ARG, vid, val, depth  ));
-    }
-}
-
-/*----------------  1.1.1. mutate dependencies  -----------------------------*/
-
-LambExpr* shift(LambExpr* e, int vid, int gap_size) 
-    /*  /shift/: Create an expression analogous to /e/ except that references
-        to outer variables (i.e. those /vid/ or more levels up) are displaced
-        by /gap_size/.  For /gap_size/ positive, this creates a gap so that the
-        resulting expression makes no reference to the variable /vid/ levels up
-        from /e/.  For /gap_size/ equal to -1, this removes a gap, e.g. the gap
-        created upon beta-elimination of an abstraction whose body is /e/.      
-    */
-{
-    switch ( e->tag ) {
-        case LEAF: return e;
-        case VRBL: return e->VID < vid ? e : vrbl_expr(e->VID + gap_size);
-        case ABST: return abst_expr(shift(e->BOD, vid+1, gap_size));
-        case EVAL: return eval_expr(shift(e->FUN, vid  , gap_size),
-                                    shift(e->ARG, vid  , gap_size));
-    }
-}
-
-/*----------------  1.1.2. query dependencies   -----------------------------*/
-
-bool mentions_vrbl(LambExpr* e, int vid_lo, int vid_hi)
-{
-    switch ( e->tag ) {
-        case LEAF: return false;
-        case VRBL: return (vid_lo <= e->VID && e->VID < vid_hi);
-        case ABST: return mentions_vrbl(e->BOD, vid_lo+1, vid_hi+1);
-        case EVAL: return mentions_vrbl(e->FUN, vid_lo  , vid_hi  ) ||
-                          mentions_vrbl(e->ARG, vid_lo  , vid_hi  );
-    }
-}
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/*~~~~~~~~~~  1.2. Display  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~  1.1. Display  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 void print_expr(LambExpr* e, char leaf_nms[][16])
 {
