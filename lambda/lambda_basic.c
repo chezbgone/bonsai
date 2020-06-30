@@ -194,7 +194,7 @@ void print_expr(LambExpr* e, char leaf_nms[][16])
 {
     switch ( e->tag ) {
         case LEAF: pink(); { 
-            if ( leaf_nms == NULL) { printf("f%d", e->LID); }
+            if ( leaf_nms == NULL || e->LID < 0 ) { printf("f%d", e->LID); }
             else { printf("%s", leaf_nms[e->LID]); }
         } defc(); break;
         case VRBL: lime(); printf("%d", e->VID); defc(); break;

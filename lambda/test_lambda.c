@@ -36,10 +36,15 @@ void test_sort();
 LambExpr* make_normalizable();
 void test_normalize();
 
+LambExpr* make_syllabizable();
+void populate_lib(LambExpr** lib);
+void test_syllabize();
+
 void main()
 {
     init_lamb_expr_pool();
-    test_normalize();
+    test_syllabize();
+    //test_normalize();
     //test_sort();
     //test_abst();
     free_lamb_expr_pool();
@@ -48,14 +53,66 @@ void main()
 
 /*---------------------------------------------------------------------------*/
 
-void test_normalize()
+void test_syllabize()
 {
-    LambExpr* sortable = make_normalizable();
+    LambExpr* expr = make_syllabizable();
     lime(); printf("EXPR: ");
-    print_expr(sortable, my_leaf_names);
+    print_expr(expr, my_leaf_names);
     printf("\n");
 
-    LambExpr* normed = normalize(sortable); 
+    LambExpr* lib[10];
+    populate_lib(lib);
+    for ( int i=0; i!=4; ++i ) {
+        pink(); printf("f%d", -i-1);
+        teal(); printf("  :  ");
+        print_expr(lib[i], my_leaf_names); printf("\n");
+    }
+
+    LambExpr* syllabized = syllabize(expr, lib); 
+    lime(); printf("SYLLABIZED: ");
+    print_expr(syllabized, my_leaf_names);
+    printf("\n");
+}
+
+void populate_lib(LambExpr** lib)
+{
+    /* a fun literal */                  
+    lib[0] = eval_expr(leaf_expr(4), leaf_expr(5));
+
+    /* semicolon composition */
+    lib[1] = abst_expr(abst_expr(abst_expr(
+        eval_expr(vrbl_expr(1), eval_expr(vrbl_expr(2), vrbl_expr(0)))
+    ))); 
+
+    /* return precomposition-with-bopp map */
+    lib[2] = eval_expr(leaf_expr(-2), leaf_expr(0)); 
+
+    /* return postcomposition-with-moopsoup map */
+    lib[3] = abst_expr(eval_expr(
+        eval_expr(leaf_expr(-2), vrbl_expr(0)), leaf_expr(-1) 
+    ));
+}
+
+LambExpr* make_syllabizable()
+{
+    LambExpr* a = abst_expr(eval_expr(
+        eval_expr(vrbl_expr(0), leaf_expr(-1)),
+        eval_expr(eval_expr(leaf_expr(-4), leaf_expr(1)), leaf_expr(3))
+    )); 
+    LambExpr* e = eval_expr(a, leaf_expr(-3));
+    return e;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void test_normalize()
+{
+    LambExpr* expr = make_normalizable();
+    lime(); printf("EXPR: ");
+    print_expr(expr, my_leaf_names);
+    printf("\n");
+
+    LambExpr* normed = normalize(expr); 
     lime(); printf("NORMED: ");
     print_expr(normed, my_leaf_names);
     printf("\n");

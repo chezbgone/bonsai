@@ -53,27 +53,27 @@ LambExpr* beta_pass(LambExpr* e)
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~~~  0.1. Syllabize  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-bool is_unwrap(LambExpr* e);
+bool is_basic(LambExpr* e);
 LambExpr* unwrap(LambExpr* e, LambExpr* const* lib);
 
 /*--------------------  0.1.0. main loop  -----------------------------------*/
 
 LambExpr* syllabize(LambExpr* e, LambExpr* const* lib)
 {
-    while ( ! is_unwrap(e) ) { e = unwrap(e, lib); }
+    while ( ! is_basic(e) ) { e = normalize(unwrap(e, lib)); }
     return normalize(e);
 }
 
 /*--------------------  0.1.1. helpers  -------------------------------------*/
 
-bool is_unwrap(LambExpr* e)
+bool is_basic(LambExpr* e)
 {
     if ( e->tag == EVAL && e->FUN->tag == ABST ) { return false; }
     switch ( e->tag ) {
         case LEAF: return 0 <= e->LID;
         case VRBL: return true;
-        case EVAL: return is_unwrap(e->FUN) && is_normal(e->ARG); 
-        case ABST: return is_unwrap(e->BOD);
+        case EVAL: return is_basic(e->FUN) && is_basic(e->ARG); 
+        case ABST: return is_basic(e->BOD);
     }
 }
 
