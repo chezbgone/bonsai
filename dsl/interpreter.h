@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-05-17
+ *  change: 2020-06-30
  *  create: 2020-05-12
  *  descrp: interface for interpretation of abstract syntax trees
  *  to use: 
@@ -9,10 +9,10 @@
 #define INTERPRETER_H 
 
 #include <stdbool.h>
-
 #include "../lambda/concept_table.h"
 #include "../lambda/lambda.h" 
 #include "../lambda/type.h" 
+#include "../dsl/grammar.h" 
 
 typedef struct ValGrid ValGrid;
 struct ValGrid {
@@ -22,24 +22,13 @@ struct ValGrid {
     int width;
     EType tag;
 };   
+
+/* define the type: /Routine/                                                */
 typedef ValGrid const* (*Routine)(ValGrid const*, LambExpr* const*, CTable const*);
 
 void print_grid(ValGrid const* vg); 
 
-bool has_subroutines(LambExpr const* e, Grammar const* G);
-void expand_subroutines(LambExpr* e, CTable* ct)
-{
-    if ( ! has_subroutines(e) ) { return; }
-    switch ( e->TAG ) {
-        case LEAF: return;
-        case VRBL: return; 
-        case EVAL:
-            expand_subroutines(e->arg)
-        case ABST: /*TODO*/ return;
-    }
-}
-
-ValGrid const* evaluate(ValGrid const* input, LambExpr* e, CTable* ct, int const* nb_args);
+ValGrid const* evaluate(ValGrid const* input, LambExpr* e, CTable* ct, Grammar const* G);
 
 ValGrid* make_grid(int H, int W, EType tag);
 

@@ -1,5 +1,5 @@
 /*  author: samtenka
- *  change: 2020-06-26
+ *  change: 2020-07-03
  *  create: 2020-06-26
  *  descrp: interface for grammar type
  *  to use: 
@@ -18,37 +18,47 @@
 /*====  0. GRAMMAR  =========================================================*/
 /*===========================================================================*/
 
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~~~  0.0. Data Structure  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+typedef struct Primitive Primitive;
+struct Primitive {
+    char name[16];
+    int arity;
+    EType type;
+
+    float count;
+
+    bool is_const;
+    bool needs_nonconst;
+    bool commutes;
+    bool needs_unequal;
+    bool absorbs_self;
+};
+
 typedef struct Grammar Grammar;
 struct Grammar {
     int nb_types;
 
-    struct {
-        int len;
-        LambExpr** exprs;
-    } library;
-
     int len;
-    int nb_irreds;
-    EType const* leaf_types; 
-    int const* arity;
+    struct { int cap; int len; Primitive* elts; } primitives;
+    struct { int cap; int len; LambExpr** elts; } concepts;
 
-    int const*   counts;
-    float const* leaf_scores; 
-    float const* eval_score;
-    float        abst_score;
-
-    bool const* is_const;
-    bool const* needs_nonconst;
-    bool const* commutes;
-    bool const* needs_unequal;
-    bool const* absorbs_self;
+    float* leaf_scores; 
+    float* eval_scores;
+    float  abst_score;
 };
 
-void scores_from_counts(Grammar* G); 
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~~~  0.1. Methods  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-/*===========================================================================*/
-/*====  1. LIBRARY  =========================================================*/
-/*===========================================================================*/
+void alloc_grammar(Grammar* G, int nb_prims, int nb_types);
+void free_grammar(Grammar* G);
+
+/* initialize leaf_scores, eval_score, and abst_score */
+void scores_from_counts(Grammar* G, Primitive* my_prims, float abst_prob); 
+
+int add_concept(LambExpr* e, Grammar* G);
 
 #endif//GRAMMAR_H
 

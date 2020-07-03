@@ -1,7 +1,7 @@
 /*  author: samtenka
- *  change: 2020-05-17
+ *  change: 2020-06-30
  *  create: 2020-05-14
- *  descrp: interface for interpretation of abstract syntax trees
+ *  descrp: interpretation of abstract syntax trees
  *  to use: 
  */
 
@@ -95,27 +95,22 @@ Routine implementations[] = {
 }; 
 
 #define MAX_NB_ARGS 4
-ValGrid const* evaluate(ValGrid const* input, LambExpr* e, CTable* ct, int const* nb_args)
+ValGrid const* evaluate(ValGrid const* input, LambExpr* e, CTable* ct, Grammar const* G)
 {
-    /* is memoized */
+    /* memoized */
     CTableValue const* val = search_table(ct, e);
-    if ( val != NULL ) {
-        //lime();
-        //printf("found: ");
-        //print_expr(e, NULL);
-        //printf("\n");
-        return val->cargo;
-    }
+    if ( val != NULL ) { return val->cargo; }
 
-    /* evaluate children */
+    /* evaluate kids */
     switch ( e-> tag ) {
         case LEAF: break; 
         case VRBL: break; 
-        case ABST: evaluate(input, e->BOD, ct, nb_args); break; 
-        case EVAL: evaluate(input, e->FUN, ct, nb_args);
-                   evaluate(input, e->ARG, ct, nb_args); break; 
+        case ABST: evaluate(input, e->BOD, ct, G); break; 
+        case EVAL: evaluate(input, e->FUN, ct, G);
+                   evaluate(input, e->ARG, ct, G); break; 
     }
 
+    /* collect arg values */
     LambExpr* args[MAX_NB_ARGS];
     int nb_args_seen = 0;
     LambExpr* f = e; 
@@ -124,11 +119,12 @@ ValGrid const* evaluate(ValGrid const* input, LambExpr* e, CTable* ct, int const
         nb_args_seen += 1;
         f = f->FUN;
     }
+
+    /* abort if not in expected form */
     if ( f->tag != LEAF ) {
         fprintf(stderr, "EVAL HEAD ISN'T LEAF!\n"); return NULL;
-    } else if ( nb_args_seen != nb_args[f->LID] ) {
-        //fprintf(stderr, "WRONG NUMBER OF ARGS!\n");
-        return NULL;
+    } else if ( nb_args_seen != G->primitives.elts[f->LID].arity ) {
+        fprintf(stderr, "WRONG NUMBER OF ARGS!\n"); return NULL;
     }
 
     /* address fact that arguments are backward */
@@ -138,16 +134,9 @@ ValGrid const* evaluate(ValGrid const* input, LambExpr* e, CTable* ct, int const
         args[nb_args_seen-1-a] = temp; 
     }
 
-    //lime();
-    //printf("evaluating: ");
-    //print_expr(e, NULL);
-    //printf("\n");
-
+    /* run head function */
     ValGrid const* out = implementations[f->LID](input, args, ct);
     update_table(ct, e, (CTableValue){.cargo=out});
-
-    //print_grid(out);
-
     return out; 
 }
 

@@ -9,7 +9,8 @@
 #include <stdio.h> 
 
 #include "../utils/colors.h" 
-#include "enumerator.h" 
+#include "../dsl/enumerator.h" 
+#include "../dsl/grammar.h" 
 #include "../lambda/lambda.h" 
 #include "../lambda/type.h" 
 
@@ -33,15 +34,15 @@ LambsByEType* init_lbt(Grammar const* G)
     for ( int t = 0; t != NB_TYPES; ++t ) {
         lbt->arr[t] = (LambList){.arr = malloc(sizeof(ScoredLamb)*1), .len = 0, .cap = 1};
     }
-    for ( int l = 0; l != G->nb_leaves; ++l ) {
+    for ( int l = 0; l != G->primitives.len; ++l ) {
         ScoredLamb sp = {
             .score = G->leaf_scores[l],
             //.e = (l == 0) ? vrbl_expr(0) /*BASE*/ : leaf_expr(l),
             .e = leaf_expr(l),
-            .is_const = G->is_const[l],
-            .needs_nonconst = G->needs_nonconst[l] 
+            .is_const = G->primitives.elts[l].is_const,
+            .needs_nonconst = G->primitives.elts[l].needs_nonconst 
         };  
-        insert(&(lbt->arr[G->leaf_types[l]]), sp);
+        insert(&(lbt->arr[G->primitives.elts[l].type]), sp);
     }
     for ( int t = 0; t != NB_TYPES; ++t ) {
         lbt->arr[t].active_lo = 0;
@@ -85,7 +86,7 @@ void abst_pass(Grammar const* G, LambList* funs, LambList* bods, float min_score
 
 void eval_pass(Grammar const* G, EType fun_t, LambList* funs, LambList* outs, LambList* args, float min_score, bool penultimate)
 { 
-    float eval_score = G->eval_score[fun_t];
+    float eval_score = G->eval_scores[fun_t];
     for ( int fun_i = 0; fun_i != funs->active_hi; ++fun_i ) {
         ScoredLamb fun = funs->arr[fun_i]; 
         int arg_start = (fun_i < funs->active_lo) ? args->active_lo : 0;
@@ -93,14 +94,14 @@ void eval_pass(Grammar const* G, EType fun_t, LambList* funs, LambList* outs, La
             ScoredLamb arg = args->arr[arg_i]; 
 
             if ( penultimate && fun.needs_nonconst && arg.is_const ) { continue; }
-            if ( fun.e->tag == EVAL && fun.e->FUN->tag == LEAF && G->commutes[fun.e->FUN->LID] ) {
+            if ( fun.e->tag == EVAL && fun.e->FUN->tag == LEAF && G->primitives.elts[fun.e->FUN->LID].commutes) {
                 if ( ! ( fun.e->ARG->weight <= arg.e->weight ) ) { continue; }   
                 if ( ( fun.e->ARG->weight == arg.e->weight ) && ! ( fun.e->ARG->hash <= arg.e->hash ) ) { continue; }   
             }
-            if ( fun.e->tag == EVAL && fun.e->FUN->tag == LEAF && G->needs_unequal[fun.e->FUN->LID] ) {
+            if ( fun.e->tag == EVAL && fun.e->FUN->tag == LEAF && G->primitives.elts[fun.e->FUN->LID].needs_unequal ) {
                 if ( same_expr(fun.e->ARG, arg.e) ) { continue; }   
             }
-            if ( fun.e->tag == EVAL && fun.e->FUN->tag == LEAF && G->absorbs_self[fun.e->FUN->LID] ) {
+            if ( fun.e->tag == EVAL && fun.e->FUN->tag == LEAF && G->primitives.elts[fun.e->FUN->LID].absorbs_self ) {
                 if ( arg.e->tag == EVAL && arg.e->FUN->tag == EVAL ) {
                     if ( arg.e->FUN->tag == EVAL && arg.e->FUN->FUN->tag == LEAF && arg.e->FUN->FUN->LID == fun.e->FUN->LID ) {
                         continue;
@@ -112,7 +113,10 @@ void eval_pass(Grammar const* G, EType fun_t, LambList* funs, LambList* outs, La
             if ( new_score < min_score ) { continue; }
             ScoredLamb new_prog = {
                 .score = new_score,
+                //
                 .e = eval_expr(fun.e, arg.e),
+                //.e = syllabize(eval_expr(fun.e, arg.e), G->primitives.elts),
+                //
                 .is_const = fun.is_const && arg.is_const,
                 .needs_nonconst = fun.needs_nonconst && arg.is_const,
             };
