@@ -44,6 +44,7 @@ LambsByEType* init_lbt(Grammar const* G)
         };  
         insert(&(lbt->arr[G->primitives.elts[l].type]), sp);
     }
+    /* TODO: add concepts, too! (not just primitives) */
     for ( int t = 0; t != NB_TYPES; ++t ) {
         lbt->arr[t].active_lo = 0;
         lbt->arr[t].active_hi = lbt->arr[t].len;
@@ -114,8 +115,8 @@ void eval_pass(Grammar const* G, EType fun_t, LambList* funs, LambList* outs, La
             ScoredLamb new_prog = {
                 .score = new_score,
                 //
-                .e = eval_expr(fun.e, arg.e),
-                //.e = syllabize(eval_expr(fun.e, arg.e), G->primitives.elts),
+                //.e = eval_expr(fun.e, arg.e),
+                .e = syllabize(eval_expr(fun.e, arg.e), G->concepts.elts),
                 //
                 .is_const = fun.is_const && arg.is_const,
                 .needs_nonconst = fun.needs_nonconst && arg.is_const,

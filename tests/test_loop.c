@@ -43,6 +43,18 @@ void main()
     {
         Grammar G;              alloc_grammar(&G, NB_PRIMITIVES, NB_TYPES);
                                 scores_from_counts(&G, my_prims, 0.0);
+
+        add_concept(
+            abst_expr(
+                eval_expr(eval_expr(leaf_expr(25), 
+                    eval_expr(eval_expr(leaf_expr(22), vrbl_expr( 0)),
+                              eval_expr(eval_expr(leaf_expr( 1), leaf_expr( 0)), leaf_expr( 2)))),
+                    eval_expr(eval_expr(leaf_expr(22), vrbl_expr( 0)),
+                              eval_expr(eval_expr(leaf_expr( 1), leaf_expr( 0)), leaf_expr( 4)))
+                )
+            ), &G
+        ); 
+
         LambList ll;            init_lamb_list(&G, &ll, 8.0);
         Tasks tasks;            init_tasks(&tasks, NB_EASY_TASKS);
 

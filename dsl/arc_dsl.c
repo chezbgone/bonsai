@@ -45,34 +45,34 @@ Primitive my_prims[] = {
 };
 
 char my_leaf_names[][16] = {
-"here"          , 
-"offset"        , 
-                  
-"east"          , 
-"north"         , 
-"south"         , 
-"west"          , 
-"plus"          , 
-"diff"          ,
-"negate"        , 
-                  
-"view"          , 
-"abyss"         , 
-"black"         , 
-"cobalt"        , 
-"crimson"       , 
-"forest"        , 
-"gold"          , 
-"lead"          , 
-"magenta"       , 
-"salmon"        , 
-"sky"           , 
-"tan"           , 
-                  
-"has_hue"       , 
-"sees"          , 
-                  
-"not"           , 
-"or"            , 
-"and"           , 
+/*  0 */ "here"   , 
+/*  1 */ "offset" , 
+
+/*  2 */ "east"   , 
+/*  3 */ "north"  , 
+/*  4 */ "south"  , 
+/*  5 */ "west"   , 
+/*  6 */ "plus"   , 
+/*  7 */ "diff"   ,
+/*  8 */ "negate" , 
+
+/*  9 */ "view"   , 
+/* 10 */ "abyss"  , 
+/* 11 */ "black"  , 
+/* 12 */ "cobalt" , 
+/* 14 */ "crimson", 
+/* 15 */ "forest" , 
+/* 16 */ "gold"   , 
+/* 17 */ "lead"   , 
+/* 18 */ "magenta", 
+/* 19 */ "salmon" , 
+/* 20 */ "sky"    , 
+/* 21 */ "tan"    , 
+
+/* 22 */ "has_hue", 
+/* 23 */ "sees"   , 
+
+/* 24 */ "not"    , 
+/* 25 */ "or"     , 
+/* 26 */ "and"    , 
 };
