@@ -1,5 +1,5 @@
 # author :  samtenka
-# change :  2020-05-28 
+# change :  2020-07-01 
 # create :  2020-03-15
 # descrp :  Compilation commands for bonsai tests. 
 # to use :  Run the following commands (replacing `logic_compress `with the
@@ -9,6 +9,8 @@
 #               ./moo 
 #
 #           We briefly describe the available tests:
+#
+#               compress_loop   --- multiple iterations of bonsai.  unfinished.
 #
 #               compress_logic  --- propose and score new logical combo.s based
 #                                   on decision trees trained with toy arc-like
@@ -23,6 +25,25 @@
 #
 #               pool            --- verify that memory pools work correctly on 
 #                                   simple fake stress test 
+
+test_compress_loop:
+	gcc alloc/pool.c \
+		containers/*.c \
+		data_scripts/toy_data.c \
+		dectree/dataset.c \
+		dectree/dectree.c \
+		dsl/enumerator.c \
+		dsl/grammar.c \
+		dsl/interpreter.c \
+		lambda/concept_table.c \
+		lambda/extract.c \
+		lambda/extract_logic.c \
+		lambda/lambda_basic.c \
+		lambda/lambda_beta.c \
+		lambda/type.c \
+	 	utils/*.c \
+		tests/test_loop.c \
+		-o moo.o
 
 test_compress_logic:
 	gcc alloc/pool.c \

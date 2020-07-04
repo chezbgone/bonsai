@@ -10,7 +10,7 @@
 
 // TODO: replace by commented struct below
 //
-#define NB_TYPES 18
+#define NB_TYPES 19
 
 typedef enum EType EType;
 enum EType {
@@ -36,11 +36,12 @@ enum EType {
 
     tTWOTWO             = 16,
     tTWOTWO_TWO         = 17,
+    tTWO_TWOCEL         = 18,
 };                       
 
-extern bool is_func[];   
-extern EType arg_type[];
-extern EType out_type[];
+extern bool is_func[NB_TYPES];   
+extern EType arg_type[NB_TYPES];
+extern EType out_type[NB_TYPES];
 
 ///*=============================================================================
 //======  0. TYPES  =============================================================

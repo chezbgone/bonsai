@@ -13,28 +13,28 @@
 #include "lambda.h"
 #include "type.h"
 
-bool is_func[] = {
+bool is_func[NB_TYPES] = {
     false           , 1             , 1             , 1             ,
     false           , 1             , 1             , 1             ,
     1               , false         , 1             , false         ,
     1               , 1             , 1             , 1             ,
-    1               , 1             , 1             ,
+    1               , 1             , 1             , 
 };
 
-EType arg_type[] = { 
+EType arg_type[NB_TYPES] = { 
     -1              , tCEL          , tDIR          , tTWOCEL       ,
     -1              , tCEL          , tCEL          , tDIR          ,
     tDIR            , -1            , tCEL          , -1            ,
     tCEL            , tDIR          , tTWOCEL       , tHUE          ,
-    tTWO            , tTWO          , tTWO          ,
+    tTWO            , tTWO          , tTWOCEL
 };
 
-EType out_type[] = { 
+EType out_type[NB_TYPES] = { 
     -1              , tCEL          , tCEL_CEL      , tCEL_CEL_DIR  ,
     -1              , tDIR          , tDIR_CEL      , tDIR          ,
     tDIR_DIR        , -1            , tHUE          , -1            ,
     tTWO            , tTWOCEL       , tTWOCEL_DIR   , tTWOCEL       ,
-    tTWO            , tTWOTWO       , tTWOTWO       ,
+    tTWO            , tTWOTWO       , tTWO
 };
 
 //Type t_bool          = {.tag=BASE, .data={.base=BOOL                        }};
