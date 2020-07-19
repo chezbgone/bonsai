@@ -72,7 +72,7 @@ void scores_from_counts(Grammar* G, Primitive* prims, float abst_prob)
 
     for ( int t = 0; t != G->nb_types; ++t) {
         G->eval_scores[t] = plog(
-               is_func[t] ? ( weight_to[t] / weight_to[out_type[t]])
+               is_func[t] ? ( (1.0+weight_to[t]) / (1.1+weight_to[out_type[t]]) )
                           : 0.0
         );
     }
@@ -107,17 +107,22 @@ float plog(float p)
 /*====  1. GRAMMAR USAGE  ===================================================*/
 /*===========================================================================*/
 
-int add_concept(LambExpr* e, Grammar* G)
+int add_concept(LambExpr* e, EType t, Grammar* G)
 {
     if ( G->concepts.len == G->concepts.cap ) {
         int new_cap = 1 + 2*G->concepts.cap;
         LambExpr** new_elts = malloc(sizeof(LambExpr*) * new_cap); 
+        EType*     new_types = malloc(sizeof(EType) * new_cap); 
         for ( int i=0; i!=G->concepts.len; ++i ) { 
             new_elts[i] = G->concepts.elts[i]; 
+            new_types[i] = G->concepts.types[i]; 
         }
         free(G->concepts.elts);
+        free(G->concepts.types);
         G->concepts.elts = new_elts; 
+        G->concepts.types= new_types; 
     }
     G->concepts.elts[G->concepts.len] = e;
+    G->concepts.types[G->concepts.len] = t;
     return (G->concepts.len++);
 }

@@ -44,7 +44,15 @@ LambsByEType* init_lbt(Grammar const* G)
         };  
         insert(&(lbt->arr[G->primitives.elts[l].type]), sp);
     }
-    /* TODO: add concepts, too! (not just primitives) */
+    for ( int l = 0; l != G->concepts.len; ++l ) {
+        ScoredLamb sp = {
+            .score = -0.1 /*TODO!*/,
+            .e = syllabize(leaf_expr(-l-1), G->concepts.elts),
+            .is_const = false,
+            .needs_nonconst = false,
+        };  
+        insert(&(lbt->arr[G->concepts.types[l]]), sp);
+    }
     for ( int t = 0; t != NB_TYPES; ++t ) {
         lbt->arr[t].active_lo = 0;
         lbt->arr[t].active_hi = lbt->arr[t].len;

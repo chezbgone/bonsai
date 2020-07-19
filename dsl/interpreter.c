@@ -124,7 +124,7 @@ ValGrid const* evaluate(ValGrid const* input, LambExpr* e, CTable* ct, Grammar c
     if ( f->tag != LEAF ) {
         fprintf(stderr, "EVAL HEAD ISN'T LEAF!\n"); return NULL;
     } else if ( nb_args_seen != G->primitives.elts[f->LID].arity ) {
-        fprintf(stderr, "WRONG NUMBER OF ARGS!\n"); return NULL;
+        /*fprintf(stderr, "WRONG NUMBER OF ARGS!\n");*/ return NULL;
     }
 
     /* address fact that arguments are backward */

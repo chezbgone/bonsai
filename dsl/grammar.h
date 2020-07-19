@@ -42,7 +42,7 @@ struct Grammar {
 
     int len;
     struct { int cap; int len; Primitive* elts; } primitives;
-    struct { int cap; int len; LambExpr** elts; } concepts;
+    struct { int cap; int len; LambExpr** elts; EType* types; } concepts;
 
     float* leaf_scores; 
     float* eval_scores;
@@ -58,7 +58,7 @@ void free_grammar(Grammar* G);
 /* initialize leaf_scores, eval_score, and abst_score */
 void scores_from_counts(Grammar* G, Primitive* my_prims, float abst_prob); 
 
-int add_concept(LambExpr* e, Grammar* G);
+int add_concept(LambExpr* e, EType t, Grammar* G);
 
 #endif//GRAMMAR_H
 

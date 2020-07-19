@@ -46,16 +46,18 @@ void main()
 
         add_concept(
             abst_expr(
-                eval_expr(eval_expr(leaf_expr(25), 
-                    eval_expr(eval_expr(leaf_expr(22), vrbl_expr( 0)),
-                              eval_expr(eval_expr(leaf_expr( 1), leaf_expr( 0)), leaf_expr( 2)))),
-                    eval_expr(eval_expr(leaf_expr(22), vrbl_expr( 0)),
+                eval_expr(eval_expr(leaf_expr(24), 
+                    eval_expr(vrbl_expr( 0),
+                              eval_expr(eval_expr(leaf_expr( 1), leaf_expr( 0)), leaf_expr( 3)))),
+                    eval_expr(vrbl_expr( 0),
                               eval_expr(eval_expr(leaf_expr( 1), leaf_expr( 0)), leaf_expr( 4)))
                 )
-            ), &G
+            ),
+            tTWO_TWOCEL,
+            &G
         ); 
 
-        LambList ll;            init_lamb_list(&G, &ll, 8.0);
+        LambList ll;            init_lamb_list(&G, &ll, 9.0);
         Tasks tasks;            init_tasks(&tasks, NB_EASY_TASKS);
 
         for ( int pi = 0; pi != ll.len; ++pi ) {
@@ -107,7 +109,7 @@ void main()
         }
 
 
-        for ( int it = 0; it != 12; ++it ) {
+        for ( int it = 0; it != 0; ++it ) {
             printf("\n\n");
             lava();
             for ( int j = 0; j != 60; ++j ) { printf("=-"); }
