@@ -275,10 +275,12 @@ void main()
     init_lamb_expr_pool();
     signal(SIGINT, handle_interrupt);
     {
+        // print the primitives
         Grammar G;              init_grammar(&G);
         LambList ll;            init_lamb_list(&G, &ll, 8.0);
         Tasks tasks;            init_tasks(&tasks, NB_EASY_TASKS);
 
+        // print the primitives
         for ( int pi = 0; pi != ll.len; ++pi ) {
             printf("%4d : ", pi);
             lava(); printf("%8.4f ", ll.arr[pi].score); defc();
@@ -289,6 +291,8 @@ void main()
         int const nb_dims = ll.len; 
         int const nb_colors = 10;
 
+        // load task data (defined in "../data_scripts/toy_data.h")
+        // into `tasks` variable
         for ( int tidx = 0; tidx != NB_EASY_TASKS; ++tidx ) {
             Task t = {make_charss(0), make_charss(0), nb_dims};
             push_tasks(&tasks, t);
@@ -327,7 +331,7 @@ void main()
             }
         }
 
-
+        // actual loop: `it` counts iterations
         for ( int it = 0; it != 12; ++it ) {
             printf("\n\n");
             lava();

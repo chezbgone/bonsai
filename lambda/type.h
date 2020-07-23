@@ -14,10 +14,10 @@
 
 typedef enum EType EType;
 enum EType {
-    tCEL                =  0,
-    tCEL_CEL            =  1,
-    tCEL_CEL_DIR        =  2,
-    tCEL_CEL_DIR_TWOCEL =  3,
+    tCEL                =  0,  // CEL 
+    tCEL_CEL            =  1,  // CEL <- CEL
+    tCEL_CEL_DIR        =  2,  // (CEL <- CEL) <- DIR
+    tCEL_CEL_DIR_TWOCEL =  3,  // (CEL <- CEL) <- DIR <- (TWO <- CEL)
 
     tDIR                =  4,
     tDIR_CEL            =  5,

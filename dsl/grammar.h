@@ -29,6 +29,7 @@ struct Primitive {
 
     float count;
 
+    // for speed instead of correctness:
     bool is_const;
     bool needs_nonconst;
     bool commutes;
@@ -44,9 +45,9 @@ struct Grammar {
     struct { int cap; int len; Primitive* elts; } primitives;
     struct { int cap; int len; LambExpr** elts; EType* types; } concepts;
 
-    float* leaf_scores; 
-    float* eval_scores;
-    float  abst_score;
+    float* leaf_scores; // for each leaf 
+    float* eval_scores; // for each function type (how likely to participate in eval) 
+    float  abst_score;  // for each function type (how likely to arise from abst)
 };
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
