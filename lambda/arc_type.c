@@ -11,7 +11,7 @@
 
 #include "../utils/colors.h"
 #include "lambda.h"
-#include "type.h"
+#include "arc_type.h"
 
 bool is_func[NB_TYPES] = {
     false           , 1             , 1             , 1             ,

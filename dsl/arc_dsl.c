@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 #include "../dsl/grammar.h"
-#include "../lambda/type.h"
+#include "../lambda/arc_type.h"
 
 #define NB_PRIMITIVES 26
 Primitive my_prims[] = {

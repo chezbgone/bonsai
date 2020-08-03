@@ -5,8 +5,8 @@
  *  to use: 
  */
 
-#ifndef TYPE_H 
-#define TYPE_H 
+#ifndef ARC_TYPE_H 
+#define ARC_TYPE_H 
 
 // TODO: replace by commented struct below
 //
@@ -78,4 +78,4 @@ extern EType out_type[NB_TYPES];
 //extern Type t_bools;
 //extern Type t_numbs;   
 
-#endif//TYPE_H
+#endif//ARC_TYPE_H
